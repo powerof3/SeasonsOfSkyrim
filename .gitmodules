@@ -1,4 +1,4 @@
 [submodule "external/CommonLibSSE"]
 	path = external/CommonLibSSE
-	url = https://github.com/powerof3/CommonLibSSE.git
+	url = https://github.com/powerof3/CommonLibSSE
 	branch = dev
