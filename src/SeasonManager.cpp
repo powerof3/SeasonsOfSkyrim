@@ -1,11 +1,7 @@
 #include "SeasonManager.h"
 
-std::optional<Season> SeasonManager::GetSeason()
+SeasonManager::SeasonPtr SeasonManager::GetCurrentSeason()
 {
-	if (!isExterior) {
-		return std::nullopt;
-	}
-
 	switch (seasonType) {
 	case SEASON_TYPE::kPermanentWinter:
 		return winter;
@@ -38,15 +34,44 @@ std::optional<Season> SeasonManager::GetSeason()
 			case MONTH::kSunsDusk:
 				return autumn;
 			default:
-				break;
+				return std::nullopt;
 			}
 		}
-		break;
 	default:
-		break;
+		return std::nullopt;
+	}
+}
+
+void SeasonManager::UpdateSeason()
+{
+	lastSeason = currentSeason;
+
+	const auto season = GetCurrentSeason();
+	currentSeason = season ? season->get().GetType() : SEASON::kNone;
+}
+
+SeasonManager::SeasonPtr SeasonManager::GetSeason()
+{
+	if (!isExterior) {
+		return std::nullopt;
 	}
 
-	return std::nullopt;
+	if (currentSeason == SEASON::kNone) {
+		UpdateSeason();
+	}
+
+	switch (currentSeason) {
+	case SEASON::kWinter:
+		return winter;
+	case SEASON::kSpring:
+		return spring;
+	case SEASON::kSummer:
+		return summer;
+	case SEASON::kAutumn:
+		return autumn;
+	default:
+		return std::nullopt;
+	}
 }
 
 void SeasonManager::LoadSettings()
@@ -83,7 +108,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 	ini.LoadFile(path);
 
 	if (winter.GetFormSwapMap().GenerateFormSwaps(ini)) {
-	    (void)ini.SaveFile(path);
+		(void)ini.SaveFile(path);
 	}
 }
 
@@ -136,53 +161,58 @@ void SeasonManager::LoadFormSwaps()
 SEASON SeasonManager::GetSeasonType()
 {
 	const auto season = GetSeason();
-	return season ? season->GetType() : SEASON::kNone;
+	return season ? season->get().GetType() : SEASON::kNone;
 }
 
 bool SeasonManager::CanSwapGrass()
 {
 	const auto season = GetSeason();
-	return season ? season->CanSwapGrass() : false;
+	return season ? season->get().CanSwapGrass() : false;
 }
 
 std::pair<bool, std::string> SeasonManager::CanSwapLOD()
 {
 	const auto season = GetSeason();
-	return season ? std::make_pair(season->CanSwapLOD(), season->GetID().second) : std::make_pair(false, "");
+	return season ? std::make_pair(season->get().CanSwapLOD(), season->get().GetID().second) : std::make_pair(false, "");
 }
 
 bool SeasonManager::IsLandscapeSwapAllowed()
 {
 	const auto season = GetSeason();
-	return season ? season->IsLandscapeSwapAllowed() : false;
+	return season ? season->get().IsLandscapeSwapAllowed() : false;
 }
 
 bool SeasonManager::IsSwapAllowed()
 {
 	const auto season = GetSeason();
-	return season ? season->IsSwapAllowed() : false;
+	return season ? season->get().IsSwapAllowed() : false;
 }
 
 bool SeasonManager::IsSwapAllowed(const RE::TESForm* a_form)
 {
 	const auto season = GetSeason();
-	return season ? season->IsSwapAllowed(a_form) : false;
+	return season ? season->get().IsSwapAllowed(a_form) : false;
 }
 
 RE::TESBoundObject* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
 {
-	auto season = GetSeason();
-	return season ? season->GetFormSwapMap().GetSwapForm(a_form) : nullptr;
+	const auto season = GetSeason();
+	return season ? season->get().GetFormSwapMap().GetSwapForm(a_form) : nullptr;
 }
 
 RE::TESLandTexture* SeasonManager::GetLandTexture(const RE::TESForm* a_form)
 {
-	auto season = GetSeason();
-	return season ? season->GetFormSwapMap().GetLandTexture(a_form) : nullptr;
+	const auto season = GetSeason();
+	return season ? season->get().GetFormSwapMap().GetLandTexture(a_form) : nullptr;
 }
 
 RE::TESLandTexture* SeasonManager::GetLandTextureFromTextureSet(const RE::TESForm* a_form)
 {
-	auto season = GetSeason();
-	return season ? season->GetFormSwapMap().GetLandTextureFromTextureSet(a_form) : nullptr;
+	const auto season = GetSeason();
+	return season ? season->get().GetFormSwapMap().GetLandTextureFromTextureSet(a_form) : nullptr;
+}
+
+void SeasonManager::SetExterior(bool a_isExterior)
+{
+	isExterior = a_isExterior;
 }

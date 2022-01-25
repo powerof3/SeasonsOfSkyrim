@@ -17,10 +17,10 @@ public:
 	}
 
 	void LoadSettings();
-
 	void LoadOrGenerateWinterFormSwap();
-
 	void LoadFormSwaps();
+
+	void UpdateSeason();
 
 	[[nodiscard]] SEASON GetSeasonType();
     [[nodiscard]] bool CanSwapGrass();
@@ -35,6 +35,8 @@ public:
 	RE::TESLandTexture* GetLandTexture(const RE::TESForm* a_form);
 	RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::TESForm* a_form);
 
+	void SetExterior(bool a_isExterior);
+
 protected:
 	SeasonManager() = default;
 	SeasonManager(const SeasonManager&) = delete;
@@ -45,19 +47,24 @@ protected:
 	SeasonManager& operator=(SeasonManager&&) = delete;
 
 private:
-	std::optional<Season> GetSeason();
+    using SeasonPtr = std::optional<std::reference_wrapper<Season>>;
+
+    SeasonPtr GetSeason();
+	SeasonPtr GetCurrentSeason();
 
 	static void LoadFormSwaps_Impl(Season& a_season);
 
 	struct Hooks
 	{
-		struct SetInterior
+	    struct SetInterior
 		{
 			static void thunk(bool a_isInterior)
 			{
 				func(a_isInterior);
 
-				GetSingleton()->isExterior = !a_isInterior;
+				const auto manager = GetSingleton();
+				manager->SetExterior(!a_isInterior);
+				manager->UpdateSeason();
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 		};
@@ -74,12 +81,15 @@ private:
 		}
 	};
 
-	Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
+    SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
+
+    Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
 	Season spring{ SEASON::kSpring, { "Spring", "SPR" } };
 	Season summer{ SEASON::kSummer, { "Summer", "SUM" } };
 	Season autumn{ SEASON::kAutumn, { "Autumn", "AUT" } };
 
-	SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
+	SEASON currentSeason{ SEASON::kNone };
+	SEASON lastSeason{ SEASON::kNone };
 
 	std::atomic_bool isExterior{ false };
 };
