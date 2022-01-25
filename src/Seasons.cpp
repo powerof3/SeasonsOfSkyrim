@@ -114,7 +114,9 @@ RE::TESLandTexture* FormSwapMap::GetLandTextureFromTextureSet(const RE::TESForm*
 
 void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini)
 {
-	INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", ";Valid worldspaces");
+    const auto& [type, suffix] = ID;
+
+    INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", ";Valid worldspaces");
 	INI::get_value(a_ini, swapActivators, type.c_str(), "Activators", ";Swap objects of these types for seasonal variants");
 	INI::get_value(a_ini, swapFurniture, type.c_str(), "Furniture", nullptr);
 	INI::get_value(a_ini, swapMovableStatics, type.c_str(), "Movable Statics", nullptr);
@@ -124,9 +126,12 @@ void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini)
 
 	if (swapLOD) {  //make sure LOD has been generated! No need to check form swaps
 		const auto worldSpaceName = !allowedWorldspaces.empty() ? allowedWorldspaces[0] : "Tamriel";
-		const auto lodPath = fmt::format(R"(Data\meshes\terrain\{}\{}.4.0.0.{}.BTR)", worldSpaceName, worldSpaceName, id);
+		const auto lodPath = fmt::format(R"(Data\meshes\terrain\{}\{}.4.0.0.{}.BTR)", worldSpaceName, worldSpaceName, suffix);
 
 		swapLOD = std::filesystem::exists(lodPath);
+		if (!swapLOD) {
+			logger::error("LOD files for season {} not found! Please make sure seasonal LOD has been generated and installed correctly. Default LOD will be used instead", type);
+		}
 	}
 }
 
@@ -155,14 +160,14 @@ bool Season::IsSwapAllowed(const RE::TESForm* a_form) const
 	return IsSwapAllowed() && is_valid_swap_type(a_form);
 }
 
-const std::string& Season::GetID() const
+const std::pair<std::string, std::string>& Season::GetID() const
 {
-	return id;
+	return ID;
 }
 
-const std::string& Season::GetType() const
+SEASON Season::GetType() const
 {
-	return type;
+	return season;
 }
 
 FormSwapMap& Season::GetFormSwapMap()

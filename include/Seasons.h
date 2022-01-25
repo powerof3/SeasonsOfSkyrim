@@ -1,8 +1,16 @@
 #pragma once
 
-enum class SEASON_TYPE : std::int32_t
+enum class SEASON : std::uint32_t
 {
-	kInvalid = -1,
+	kNone = 0,
+    kWinter,
+	kSpring,
+	kSummer,
+	kAutumn
+};
+
+enum class SEASON_TYPE : std::uint32_t
+{
 	kOff = 0,
 	kPermanentWinter,
 	kPermanentSpring,
@@ -10,8 +18,6 @@ enum class SEASON_TYPE : std::int32_t
 	kPermanentAutumn,
 	kSeasonal
 };
-
-class Season;
 
 class FormSwapMap
 {
@@ -57,7 +63,7 @@ private:
 
 	template <class T>
 	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, std::multimap<T*, T*>& a_tempFormMap);
-    template <class T>
+	template <class T>
 	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, std::multimap<T*, T*>& a_tempFormMap);
 
 	Map::FormIDType _formMap;
@@ -233,9 +239,9 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 class Season
 {
 public:
-	explicit Season(std::string a_type, std::string a_ID) :
-		id(std::move(a_ID)),
-		type(std::move(a_type))
+	explicit Season(SEASON a_season, std::pair<std::string, std::string> a_ID) :
+		season(a_season),
+		ID(std::move(a_ID))
 	{}
 
 	void LoadSettingsAndVerify(CSimpleIniA& a_ini);
@@ -246,14 +252,14 @@ public:
 	[[nodiscard]] bool IsSwapAllowed() const;
 	[[nodiscard]] bool IsSwapAllowed(const RE::TESForm* a_form) const;
 
-	[[nodiscard]] const std::string& GetID() const;
-	[[nodiscard]] const std::string& GetType() const;
+	[[nodiscard]] const std::pair<std::string, std::string>& GetID() const;
+	[[nodiscard]] SEASON GetType() const;
 
 	[[nodiscard]] FormSwapMap& GetFormSwapMap();
 
 private:
-	std::string id{};
-	std::string type{};
+	SEASON season{};
+	std::pair<std::string, std::string> ID{};
 
 	std::vector<std::string> allowedWorldspaces{
 		"Tamriel",

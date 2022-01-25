@@ -20,9 +20,10 @@ public:
 
 	void LoadOrGenerateWinterFormSwap();
 
-    void LoadFormSwaps();
+	void LoadFormSwaps();
 
-	[[nodiscard]] bool CanSwapGrass();
+	[[nodiscard]] SEASON GetSeasonType();
+    [[nodiscard]] bool CanSwapGrass();
 
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD();
 
@@ -46,7 +47,7 @@ protected:
 private:
 	std::optional<Season> GetSeason();
 
-    static void LoadFormSwaps_Impl(Season& a_season);
+	static void LoadFormSwaps_Impl(Season& a_season);
 
 	struct Hooks
 	{
@@ -73,10 +74,10 @@ private:
 		}
 	};
 
-	Season winter{ "Winter", "WIN" };
-	Season spring{ "Spring", "SPR" };
-	Season summer{ "Summer", "SUM" };
-	Season autumn{ "Autumn", "AUT" };
+	Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
+	Season spring{ SEASON::kSpring, { "Spring", "SPR" } };
+	Season summer{ SEASON::kSummer, { "Summer", "SUM" } };
+	Season autumn{ SEASON::kAutumn, { "Autumn", "AUT" } };
 
 	SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
 

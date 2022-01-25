@@ -8,12 +8,13 @@ namespace FormSwap
 	{
 		static bool can_apply_snow_shader(RE::TESObjectREFR* a_ref, RE::NiAVObject* a_node)
 		{
-			const auto base = a_ref->GetBaseObject();
-			if (!base || base->IsNot(RE::FormType::Activator, RE::FormType::Container, RE::FormType::Furniture, RE::FormType::MovableStatic, RE::FormType::Static) || base->IsMarker() || base->IsWater()) {
+			const auto seasonManager = SeasonManager::GetSingleton();
+			if (seasonManager->GetSeasonType() != SEASON::kWinter) {
 				return false;
 			}
 
-			if (!SeasonManager::GetSingleton()->IsSwapAllowed(base)) {
+			const auto base = a_ref->GetBaseObject();
+			if (!base || base->IsNot(RE::FormType::Activator, RE::FormType::Container, RE::FormType::Furniture, RE::FormType::MovableStatic, RE::FormType::Static) || !seasonManager->IsSwapAllowed(base) || base->IsMarker() || base->IsWater()) {
 				return false;
 			}
 
@@ -29,7 +30,7 @@ namespace FormSwap
 			}
 
 			if (const auto model = base->As<RE::TESModel>(); model) {
-                if (const std::string path = model->model.c_str(); path.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) { return string::icontains(path, str); })) {
+				if (const std::string path = model->model.c_str(); path.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) { return string::icontains(path, str); })) {
 					return false;
 				}
 			} else {
@@ -59,7 +60,7 @@ namespace FormSwap
 				}
 			}
 
-		    return true;
+			return true;
 		}
 
 	private:
