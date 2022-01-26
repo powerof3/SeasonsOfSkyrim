@@ -5,15 +5,29 @@
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
-	if (a_message->type == SKSE::MessagingInterface::kDataLoaded) {
-		Cache::DataHolder::GetSingleton()->GetData();
+	switch (a_message->type) {
+	case SKSE::MessagingInterface::kPostLoad:
+		{
+			logger::info("{:*^30}", "HOOKS");
 
-		logger::info("{:*^30}", "FORM SWAP");
+	        FormSwap::Install();
+			LandscapeSwap::Install();
+			LODSwap::Install();
+			SeasonManager::InstallHooks();
+		}
+		break;
+	case SKSE::MessagingInterface::kDataLoaded:
+		{
+			Cache::DataHolder::GetSingleton()->GetData();
 
-		const auto manager = SeasonManager::GetSingleton();
-		manager->LoadOrGenerateWinterFormSwap();
-		manager->LoadFormSwaps();
-		manager->RegisterEvents();
+			const auto manager = SeasonManager::GetSingleton();
+			manager->LoadOrGenerateWinterFormSwap();
+			manager->LoadFormSwaps();
+			manager->RegisterEvents();
+		}
+		break;
+	default:
+		break;
 	}
 }
 
@@ -60,18 +74,10 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	logger::info("loaded plugin");
 
 	SKSE::Init(a_skse);
-	SKSE::AllocTrampoline(64);
 
 	SeasonManager::GetSingleton()->LoadSettings();
 
-	logger::info("{:*^30}", "HOOKS");
-
-	FormSwap::Install();
-	LandscapeSwap::Install();
-	LODSwap::Install();
-	SeasonManager::InstallHooks();
-
-    const auto messaging = SKSE::GetMessagingInterface();
+	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);
 
 	return true;
