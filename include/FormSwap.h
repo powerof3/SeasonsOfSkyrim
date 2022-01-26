@@ -6,19 +6,22 @@ namespace FormSwap
 {
 	struct detail
 	{
-		static bool can_apply_snow_shader(RE::TESObjectREFR* a_ref, RE::NiAVObject* a_node)
+		static bool can_apply_snow_shader(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base, RE::NiAVObject* a_node)
 		{
 			const auto seasonManager = SeasonManager::GetSingleton();
 			if (seasonManager->GetSeasonType() != SEASON::kWinter) {
 				return false;
 			}
 
-			const auto base = a_ref->GetBaseObject();
-			if (!base || base->IsNot(RE::FormType::Activator, RE::FormType::Container, RE::FormType::Furniture, RE::FormType::MovableStatic, RE::FormType::Static) || !seasonManager->IsSwapAllowed(base) || base->IsMarker() || base->IsWater()) {
+			if (a_base->IsNot(RE::FormType::Activator, RE::FormType::Container, RE::FormType::Furniture, RE::FormType::MovableStatic, RE::FormType::Static)) {
 				return false;
 			}
 
-			if (!a_node || base->Is(RE::FormType::Activator) && a_node->HasAnimation()) {
+			if (!seasonManager->IsSwapAllowed(a_base) || a_base->IsMarker() || a_base->IsWater()) {
+				return false;
+			}
+
+			if (a_base->Is(RE::FormType::Activator, RE::FormType::Furniture) && a_node->HasAnimation()) { // no grindstones, mills
 				return false;
 			}
 
@@ -29,15 +32,13 @@ namespace FormSwap
 				}
 			}
 
-			if (const auto model = base->As<RE::TESModel>(); model) {
+			if (const auto model = a_base->As<RE::TESModel>(); model) {
 				if (const std::string path = model->model.c_str(); path.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) { return string::icontains(path, str); })) {
 					return false;
 				}
-			} else {
-				return false;
 			}
 
-			if (const auto stat = base->As<RE::TESObjectSTAT>(); stat) {
+			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat) {
 				const auto mat = stat->data.materialObj;
 				if (mat && Cache::DataHolder::GetSingleton()->IsSnowShader(mat) || util::contains_textureset(stat, R"(Landscape\Snow)"sv)) {
 					return false;
@@ -85,7 +86,7 @@ namespace FormSwap
 
 			const auto node = func(a_ref, a_backgroundLoading);
 
-			if (base && detail::can_apply_snow_shader(a_ref, node)) {
+			if (base && node && detail::can_apply_snow_shader(a_ref, base, node)) {
 				const auto eid = util::get_editorID(base);
 				auto& [init, projectedParams, projectedColor] = string::icontains(eid, "FarmHouse"sv) ? farmHouse : defaultObj;
 				if (!init) {
