@@ -15,8 +15,7 @@ SeasonManager::SeasonPtr SeasonManager::GetCurrentSeason()
 		{
 			using MONTH = RE::Calendar::Month;
 
-			const auto calendar = RE::Calendar::GetSingleton();
-			switch (calendar ? calendar->GetMonth() : 7) {
+			switch (const auto calendar = RE::Calendar::GetSingleton(); calendar ? calendar->GetMonth() : 7) {
 			case MONTH::kEveningStar:
 			case MONTH::kSunsDawn:
 			case MONTH::kMorningStar:
@@ -42,12 +41,14 @@ SeasonManager::SeasonPtr SeasonManager::GetCurrentSeason()
 	}
 }
 
-void SeasonManager::UpdateSeason()
+bool SeasonManager::UpdateSeason()
 {
 	lastSeason = currentSeason;
 
 	const auto season = GetCurrentSeason();
 	currentSeason = season ? season->get().GetType() : SEASON::kNone;
+
+	return currentSeason != lastSeason;
 }
 
 SeasonManager::SeasonPtr SeasonManager::GetSeason()
@@ -212,7 +213,33 @@ RE::TESLandTexture* SeasonManager::GetLandTextureFromTextureSet(const RE::TESFor
 	return season ? season->get().GetFormSwapMap().GetLandTextureFromTextureSet(a_form) : nullptr;
 }
 
+bool SeasonManager::GetExterior()
+{
+	return isExterior;
+}
+
 void SeasonManager::SetExterior(bool a_isExterior)
 {
 	isExterior = a_isExterior;
+}
+
+SeasonManager::EventResult SeasonManager::ProcessEvent(const RE::TESActivateEvent* a_event, RE::BSTEventSource<RE::TESActivateEvent>*)
+{
+	if (!a_event || GetExterior()) {
+		return EventResult::kContinue;
+	}
+
+	constexpr auto is_teleport_door = [](auto&& a_ref, auto&& a_object) {
+		return a_ref && a_ref->IsPlayerRef() && a_object && a_object->extraList.HasType(RE::ExtraDataType::kTeleport);
+	};
+
+	if (!is_teleport_door(a_event->actionRef, a_event->objectActivated)) {
+		return EventResult::kContinue;
+	}
+
+	if (const auto tes = RE::TES::GetSingleton(); UpdateSeason()) {
+		tes->PurgeBufferedCells();
+	}
+
+	return EventResult::kContinue;
 }

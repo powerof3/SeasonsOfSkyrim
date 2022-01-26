@@ -2,7 +2,7 @@
 
 #include "Seasons.h"
 
-class SeasonManager
+class SeasonManager final : public RE::BSTEventSink<RE::TESActivateEvent>
 {
 public:
 	[[nodiscard]] static SeasonManager* GetSingleton()
@@ -16,11 +16,19 @@ public:
 		Hooks::Install();
 	}
 
+	static void RegisterEvents()
+	{
+        if (auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
+			scripts->AddEventSink<RE::TESActivateEvent>(GetSingleton());
+			logger::info("Registered {}"sv, typeid(RE::TESActivateEvent).name());
+		}
+	}
+
 	void LoadSettings();
 	void LoadOrGenerateWinterFormSwap();
 	void LoadFormSwaps();
 
-	void UpdateSeason();
+	bool UpdateSeason();
 
 	[[nodiscard]] SEASON GetSeasonType();
     [[nodiscard]] bool CanSwapGrass();
@@ -35,28 +43,21 @@ public:
 	RE::TESLandTexture* GetLandTexture(const RE::TESForm* a_form);
 	RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::TESForm* a_form);
 
-	void SetExterior(bool a_isExterior);
+	bool GetExterior();
+    void SetExterior(bool a_isExterior);
 
 protected:
-	SeasonManager() = default;
-	SeasonManager(const SeasonManager&) = delete;
-	SeasonManager(SeasonManager&&) = delete;
-	~SeasonManager() = default;
+	using EventResult = RE::BSEventNotifyControl;
+	using SeasonPtr = std::optional<std::reference_wrapper<Season>>;
 
-	SeasonManager& operator=(const SeasonManager&) = delete;
-	SeasonManager& operator=(SeasonManager&&) = delete;
-
-private:
-    using SeasonPtr = std::optional<std::reference_wrapper<Season>>;
-
-    SeasonPtr GetSeason();
+	SeasonPtr GetSeason();
 	SeasonPtr GetCurrentSeason();
 
 	static void LoadFormSwaps_Impl(Season& a_season);
 
 	struct Hooks
 	{
-	    struct SetInterior
+		struct SetInterior
 		{
 			static void thunk(bool a_isInterior)
 			{
@@ -64,7 +65,9 @@ private:
 
 				const auto manager = GetSingleton();
 				manager->SetExterior(!a_isInterior);
-				manager->UpdateSeason();
+				if (!a_isInterior) {
+					manager->UpdateSeason();
+				}
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 		};
@@ -80,6 +83,17 @@ private:
 			logger::info("Installed interior-exterior detection"sv);
 		}
 	};
+
+	EventResult ProcessEvent(const RE::TESActivateEvent* a_event, RE::BSTEventSource<RE::TESActivateEvent>*) override;
+
+private:
+	SeasonManager() = default;
+	SeasonManager(const SeasonManager&) = delete;
+	SeasonManager(SeasonManager&&) = delete;
+	~SeasonManager() override = default;
+
+	SeasonManager& operator=(const SeasonManager&) = delete;
+	SeasonManager& operator=(SeasonManager&&) = delete;
 
     SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
 

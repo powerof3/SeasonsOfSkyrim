@@ -13,6 +13,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		const auto manager = SeasonManager::GetSingleton();
 		manager->LoadOrGenerateWinterFormSwap();
 		manager->LoadFormSwaps();
+		manager->RegisterEvents();
 	}
 }
 
