@@ -22,11 +22,21 @@ namespace LandscapeSwap
 
 	namespace Grass
 	{
-		struct GetGrassList
+		struct detail
 		{
-			static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
+			static bool is_underwater_grass(RE::BSSimpleList<RE::TESGrass*>& a_grassList)
 			{
-				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapGrass()) {
+				return std::ranges::any_of(a_grassList, [](const auto& grass) {
+				    return grass && grass->GetUnderwaterState() == RE::TESGrass::GRASS_WATER_STATE::kBelowOnlyAtLeast;
+				});
+			}
+		};
+
+	    struct GetGrassList
+		{
+		    static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
+			{
+				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapGrass() && !detail::is_underwater_grass(a_landTexture->textureGrassList)) {
 					const auto newLandTexture = seasonManager->GetLandTexture(a_landTexture);
 					return newLandTexture ? newLandTexture->textureGrassList : a_landTexture->textureGrassList;
 				}
