@@ -18,7 +18,7 @@ public:
 
 	static void RegisterEvents()
 	{
-        if (auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
+		if (auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
 			scripts->AddEventSink<RE::TESActivateEvent>(GetSingleton());
 			logger::info("Registered {}"sv, typeid(RE::TESActivateEvent).name());
 		}
@@ -28,10 +28,16 @@ public:
 	void LoadOrGenerateWinterFormSwap();
 	void LoadFormSwaps();
 
+	//Calendar is not initialized using savegame values when it is loaded from start
+	void SaveSeason(std::string_view a_savePath) const;
+	void LoadSeason(const std::string& a_savePath);
+	void ClearSeason(std::string_view a_savePath) const;
+	void CleanupSerializedSeasonList() const;
+
 	bool UpdateSeason();
 
 	[[nodiscard]] SEASON GetSeasonType();
-    [[nodiscard]] bool CanSwapGrass();
+	[[nodiscard]] bool CanSwapGrass();
 
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD();
 
@@ -44,7 +50,7 @@ public:
 	RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::TESForm* a_form);
 
 	bool GetExterior();
-    void SetExterior(bool a_isExterior);
+	void SetExterior(bool a_isExterior);
 
 protected:
 	using EventResult = RE::BSEventNotifyControl;
@@ -95,9 +101,9 @@ private:
 	SeasonManager& operator=(const SeasonManager&) = delete;
 	SeasonManager& operator=(SeasonManager&&) = delete;
 
-    SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
+	SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
 
-    Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
+	Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
 	Season spring{ SEASON::kSpring, { "Spring", "SPR" } };
 	Season summer{ SEASON::kSummer, { "Summer", "SUM" } };
 	Season autumn{ SEASON::kAutumn, { "Autumn", "AUT" } };
@@ -106,4 +112,8 @@ private:
 	SEASON lastSeason{ SEASON::kNone };
 
 	std::atomic_bool isExterior{ false };
+
+	bool loadedFromSave{ false };
+
+	const wchar_t* serializedSeasonList{ L"Data/Seasons/Serialization.ini" };
 };

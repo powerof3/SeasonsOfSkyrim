@@ -45,6 +45,11 @@ bool SeasonManager::UpdateSeason()
 {
 	lastSeason = currentSeason;
 
+	if (loadedFromSave) {
+		loadedFromSave = false;
+		return true;
+	}
+
 	const auto season = GetCurrentSeason();
 	currentSeason = season ? season->get().GetType() : SEASON::kNone;
 
@@ -81,6 +86,7 @@ void SeasonManager::LoadSettings()
 
 	CSimpleIniA ini;
 	ini.SetUnicode();
+	ini.SetMultiKey();
 
 	ini.LoadFile(path);
 
@@ -157,6 +163,95 @@ void SeasonManager::LoadFormSwaps()
 	LoadFormSwaps_Impl(spring);
 	LoadFormSwaps_Impl(summer);
 	LoadFormSwaps_Impl(autumn);
+}
+
+void SeasonManager::SaveSeason(std::string_view a_savePath) const
+{
+	if (const auto player = RE::PlayerCharacter::GetSingleton(); !player->parentCell || !player->parentCell->IsExteriorCell()) {
+		return;
+	}
+
+	CSimpleIniA ini;
+	ini.SetUnicode();
+
+	ini.LoadFile(serializedSeasonList);
+
+	ini.SetValue("Saves", a_savePath.data(), std::to_string(stl::to_underlying(currentSeason)).c_str(), nullptr);
+
+	(void)ini.SaveFile(serializedSeasonList);
+}
+
+void SeasonManager::LoadSeason(const std::string& a_savePath)
+{
+	CSimpleIniA ini;
+	ini.SetUnicode();
+
+	ini.LoadFile(serializedSeasonList);
+
+	currentSeason = string::lexical_cast<SEASON>(ini.GetValue("Saves", a_savePath.c_str(), "3"));
+	logger::info("current season {} | {}", currentSeason, a_savePath);
+	loadedFromSave = true;
+
+	(void)ini.SaveFile(serializedSeasonList);
+}
+
+void SeasonManager::ClearSeason(std::string_view a_savePath) const
+{
+	CSimpleIniA ini;
+	ini.SetUnicode();
+
+	ini.LoadFile(serializedSeasonList);
+
+	ini.DeleteValue("Saves", a_savePath.data(), nullptr);
+
+	(void)ini.SaveFile(serializedSeasonList);
+}
+
+void SeasonManager::CleanupSerializedSeasonList() const
+{
+	constexpr auto get_save_directory = []() -> std::optional<std::filesystem::path> {
+		wchar_t* buffer{ nullptr };
+		const auto result = SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, nullptr, std::addressof(buffer));
+		std::unique_ptr<wchar_t[], decltype(&::CoTaskMemFree)> knownPath(buffer, ::CoTaskMemFree);
+		if (!knownPath || result != S_OK) {
+			logger::error("failed to get known folder path"sv);
+			return std::nullopt;
+		}
+
+		std::filesystem::path path = knownPath.get();
+		path /= "My Games/Skyrim Special Edition/"sv;
+		path /= RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString();
+		return path;
+	};
+
+    const auto directory = get_save_directory();
+	if (!directory) {
+		return;
+	}
+
+	CSimpleIniA ini;
+	ini.SetUnicode();
+
+	if (const auto rc = ini.LoadFile(serializedSeasonList); rc < 0) {
+		logger::error("	couldn't read INI");
+		return;
+	}
+
+    if (const auto values = ini.GetSection("Saves"); values && !values->empty()) {
+        std::vector<std::string> badSaves;
+		badSaves.reserve(values->size());
+        for (const auto& key : *values | std::views::keys) {
+			auto save = fmt::format("{}{}.ess", directory->string(), key.pItem);
+			if (!std::filesystem::exists(save)) {
+			    badSaves.emplace_back(key.pItem);
+			}
+		}
+		for (auto& badSave : badSaves) {
+		    ini.DeleteValue("Saves", badSave.c_str(), nullptr);
+		}
+	}
+
+	(void)ini.SaveFile(serializedSeasonList);
 }
 
 SEASON SeasonManager::GetSeasonType()

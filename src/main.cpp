@@ -10,9 +10,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		{
 			logger::info("{:*^30}", "HOOKS");
 
-	        FormSwap::Install();
+			FormSwap::Install();
 			LandscapeSwap::Install();
 			LODSwap::Install();
+
 			SeasonManager::InstallHooks();
 		}
 		break;
@@ -24,6 +25,27 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			manager->LoadOrGenerateWinterFormSwap();
 			manager->LoadFormSwaps();
 			manager->RegisterEvents();
+			manager->CleanupSerializedSeasonList();
+		}
+		break;
+	case SKSE::MessagingInterface::kSaveGame:
+		{
+			std::string_view savePath = { static_cast<char*>(a_message->data), a_message->dataLen };
+			SeasonManager::GetSingleton()->SaveSeason(savePath);
+		}
+		break;
+	case SKSE::MessagingInterface::kPreLoadGame:
+		{
+			std::string savePath({ static_cast<char*>(a_message->data), a_message->dataLen });
+			string::replace_last_instance(savePath, ".ess", "");
+
+			SeasonManager::GetSingleton()->LoadSeason(savePath);
+		}
+		break;
+	case SKSE::MessagingInterface::kDeleteGame:
+		{
+			std::string_view savePath = { static_cast<char*>(a_message->data), a_message->dataLen };
+			SeasonManager::GetSingleton()->ClearSeason(savePath);
 		}
 		break;
 	default:

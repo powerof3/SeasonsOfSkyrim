@@ -4,6 +4,8 @@
 #include "SKSE/SKSE.h"
 
 #include <ranges>
+#include <ShlObj.h>
+
 #include <robin_hood.h>
 #include <SimpleIni.h>
 #include <fmt/format.h>
