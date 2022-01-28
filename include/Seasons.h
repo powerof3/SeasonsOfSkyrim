@@ -24,6 +24,12 @@ class FormSwapMap
 public:
 	FormSwapMap();
 
+	enum TYPE : std::uint32_t
+	{
+	    kBase = 0,
+		kSwap
+	};
+
 	void LoadFormSwaps(const CSimpleIniA& a_ini);
 	bool GenerateFormSwaps(CSimpleIniA& a_ini);
 

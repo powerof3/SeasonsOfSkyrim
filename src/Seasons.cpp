@@ -13,16 +13,23 @@ void FormSwapMap::LoadFormSwaps_Impl(const std::string& a_type, const std::vecto
 	for (const auto& key : a_values) {
 		const auto formPair = string::split(key, "|");
 
-		const auto form = string::split(formPair[0], "~");
-		const auto swapForm = string::split(formPair[1], "~");
+		constexpr auto get_form = [](const std::string& a_str) {
+			if (a_str.find('~') != std::string::npos) {
+				const auto formPair = string::split(a_str, "~");
 
-		auto formIDPair = std::make_pair(
-			string::lexical_cast<RE::FormID>(form[0], true), form[1]);
-		auto formID = RE::TESDataHandler::GetSingleton()->LookupFormID(formIDPair.first, formIDPair.second);
+				const auto processedFormPair = std::make_pair(
+					string::lexical_cast<RE::FormID>(formPair[0], true), formPair[1]);
 
-		auto swapFormIDPair = std::make_pair(
-			string::lexical_cast<RE::FormID>(swapForm[0], true), swapForm[1]);
-		auto swapFormID = RE::TESDataHandler::GetSingleton()->LookupFormID(swapFormIDPair.first, swapFormIDPair.second);
+				return RE::TESDataHandler::GetSingleton()->LookupFormID(processedFormPair.first, processedFormPair.second);
+			}
+			if (const auto form = RE::TESForm::LookupByEditorID(a_str); form) {
+				return form->GetFormID();
+			}
+			return static_cast<RE::FormID>(0);
+		};
+
+		auto formID = get_form(formPair[kBase]);
+		auto swapFormID = get_form(formPair[kSwap]);
 
 		if (swapFormID != 0 && formID != 0) {
 			map.insert_or_assign(formID, swapFormID);
