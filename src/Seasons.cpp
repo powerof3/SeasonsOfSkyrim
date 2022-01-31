@@ -137,7 +137,7 @@ void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini)
 
 		swapLOD = std::filesystem::exists(lodPath);
 		if (!swapLOD) {
-			logger::error("LOD files for season {} not found! Please make sure seasonal LOD has been generated and installed correctly. Default LOD will be used instead", type);
+			logger::error("LOD files for season {} not found! Default LOD will be used instead", type);
 		}
 	}
 }

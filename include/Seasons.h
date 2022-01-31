@@ -265,7 +265,7 @@ public:
 
 private:
 	SEASON season{};
-	std::pair<std::string, std::string> ID{};
+	std::pair<std::string, std::string> ID{}; //type, suffix (Winter, WIN)
 
 	std::vector<std::string> allowedWorldspaces{
 		"Tamriel",

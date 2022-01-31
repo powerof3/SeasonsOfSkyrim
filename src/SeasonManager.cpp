@@ -105,7 +105,9 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 {
 	constexpr auto path = L"Data/Seasons/MainFormSwap_WIN.ini";
 
-	logger::info("loading main WIN formswap settings");
+	logger::info("{:*^30}", "CONFIG");
+
+    logger::info("Loading main WIN formswap settings");
 
 	CSimpleIniA ini;
 	ini.SetUnicode();
@@ -134,7 +136,7 @@ void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
 	}
 
 	if (configs.empty()) {
-		logger::warn("No .ini files with _{} suffix were found in the Data/Seasons folder, skipping formswaps for {}...", suffix, type);
+		logger::warn("No .ini files with _{} suffix were found in the Data/Seasons folder, skipping {} formswaps for {}...", suffix, suffix == "WIN" ? "secondary" : "", type);
 		return;
 	}
 
@@ -189,7 +191,6 @@ void SeasonManager::LoadSeason(const std::string& a_savePath)
 	ini.LoadFile(serializedSeasonList);
 
 	currentSeason = string::lexical_cast<SEASON>(ini.GetValue("Saves", a_savePath.c_str(), "3"));
-	logger::info("current season {} | {}", currentSeason, a_savePath);
 	loadedFromSave = true;
 
 	(void)ini.SaveFile(serializedSeasonList);
