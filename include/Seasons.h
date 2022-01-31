@@ -175,7 +175,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 			a_tempFormMap.emplace(landTexture, RE::TESForm::LookupByID<RE::TESLandTexture>(formID));
 		}
 	} else if constexpr (std::is_same_v<T, RE::TESObjectSTAT>) {
-		std::array blackList = { "Ice"sv, "Frozen"sv, "LoadScreen"sv, "_INTERIOR"sv, "INV"sv };
+		std::array blackList = { "Ice"sv, "Frozen"sv, "LoadScreen"sv, "_INTERIOR"sv, "INV"sv, "DynDOLOD" };
 
 		auto& statics = dataHandler->GetFormArray<RE::TESObjectSTAT>();
 
