@@ -153,7 +153,7 @@ namespace LODSwap
 			static inline std::uint64_t id = 31151;
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.{}.DDS)" };
-			static inline const char* defaultPath{  R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.DDS)" };
+			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.DDS)" };
 		};
 
 		struct BuildTypeListFileName

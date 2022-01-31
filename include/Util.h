@@ -4,8 +4,8 @@ namespace Map
 {
 	using FormEditorID = robin_hood::unordered_flat_map<RE::FormID, std::string>;
 
-    using FormID = robin_hood::unordered_flat_map<RE::FormID, RE::FormID>;
-    using FormIDType = robin_hood::unordered_flat_map<std::string, FormID>;
+	using FormID = robin_hood::unordered_flat_map<RE::FormID, RE::FormID>;
+	using FormIDType = robin_hood::unordered_flat_map<std::string, FormID>;
 }
 
 namespace Set
@@ -15,14 +15,14 @@ namespace Set
 
 namespace util
 {
-	inline bool contains_textureset(RE::TESModel* a_model, std::string_view a_modelPath)
+	inline bool contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
 	{
-        if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
+		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			for (const auto& textures : altTextures) {
 				const auto txst = textures.textureSet;
 				std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				if (path.find(a_modelPath) != std::string::npos) {
+				if (path.find(a_txstPath) != std::string::npos) {
 					return true;
 				}
 			}
@@ -31,42 +31,42 @@ namespace util
 		return false;
 	}
 
-	inline bool only_contains_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_modelPath)
+	inline bool only_contains_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
 	{
-        if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
+		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				const auto txst = textures.textureSet;
 				std::string path = txst ? txst->textures[0].textureName.c_str() : "";
-				return path.find(a_modelPath.first) != std::string::npos || path.find(a_modelPath.second) != std::string::npos;
+				return path.find(a_txstPath.first) != std::string::npos || path.find(a_txstPath.second) != std::string::npos;
 			});
 		}
 
 		return true;
 	}
 
-	inline bool only_contains_textureset(RE::TESModel* a_model, std::string_view a_modelPath)
+	inline bool only_contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
 	{
-        if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
+		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				const auto txst = textures.textureSet;
 				std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return path.find(a_modelPath) != std::string::npos;
+				return path.find(a_txstPath) != std::string::npos;
 			});
 		}
 
 		return false;
 	}
 
-	inline bool must_only_contain_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_modelPath)
+	inline bool must_only_contain_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
 	{
-        if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
+		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				const auto txst = textures.textureSet;
 				std::string path = txst ? txst->textures[0].textureName.c_str() : "";
-				return path.find(a_modelPath.first) != std::string::npos || path.find(a_modelPath.second) != std::string::npos;
+				return path.find(a_txstPath.first) != std::string::npos || path.find(a_txstPath.second) != std::string::npos;
 			});
 		}
 
@@ -91,7 +91,7 @@ namespace INI
 		a_ini.SetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str(), a_comment);
 	}
 
-    inline void get_value(CSimpleIniA& a_ini, bool& a_value, const char* a_section, const char* a_key, const char* a_comment)
+	inline void get_value(CSimpleIniA& a_ini, bool& a_value, const char* a_section, const char* a_key, const char* a_comment)
 	{
 		a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
 		a_ini.SetBoolValue(a_section, a_key, a_value, a_comment);

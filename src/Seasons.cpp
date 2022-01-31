@@ -37,16 +37,73 @@ void FormSwapMap::LoadFormSwaps_Impl(const std::string& a_type, const std::vecto
 	}
 }
 
+RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture)
+{
+	static std::array blackList = { "Snow"sv, "Ice"sv, "Winter"sv, "Frozen"sv, "Coast"sv, "River"sv };
+
+	if (const auto editorID = util::get_editorID(a_landTexture); !editorID.empty() && std::ranges::any_of(blackList, [&](const auto str) { return editorID.find(str) != std::string::npos; })) {
+		return nullptr;
+	}
+
+	const auto mat = a_landTexture->materialType;
+	const RE::MATERIAL_ID matID = mat ? mat->materialID : RE::MATERIAL_ID::kNone;
+
+	RE::FormID formID;
+
+	switch (matID) {
+	case RE::MATERIAL_ID::kGrass:
+		{
+			switch (a_landTexture->GetFormID()) {
+			case 0x57DC7:             //LFallForestLeaves01
+				formID = 0x02003ACE;  //LWinterForestLeaves01
+				break;
+			default:
+				formID = !a_landTexture->textureGrassList.empty() ? 0x00000894 : 0x0008B01E;  //LGrassSnow01 : LGrassSnow01NoGrass
+				break;
+			}
+		}
+		break;
+	case RE::MATERIAL_ID::kDirt:
+		{
+			switch (a_landTexture->GetFormID()) {
+			case 0xB424C:             //LDirtPath01
+				formID = 0x0001B082;  //LDirtSnowPath01
+				break;
+			case 0x57DCF:             //LFallForestDirt01
+				formID = 0x02005233;  //LWinterForestDirt01
+				break;
+			default:
+				formID = 0x0000089B;  //LSnow01
+				break;
+			}
+		}
+		break;
+	case RE::MATERIAL_ID::kStone:
+	case RE::MATERIAL_ID::kStoneBroken:
+	case RE::MATERIAL_ID::kGravel:
+		formID = !a_landTexture->textureGrassList.empty() ? 0x000F871F : 0x0006A1AF;  //LSnowRockswGrass : LSnowRocks01
+		break;
+	case RE::MATERIAL_ID::kSnow:
+	case RE::MATERIAL_ID::kIce:
+		return nullptr;
+	default:
+		formID = 0x0006A1B1;  //LSnow2
+		break;
+	}
+
+	return RE::TESForm::LookupByID<RE::TESLandTexture>(formID);
+}
+
 void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 {
-    for (auto& type : formTypes) {
-        if (const auto values = a_ini.GetSection(type.c_str()); values && !values->empty()) {
+	for (auto& type : formTypes) {
+		if (const auto values = a_ini.GetSection(type.c_str()); values && !values->empty()) {
 			logger::info("	[{}] read {} variants", type, values ? values->size() : -1);
 
 			std::vector<std::string> vec;
 			std::ranges::transform(*values, std::back_inserter(vec), [&](const auto& val) { return val.first.pItem; });
 
-            LoadFormSwaps_Impl(type, vec);
+			LoadFormSwaps_Impl(type, vec);
 		}
 	}
 }
@@ -56,10 +113,13 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini)
 {
 	bool save = false;
 
-    for (auto& type : formTypes) {
+	for (auto& type : formTypes) {
+		static std::multimap<RE::TESLandTexture*, RE::TESLandTexture*> landTxstMap;
+
 		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty()) {
 			save = true;
-		    if (type == "Statics") {
+
+			if (type == "Statics") {
 				std::multimap<RE::TESObjectSTAT*, RE::TESObjectSTAT*> staticMap;
 				get_snow_variants(a_ini, type, staticMap);
 			} else if (type == "Activators") {
@@ -69,7 +129,6 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini)
 				std::multimap<RE::TESFurniture*, RE::TESFurniture*> furnitureMap;
 				get_snow_variants(a_ini, type, furnitureMap);
 			} else if (type == "LandTextures") {
-				std::multimap<RE::TESLandTexture*, RE::TESLandTexture*> landTxstMap;
 				get_snow_variants(a_ini, type, landTxstMap);
 			} else if (type == "MovableStatics") {
 				std::multimap<RE::BGSMovableStatic*, RE::BGSMovableStatic*> movStaticMap;
@@ -102,7 +161,7 @@ RE::TESBoundObject* FormSwapMap::GetSwapForm(const RE::TESForm* a_form)
 	return it != map.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) : nullptr;
 }
 
-RE::TESLandTexture* FormSwapMap::GetLandTexture(const RE::TESForm* a_form)
+RE::TESLandTexture* FormSwapMap::GetSwapLandTexture(const RE::TESForm* a_form)
 {
 	const auto& map = _formMap["LandTextures"];
 	if (map.empty()) {
@@ -113,17 +172,17 @@ RE::TESLandTexture* FormSwapMap::GetLandTexture(const RE::TESForm* a_form)
 	return it != map.end() ? RE::TESForm::LookupByID<RE::TESLandTexture>(it->second) : nullptr;
 }
 
-RE::TESLandTexture* FormSwapMap::GetLandTextureFromTextureSet(const RE::TESForm* a_form)
+RE::TESLandTexture* FormSwapMap::GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
 {
-	const auto landTexture = Cache::DataHolder::GetSingleton()->GetLandTextureFromTextureSet(a_form);
-	return GetLandTexture(landTexture);
+	const auto landTexture = Cache::DataHolder::GetSingleton()->GetLandTextureFromTextureSet(a_txst);
+	return GetSwapLandTexture(landTexture);
 }
 
 void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini)
 {
-    const auto& [type, suffix] = ID;
+	const auto& [type, suffix] = ID;
 
-    INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", ";Valid worldspaces");
+	INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", ";Valid worldspaces");
 	INI::get_value(a_ini, swapActivators, type.c_str(), "Activators", ";Swap objects of these types for seasonal variants");
 	INI::get_value(a_ini, swapFurniture, type.c_str(), "Furniture", nullptr);
 	INI::get_value(a_ini, swapMovableStatics, type.c_str(), "Movable Statics", nullptr);

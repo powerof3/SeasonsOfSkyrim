@@ -21,7 +21,7 @@ namespace FormSwap
 				return false;
 			}
 
-			if (a_base->Is(RE::FormType::Activator, RE::FormType::Furniture) && a_node->HasAnimation()) { // no grindstones, mills
+			if (a_base->Is(RE::FormType::Activator, RE::FormType::Furniture) && a_node->HasAnimation()) {  // no grindstones, mills
 				return false;
 			}
 

@@ -29,7 +29,7 @@ public:
 	void LoadFormSwaps();
 
 	//Calendar is not initialized using savegame values when it is loaded from start
-	void SaveSeason(std::string_view a_savePath) const;
+	void SaveSeason(std::string_view a_savePath);
 	void LoadSeason(const std::string& a_savePath);
 	void ClearSeason(std::string_view a_savePath) const;
 	void CleanupSerializedSeasonList() const;
@@ -46,8 +46,8 @@ public:
 	[[nodiscard]] bool IsSwapAllowed(const RE::TESForm* a_form);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
-	RE::TESLandTexture* GetLandTexture(const RE::TESForm* a_form);
-	RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::TESForm* a_form);
+	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
+	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
 
 	bool GetExterior();
 	void SetExterior(bool a_isExterior);

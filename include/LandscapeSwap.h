@@ -10,8 +10,8 @@ namespace LandscapeSwap
 		{
 			static RE::BSTextureSet* thunk(RE::BGSTextureSet* a_textureSet)
 			{
-                if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->IsLandscapeSwapAllowed()) {
-					const auto newLandTexture = seasonManager->GetLandTextureFromTextureSet(a_textureSet);
+				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->IsLandscapeSwapAllowed()) {
+					const auto newLandTexture = seasonManager->GetSwapLandTextureFromTextureSet(a_textureSet);
 					return newLandTexture ? newLandTexture->textureSet : a_textureSet;
 				}
 				return a_textureSet;
@@ -27,17 +27,17 @@ namespace LandscapeSwap
 			static bool is_underwater_grass(RE::BSSimpleList<RE::TESGrass*>& a_grassList)
 			{
 				return std::ranges::any_of(a_grassList, [](const auto& grass) {
-				    return grass && grass->GetUnderwaterState() == RE::TESGrass::GRASS_WATER_STATE::kBelowOnlyAtLeast;
+					return grass && grass->GetUnderwaterState() == RE::TESGrass::GRASS_WATER_STATE::kBelowOnlyAtLeast;
 				});
 			}
 		};
 
-	    struct GetGrassList
+		struct GetGrassList
 		{
-		    static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
+			static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
 			{
 				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapGrass() && !detail::is_underwater_grass(a_landTexture->textureGrassList)) {
-					const auto newLandTexture = seasonManager->GetLandTexture(a_landTexture);
+					const auto newLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
 					return newLandTexture ? newLandTexture->textureGrassList : a_landTexture->textureGrassList;
 				}
 				return a_landTexture->textureGrassList;
@@ -55,7 +55,7 @@ namespace LandscapeSwap
 			static RE::MATERIAL_ID func(const RE::TESLandTexture* a_landTexture)
 			{
 				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->IsLandscapeSwapAllowed()) {
-					const auto newLandTexture = seasonManager->GetLandTexture(a_landTexture);
+					const auto newLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
 					const auto materialType = newLandTexture ? newLandTexture->materialType : a_landTexture->materialType;
 
 					return materialType ? materialType->materialID : RE::MATERIAL_ID::kNone;

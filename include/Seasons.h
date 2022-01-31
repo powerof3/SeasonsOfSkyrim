@@ -3,7 +3,7 @@
 enum class SEASON : std::uint32_t
 {
 	kNone = 0,
-    kWinter,
+	kWinter,
 	kSpring,
 	kSummer,
 	kAutumn
@@ -26,7 +26,7 @@ public:
 
 	enum TYPE : std::uint32_t
 	{
-	    kBase = 0,
+		kBase = 0,
 		kSwap
 	};
 
@@ -35,8 +35,8 @@ public:
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 
-	RE::TESLandTexture* GetLandTexture(const RE::TESForm* a_form);
-	RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::TESForm* a_form);
+	RE::TESLandTexture* GetSwapLandTexture(const RE::TESForm* a_form);
+	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
 
 	Map::FormID& get_map(RE::FormType a_formType)
 	{
@@ -66,6 +66,8 @@ private:
 		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
 
 	void LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values);
+
+	RE::TESLandTexture* GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture);
 
 	template <class T>
 	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, std::multimap<T*, T*>& a_tempFormMap);
@@ -119,70 +121,21 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 	if constexpr (std::is_same_v<T, RE::TESLandTexture>) {
 		auto& landTextures = dataHandler->GetFormArray<RE::TESLandTexture>();
 
-		static std::array blackList = { "Snow"sv, "Ice"sv, "Winter"sv, "Frozen"sv, "Coast"sv, "River"sv };
-
 		for (auto& landTexture : landTextures) {
-			if (const auto editorID = util::get_editorID(landTexture); !editorID.empty() && std::ranges::any_of(blackList, [&](const auto str) { return editorID.find(str) != std::string::npos; })) {
-				continue;
+			if (const auto snowVariantLT = GenerateLandTextureSnowVariant(landTexture)) {
+				a_tempFormMap.emplace(landTexture, snowVariantLT);
 			}
-			const auto mat = landTexture->materialType;
-			const RE::MATERIAL_ID matID = mat ? mat->materialID : RE::MATERIAL_ID::kNone;
-
-			RE::FormID formID;
-
-			switch (matID) {
-			case RE::MATERIAL_ID::kGrass:
-				{
-					switch (landTexture->GetFormID()) {
-					case 0x57DC7:             //LFallForestLeaves01
-						formID = 0x02003ACE;  //LWinterForestLeaves01
-						break;
-					default:
-						formID = !landTexture->textureGrassList.empty() ? 0x00000894 : 0x0008B01E;  //LGrassSnow01 : LGrassSnow01NoGrass
-						break;
-					}
-				}
-				break;
-			case RE::MATERIAL_ID::kDirt:
-				{
-					switch (landTexture->GetFormID()) {
-					case 0xB424C:             //LDirtPath01
-						formID = 0x0001B082;  //LDirtSnowPath01
-						break;
-					case 0x57DCF:             //LFallForestDirt01
-						formID = 0x02005233;  //LWinterForestDirt01
-						break;
-					default:
-						formID = 0x0000089B;  //LSnow01
-						break;
-					}
-				}
-				break;
-			case RE::MATERIAL_ID::kStone:
-			case RE::MATERIAL_ID::kStoneBroken:
-			case RE::MATERIAL_ID::kGravel:
-				formID = !landTexture->textureGrassList.empty() ? 0x000F871F : 0x0006A1AF;  //LSnowRockswGrass : LSnowRocks01
-				break;
-			case RE::MATERIAL_ID::kSnow:
-			case RE::MATERIAL_ID::kIce:
-				formID = landTexture->GetFormID();
-				break;
-			default:
-				formID = 0x0006A1B1;  //LSnow2
-				break;
-			}
-
-			a_tempFormMap.emplace(landTexture, RE::TESForm::LookupByID<RE::TESLandTexture>(formID));
 		}
 	} else if constexpr (std::is_same_v<T, RE::TESObjectSTAT>) {
 		std::array blackList = { "Ice"sv, "Frozen"sv, "LoadScreen"sv, "_INTERIOR"sv, "INV"sv, "DynDOLOD"sv };
 
-		auto& statics = dataHandler->GetFormArray<RE::TESObjectSTAT>();
+		using StaticModelMap = std::map<std::string, RE::TESObjectSTAT*>;
+		StaticModelMap processedSnowStats;
 
-		std::map<std::string, RE::TESObjectSTAT*> processedSnowStats;
+		auto& statics = dataHandler->GetFormArray<RE::TESObjectSTAT>();
 		for (auto& stat : statics) {
 			const auto mat = stat->data.materialObj;
-			if (mat && Cache::DataHolder::GetSingleton()->IsSnowShader(mat) && util::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || !mat && util::must_only_contain_textureset(stat, { "Snow"sv, "Mask"sv })) {
+			if (mat && util::is_snow_shader(mat) && util::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || util::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
 				std::string path = stat->GetModel();
 				if (path.empty()) {
 					continue;
@@ -194,9 +147,8 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 		for (auto& [path, snowStat] : processedSnowStats) {
 			for (auto& stat : statics) {
 				if (string::icontains(stat->GetModel(), path) && snowStat != stat) {
-					if (const auto mat = stat->data.materialObj; !mat || !Cache::DataHolder::GetSingleton()->IsSnowShader(mat)) {
-						const auto editorID = util::get_editorID(stat);
-						if (std::ranges::any_of(blackList, [&](const auto str) { return editorID.find(str) != std::string::npos; })) {
+					if (const auto mat = stat->data.materialObj; !mat || !util::is_snow_shader(mat)) {
+						if (const auto editorID = util::get_editorID(stat); std::ranges::any_of(blackList, [&](const auto str) { return editorID.find(str) != std::string::npos; })) {
 							continue;
 						}
 						a_tempFormMap.emplace(stat, snowStat);
@@ -265,7 +217,7 @@ public:
 
 private:
 	SEASON season{};
-	std::pair<std::string, std::string> ID{}; //type, suffix (Winter, WIN)
+	std::pair<std::string, std::string> ID{};  //type, suffix (Winter, WIN)
 
 	std::vector<std::string> allowedWorldspaces{
 		"Tamriel",

@@ -40,15 +40,15 @@ namespace Cache
 		}
 	}
 
-    std::string DataHolder::GetEditorID(RE::FormID a_formID)
+	std::string DataHolder::GetEditorID(RE::FormID a_formID)
 	{
 		const auto it = _formIDToEditorIDMap.find(a_formID);
 		return it != _formIDToEditorIDMap.end() ? it->second : std::string();
 	}
 
-	RE::TESLandTexture* DataHolder::GetLandTextureFromTextureSet(const RE::TESForm* a_form)
+	RE::TESLandTexture* DataHolder::GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
 	{
-		const auto it = _textureToLandMap.find(a_form->GetFormID());
+		const auto it = _textureToLandMap.find(a_txst->GetFormID());
 		return RE::TESForm::LookupByID<RE::TESLandTexture>(it != _textureToLandMap.end() ? it->second : 0x00000C16);
 	}
 

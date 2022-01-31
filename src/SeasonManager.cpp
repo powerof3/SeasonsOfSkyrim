@@ -107,7 +107,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 
 	logger::info("{:*^30}", "CONFIG");
 
-    logger::info("Loading main WIN formswap settings");
+	logger::info("Loading main WIN formswap settings");
 
 	CSimpleIniA ini;
 	ini.SetUnicode();
@@ -167,7 +167,7 @@ void SeasonManager::LoadFormSwaps()
 	LoadFormSwaps_Impl(autumn);
 }
 
-void SeasonManager::SaveSeason(std::string_view a_savePath) const
+void SeasonManager::SaveSeason(std::string_view a_savePath)
 {
 	if (const auto player = RE::PlayerCharacter::GetSingleton(); !player->parentCell || !player->parentCell->IsExteriorCell()) {
 		return;
@@ -177,6 +177,9 @@ void SeasonManager::SaveSeason(std::string_view a_savePath) const
 	ini.SetUnicode();
 
 	ini.LoadFile(serializedSeasonList);
+
+	const auto season = GetCurrentSeason();
+	currentSeason = season ? season->get().GetType() : SEASON::kNone;
 
 	ini.SetValue("Saves", a_savePath.data(), std::to_string(stl::to_underlying(currentSeason)).c_str(), nullptr);
 
@@ -225,10 +228,12 @@ void SeasonManager::CleanupSerializedSeasonList() const
 		return path;
 	};
 
-    const auto directory = get_save_directory();
+	const auto directory = get_save_directory();
 	if (!directory) {
 		return;
 	}
+
+	logger::info("Save directory is {}", directory->string());
 
 	CSimpleIniA ini;
 	ini.SetUnicode();
@@ -238,17 +243,17 @@ void SeasonManager::CleanupSerializedSeasonList() const
 		return;
 	}
 
-    if (const auto values = ini.GetSection("Saves"); values && !values->empty()) {
-        std::vector<std::string> badSaves;
+	if (const auto values = ini.GetSection("Saves"); values && !values->empty()) {
+		std::vector<std::string> badSaves;
 		badSaves.reserve(values->size());
-        for (const auto& key : *values | std::views::keys) {
+		for (const auto& key : *values | std::views::keys) {
 			auto save = fmt::format("{}{}.ess", directory->string(), key.pItem);
 			if (!std::filesystem::exists(save)) {
-			    badSaves.emplace_back(key.pItem);
+				badSaves.emplace_back(key.pItem);
 			}
 		}
 		for (auto& badSave : badSaves) {
-		    ini.DeleteValue("Saves", badSave.c_str(), nullptr);
+			ini.DeleteValue("Saves", badSave.c_str(), nullptr);
 		}
 	}
 
@@ -297,16 +302,16 @@ RE::TESBoundObject* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
 	return season ? season->get().GetFormSwapMap().GetSwapForm(a_form) : nullptr;
 }
 
-RE::TESLandTexture* SeasonManager::GetLandTexture(const RE::TESForm* a_form)
+RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::TESLandTexture* a_landTxst)
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetFormSwapMap().GetLandTexture(a_form) : nullptr;
+	return season ? season->get().GetFormSwapMap().GetSwapLandTexture(a_landTxst) : nullptr;
 }
 
-RE::TESLandTexture* SeasonManager::GetLandTextureFromTextureSet(const RE::TESForm* a_form)
+RE::TESLandTexture* SeasonManager::GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetFormSwapMap().GetLandTextureFromTextureSet(a_form) : nullptr;
+	return season ? season->get().GetFormSwapMap().GetSwapLandTextureFromTextureSet(a_txst) : nullptr;
 }
 
 bool SeasonManager::GetExterior()
