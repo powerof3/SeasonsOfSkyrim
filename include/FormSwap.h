@@ -9,7 +9,7 @@ namespace FormSwap
 		static bool can_apply_snow_shader(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base, RE::NiAVObject* a_node)
 		{
 			const auto seasonManager = SeasonManager::GetSingleton();
-			if (seasonManager->GetSeasonType() != SEASON::kWinter) {
+			if (!a_base || !a_node || seasonManager->GetSeasonType() != SEASON::kWinter) {
 				return false;
 			}
 
@@ -17,7 +17,7 @@ namespace FormSwap
 				return false;
 			}
 
-			if (!seasonManager->IsSwapAllowed(a_base) || a_base->IsMarker() || a_base->IsWater()) {
+			if (!seasonManager->IsSwapAllowed(a_base) || a_base->IsMarker() || a_base->IsHeadingMarker() || a_base->IsWater()) {
 				return false;
 			}
 
@@ -25,11 +25,9 @@ namespace FormSwap
 				return false;
 			}
 
-			if (const auto parentCell = a_ref->GetParentCell(); parentCell) {
-				const auto waterLevel = a_ref->GetSubmergedWaterLevel(a_ref->GetPositionZ(), parentCell);
-				if (waterLevel >= 0.01f) {
-					return false;
-				}
+			const auto waterLevel = a_ref->GetSubmergedWaterLevel(a_ref->GetPositionZ(), a_ref->GetParentCell());
+			if (waterLevel >= 0.01f) {
+				return false;
 			}
 
 			if (const auto model = a_base->As<RE::TESModel>(); model) {
@@ -38,38 +36,34 @@ namespace FormSwap
 				}
 			}
 
-			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat) {
-				const auto mat = stat->data.materialObj;
-				if (mat && Cache::DataHolder::GetSingleton()->IsSnowShader(mat) || util::contains_textureset(stat, R"(Landscape\Snow)"sv)) {
-					return false;
-				}
+			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat && stat->HasTreeLOD()) {
+				return false;
 			}
 
 			return true;
 		}
 
-		static bool can_swap_static(const RE::TESObjectREFR* a_ref)
+		static bool can_swap_static(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
 		{
-			if (!SeasonManager::GetSingleton()->IsSwapAllowed()) {
+			const auto seasonManager = SeasonManager::GetSingleton();
+			if (!a_base || a_base->IsDynamicForm() || !seasonManager->IsSwapAllowed()) {
 				return false;
 			}
 
-			if (const auto parentCell = a_ref->GetParentCell(); parentCell) {
-				const auto waterLevel = a_ref->GetSubmergedWaterLevel(a_ref->GetPositionZ(), parentCell);
-				if (waterLevel >= 0.01f) {
-					return false;
-				}
+			if (seasonManager->GetSeasonType() != SEASON::kWinter) {
+				const auto waterLevel = a_ref->GetSubmergedWaterLevel(a_ref->GetPositionZ(), a_ref->GetParentCell());
+				return waterLevel >= 0.01f;
 			}
 
 			return true;
 		}
 
 	private:
-		static inline std::array<std::string_view, 4> snowShaderBlackList = {
-			R"(Effects\)",
-			R"(Sky\)",
+		static inline std::array snowShaderBlackList = {
+			R"(Effects\)"sv,
+			R"(Sky\)"sv,
 			"Marker"sv,
-			"WetRocks"sv,
+			"WetRocks"sv
 		};
 	};
 
@@ -78,7 +72,7 @@ namespace FormSwap
 		static RE::NiAVObject* thunk(RE::TESObjectREFR* a_ref, bool a_backgroundLoading)
 		{
 			const auto base = a_ref->GetBaseObject();
-			const auto replaceBase = base && !base->IsDynamicForm() && detail::can_swap_static(a_ref) ? SeasonManager::GetSingleton()->GetSwapForm(base) : nullptr;
+			const auto replaceBase = detail::can_swap_static(a_ref, base) ? SeasonManager::GetSingleton()->GetSwapForm(base) : nullptr;
 
 			if (replaceBase) {
 				a_ref->SetObjectReference(replaceBase);
@@ -86,11 +80,19 @@ namespace FormSwap
 
 			const auto node = func(a_ref, a_backgroundLoading);
 
-			if (base && node && detail::can_apply_snow_shader(a_ref, base, node)) {
-				const auto eid = util::get_editorID(base);
-				auto& [init, projectedParams, projectedColor] = string::icontains(eid, "FarmHouse"sv) ? farmHouse : defaultObj;
+			if (!replaceBase && detail::can_apply_snow_shader(a_ref, base, node)) {
+				auto& [init, projectedParams, projectedColor] = defaultObj;
 				if (!init) {
-					projectedColor = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P")->directionalData.singlePassColor;
+					const auto snowMat = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P");
+
+					projectedColor = snowMat->directionalData.singlePassColor;
+					projectedParams = RE::NiColorA{
+						snowMat->directionalData.falloffScale,
+						snowMat->directionalData.falloffBias,
+						1.0f / snowMat->directionalData.noiseUVScale,
+						std::cosf(RE::deg_to_rad(90.0f))
+					};
+
 					init = true;
 				}
 				if (node->SetProjectedUVData(projectedParams, projectedColor, true)) {
@@ -114,15 +116,7 @@ namespace FormSwap
 			RE::NiColor projectedColor{};
 		};
 
-		static inline projectedUV defaultObj{
-			.projectedParams = { 0.35f, 0.48f, 0.02f, 0.0f },
-		};
-		static inline projectedUV defaultObjLight{
-			.projectedParams = { 0.225f, 0.82f, 0.000714f, 0.0f },
-		};
-		static inline projectedUV farmHouse{
-			.projectedParams = { 0.35f, 0.5f, 0.02f, 0.0f },
-		};
+		static inline projectedUV defaultObj{};
 	};
 
 	inline void Install()
