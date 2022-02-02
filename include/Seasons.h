@@ -62,8 +62,8 @@ public:
 	}
 
 private:
-	static inline std::array<std::string, 6>
-		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
+	static inline std::array
+		formTypes{ "LandTextures"sv, "Activators"sv, "MovableStatics"sv, "Statics"sv, "Trees"sv };
 
 	void LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values);
 
@@ -230,7 +230,6 @@ private:
 	};
 
 	bool swapActivators{ true };
-	bool swapFurniture{ true };
 	bool swapMovableStatics{ true };
 	bool swapStatics{ true };
 	bool swapTrees{ true };
@@ -245,8 +244,6 @@ private:
 		switch (a_form->GetFormType()) {
 		case RE::FormType::Activator:
 			return swapActivators;
-		case RE::FormType::Furniture:
-			return swapFurniture;
 		case RE::FormType::MovableStatic:
 			return swapMovableStatics;
 		case RE::FormType::Static:

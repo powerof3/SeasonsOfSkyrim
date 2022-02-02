@@ -11,7 +11,6 @@ namespace Cache
 				switch (form->GetFormType()) {
 				case RE::FormType::Activator:
 				case RE::FormType::Container:
-				case RE::FormType::Furniture:
 				case RE::FormType::MaterialObject:
 				case RE::FormType::MovableStatic:
 				case RE::FormType::LandTexture:

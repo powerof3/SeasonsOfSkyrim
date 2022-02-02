@@ -125,9 +125,6 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini)
 			} else if (type == "Activators") {
 				std::multimap<RE::TESObjectACTI*, RE::TESObjectACTI*> activatorMap;
 				get_snow_variants(a_ini, type, activatorMap);
-			} else if (type == "Furniture") {
-				std::multimap<RE::TESFurniture*, RE::TESFurniture*> furnitureMap;
-				get_snow_variants(a_ini, type, furnitureMap);
 			} else if (type == "LandTextures") {
 				get_snow_variants(a_ini, type, landTxstMap);
 			} else if (type == "MovableStatics") {
@@ -184,7 +181,6 @@ void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini)
 
 	INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", ";Valid worldspaces");
 	INI::get_value(a_ini, swapActivators, type.c_str(), "Activators", ";Swap objects of these types for seasonal variants");
-	INI::get_value(a_ini, swapFurniture, type.c_str(), "Furniture", nullptr);
 	INI::get_value(a_ini, swapMovableStatics, type.c_str(), "Movable Statics", nullptr);
 	INI::get_value(a_ini, swapStatics, type.c_str(), "Trees", nullptr);
 	INI::get_value(a_ini, swapLOD, type.c_str(), "LOD", ";Seasonal LOD must be generated using DynDOLOD Alpha 65/SSELODGen Beta 86 or higher.\n;See https://dyndolod.info/Help/Seasons for more info");
