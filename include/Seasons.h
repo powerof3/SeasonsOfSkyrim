@@ -205,7 +205,7 @@ public:
 		ID(std::move(a_ID))
 	{}
 
-	void LoadSettingsAndVerify(CSimpleIniA& a_ini);
+	void LoadSettingsAndVerify(CSimpleIniA& a_ini, bool a_writeComment = false);
 
 	[[nodiscard]] bool CanSwapGrass() const;
 	[[nodiscard]] bool CanSwapLOD() const;

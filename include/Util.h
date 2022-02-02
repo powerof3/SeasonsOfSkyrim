@@ -103,7 +103,7 @@ namespace INI
 		a_ini.SetValue(a_section, a_key, a_value.c_str(), a_comment);
 	}
 
-	inline void get_value(CSimpleIniA& a_ini, std::vector<std::string>& a_value, const char* a_section, const char* a_key, const char* a_comment, const char* a_deliminator = R"(|)")
+	inline void get_value(CSimpleIniA& a_ini, std::vector<std::string>& a_value, const char* a_section, const char* a_key, const char* a_comment, const char* a_deliminator = R"(,)")
 	{
 		const std::string tempValue = a_ini.GetValue(a_section, a_key, string::join(a_value, a_deliminator).c_str());
 		a_value = string::split(tempValue, a_deliminator);

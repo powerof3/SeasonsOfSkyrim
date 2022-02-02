@@ -177,17 +177,17 @@ RE::TESLandTexture* FormSwapMap::GetSwapLandTextureFromTextureSet(const RE::BGST
 	return GetSwapLandTexture(landTexture);
 }
 
-void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini)
+void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini, bool a_writeComment)
 {
 	const auto& [type, suffix] = ID;
 
-	INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", ";Valid worldspaces");
-	INI::get_value(a_ini, swapActivators, type.c_str(), "Activators", ";Swap objects of these types for seasonal variants");
+	INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", a_writeComment ? ";Valid worldspaces" : "");
+	INI::get_value(a_ini, swapActivators, type.c_str(), "Activators", a_writeComment ? ";Swap objects of these types for seasonal variants" : "");
 	INI::get_value(a_ini, swapFurniture, type.c_str(), "Furniture", nullptr);
 	INI::get_value(a_ini, swapMovableStatics, type.c_str(), "Movable Statics", nullptr);
 	INI::get_value(a_ini, swapStatics, type.c_str(), "Trees", nullptr);
-	INI::get_value(a_ini, swapLOD, type.c_str(), "LOD", ";Seasonal LOD must be generated using DynDOLOD Alpha 65/SSELODGen Beta 86 or higher.\n;See https://dyndolod.info/Help/Seasons for more info");
-	INI::get_value(a_ini, swapGrass, type.c_str(), "Grass", ";Enable seasonal grass types (eg. snow grass in winter)");
+	INI::get_value(a_ini, swapLOD, type.c_str(), "LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 65/SSELODGen Beta 86 or higher.\n;See https://dyndolod.info/Help/Seasons for more info" : "");
+	INI::get_value(a_ini, swapGrass, type.c_str(), "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)" : "");
 
 	if (swapLOD) {  //make sure LOD has been generated! No need to check form swaps
 		const auto worldSpaceName = !allowedWorldspaces.empty() ? allowedWorldspaces[0] : "Tamriel";

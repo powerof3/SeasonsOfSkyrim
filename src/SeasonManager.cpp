@@ -86,14 +86,13 @@ void SeasonManager::LoadSettings()
 
 	CSimpleIniA ini;
 	ini.SetUnicode();
-	ini.SetMultiKey();
 
 	ini.LoadFile(path);
 
 	INI::get_value(ini, seasonType, "Settings", "Season Type", ";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n;3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal");
 	logger::info("seasonal type is {}", stl::to_underlying(seasonType));
 
-	winter.LoadSettingsAndVerify(ini);
+	winter.LoadSettingsAndVerify(ini, true);
 	spring.LoadSettingsAndVerify(ini);
 	summer.LoadSettingsAndVerify(ini);
 	autumn.LoadSettingsAndVerify(ini);
