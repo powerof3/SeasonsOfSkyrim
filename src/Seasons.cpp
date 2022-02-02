@@ -114,24 +114,26 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini)
 	bool save = false;
 
 	for (auto& type : formTypes) {
-		static std::multimap<RE::TESLandTexture*, RE::TESLandTexture*> landTxstMap;
-
 		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty()) {
 			save = true;
 
 			if (type == "Statics") {
-				std::multimap<RE::TESObjectSTAT*, RE::TESObjectSTAT*> staticMap;
+				TempFormSwapMap<RE::TESObjectSTAT> staticMap;
 				get_snow_variants(a_ini, type, staticMap);
 			} else if (type == "Activators") {
-				std::multimap<RE::TESObjectACTI*, RE::TESObjectACTI*> activatorMap;
+				TempFormSwapMap<RE::TESObjectACTI> activatorMap;
+				get_snow_variants(a_ini, type, activatorMap);
+			} else if (type == "Furniture") {
+				TempFormSwapMap<RE::TESFurniture> activatorMap;
 				get_snow_variants(a_ini, type, activatorMap);
 			} else if (type == "LandTextures") {
+				TempFormSwapMap<RE::TESLandTexture> landTxstMap;
 				get_snow_variants(a_ini, type, landTxstMap);
 			} else if (type == "MovableStatics") {
-				std::multimap<RE::BGSMovableStatic*, RE::BGSMovableStatic*> movStaticMap;
+				TempFormSwapMap<RE::BGSMovableStatic> movStaticMap;
 				get_snow_variants(a_ini, type, movStaticMap);
 			} else if (type == "Trees") {
-				std::multimap<RE::TESObjectTREE*, RE::TESObjectTREE*> treeMap;
+				TempFormSwapMap<RE::TESObjectTREE> treeMap;
 				get_snow_variants(a_ini, type, treeMap);
 			}
 		} else {
@@ -181,6 +183,7 @@ void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini)
 
 	INI::get_value(a_ini, allowedWorldspaces, type.c_str(), "Worldspaces", ";Valid worldspaces");
 	INI::get_value(a_ini, swapActivators, type.c_str(), "Activators", ";Swap objects of these types for seasonal variants");
+	INI::get_value(a_ini, swapFurniture, type.c_str(), "Furniture", nullptr);
 	INI::get_value(a_ini, swapMovableStatics, type.c_str(), "Movable Statics", nullptr);
 	INI::get_value(a_ini, swapStatics, type.c_str(), "Trees", nullptr);
 	INI::get_value(a_ini, swapLOD, type.c_str(), "LOD", ";Seasonal LOD must be generated using DynDOLOD Alpha 65/SSELODGen Beta 86 or higher.\n;See https://dyndolod.info/Help/Seasons for more info");
@@ -212,14 +215,9 @@ bool Season::IsLandscapeSwapAllowed() const
 	return is_in_valid_worldspace();
 }
 
-bool Season::IsSwapAllowed() const
-{
-	return is_in_valid_worldspace();
-}
-
 bool Season::IsSwapAllowed(const RE::TESForm* a_form) const
 {
-	return is_valid_swap_type(a_form) && IsSwapAllowed();
+	return is_valid_swap_type(a_form) && is_in_valid_worldspace();
 }
 
 const std::pair<std::string, std::string>& Season::GetID() const

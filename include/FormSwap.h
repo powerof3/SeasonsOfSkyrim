@@ -9,11 +9,15 @@ namespace FormSwap
 		static bool can_apply_snow_shader(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base, RE::NiAVObject* a_node)
 		{
 			const auto seasonManager = SeasonManager::GetSingleton();
-			if (!a_base || !a_node || seasonManager->GetSeasonType() != SEASON::kWinter || !seasonManager->IsSwapAllowed(a_base)) {
+			if (!a_base || !a_node || seasonManager->GetSeasonType() != SEASON::kWinter) {
 				return false;
 			}
 
-			if (a_base->Is(RE::FormType::Activator) && a_node->HasAnimation() || a_base->IsMarker() || a_base->IsHeadingMarker() || a_base->IsWater() || a_ref->IsInWater()) {
+			if (a_base->IsNot(RE::FormType::Static, RE::FormType::MovableStatic, RE::FormType::Activator) || a_base->Is(RE::FormType::Activator) && a_node->HasAnimation()) {
+				return false;
+			}
+
+			if (a_base->IsMarker() || a_base->IsHeadingMarker() || a_base->IsWater() || a_ref->IsInWater()) {
 				return false;
 			}
 
@@ -32,7 +36,8 @@ namespace FormSwap
 
 		static std::pair<RE::TESBoundObject*, bool> get_form_swap(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
 		{
-			const auto replaceBase = a_base && !a_base->IsDynamicForm() ? SeasonManager::GetSingleton()->GetSwapForm(a_base) : nullptr;
+			const auto seasonManager = SeasonManager::GetSingleton();
+		    const auto replaceBase = a_base && !a_base->IsDynamicForm() && seasonManager->IsSwapAllowed(a_base) ? seasonManager->GetSwapForm(a_base) : nullptr;
 
 			if (replaceBase && SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater()) {
 				return { replaceBase, true };

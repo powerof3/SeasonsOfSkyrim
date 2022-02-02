@@ -62,24 +62,27 @@ public:
 	}
 
 private:
-	static inline std::array
-		formTypes{ "LandTextures"sv, "Activators"sv, "MovableStatics"sv, "Statics"sv, "Trees"sv };
+	template <class T>
+    using TempFormSwapMap = std::multimap<T*, T*>;
+
+    static inline std::array<std::string, 6>
+		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
 
 	void LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values);
 
 	RE::TESLandTexture* GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture);
 
 	template <class T>
-	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, std::multimap<T*, T*>& a_tempFormMap);
+	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap<T>& a_tempFormMap);
 	template <class T>
-	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, std::multimap<T*, T*>& a_tempFormMap);
+	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap);
 
 	Map::FormIDType _formMap;
 	Map::FormID _nullMap{};
 };
 
 template <class T>
-void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, std::multimap<T*, T*>& a_tempFormMap)
+void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap<T>& a_tempFormMap)
 {
 	auto& forms = a_dataHandler->GetFormArray(T::FORMTYPE);
 
@@ -111,7 +114,7 @@ void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, s
 }
 
 template <class T>
-void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, std::multimap<T*, T*>& a_tempFormMap)
+void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap)
 {
 	const auto dataHandler = RE::TESDataHandler::GetSingleton();
 	const auto EID = Cache::DataHolder::GetSingleton();
@@ -207,7 +210,6 @@ public:
 	[[nodiscard]] bool CanSwapGrass() const;
 	[[nodiscard]] bool CanSwapLOD() const;
 	[[nodiscard]] bool IsLandscapeSwapAllowed() const;
-	[[nodiscard]] bool IsSwapAllowed() const;
 	[[nodiscard]] bool IsSwapAllowed(const RE::TESForm* a_form) const;
 
 	[[nodiscard]] const std::pair<std::string, std::string>& GetID() const;
@@ -230,6 +232,7 @@ private:
 	};
 
 	bool swapActivators{ true };
+	bool swapFurniture{ true };
 	bool swapMovableStatics{ true };
 	bool swapStatics{ true };
 	bool swapTrees{ true };
@@ -244,6 +247,8 @@ private:
 		switch (a_form->GetFormType()) {
 		case RE::FormType::Activator:
 			return swapActivators;
+		case RE::FormType::Furniture:
+			return swapFurniture;
 		case RE::FormType::MovableStatic:
 			return swapMovableStatics;
 		case RE::FormType::Static:
@@ -254,7 +259,8 @@ private:
 			return false;
 		}
 	}
-	[[nodiscard]] bool is_in_valid_worldspace() const
+
+    [[nodiscard]] bool is_in_valid_worldspace() const
 	{
 		const auto worldSpace = RE::TES::GetSingleton()->worldSpace;
 		return worldSpace && std::ranges::find(allowedWorldspaces, worldSpace->GetFormEditorID()) != allowedWorldspaces.end();

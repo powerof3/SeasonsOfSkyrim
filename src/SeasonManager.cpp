@@ -284,12 +284,6 @@ bool SeasonManager::IsLandscapeSwapAllowed()
 	return season ? season->get().IsLandscapeSwapAllowed() : false;
 }
 
-bool SeasonManager::IsSwapAllowed()
-{
-	const auto season = GetSeason();
-	return season ? season->get().IsSwapAllowed() : false;
-}
-
 bool SeasonManager::IsSwapAllowed(const RE::TESForm* a_form)
 {
 	const auto season = GetSeason();

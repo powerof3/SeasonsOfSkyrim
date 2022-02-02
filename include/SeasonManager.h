@@ -42,7 +42,6 @@ public:
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD();
 
 	[[nodiscard]] bool IsLandscapeSwapAllowed();
-	[[nodiscard]] bool IsSwapAllowed();
 	[[nodiscard]] bool IsSwapAllowed(const RE::TESForm* a_form);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
