@@ -13,21 +13,17 @@ namespace FormSwap
 				return false;
 			}
 
-			if (a_base->IsNot(RE::FormType::Static, RE::FormType::MovableStatic, RE::FormType::Activator) || a_base->Is(RE::FormType::Activator) && a_node->HasAnimation()) {
+			if (a_base->IsNot(RE::FormType::Static, RE::FormType::MovableStatic) || a_ref->IsInWater()) {
 				return false;
 			}
 
-			if (a_base->IsMarker() || a_base->IsHeadingMarker() || a_base->IsWater() || a_ref->IsInWater()) {
+			if (const auto model = a_base->As<RE::TESModel>(); model && (model->model.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) {
+					return string::icontains(model->model, str);
+				}))) {
 				return false;
 			}
 
-			if (const auto model = a_base->As<RE::TESModel>(); model) {
-				if (model->model.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) { return string::icontains(model->model, str); }) || util::contains_textureset(model, "Snow"sv)) {
-					return false;
-				}
-			}
-
-			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat->data.materialObj || stat->HasTreeLOD()) {
+			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat && stat->data.materialObj) {
 				return false;
 			}
 
@@ -37,7 +33,7 @@ namespace FormSwap
 		static std::pair<RE::TESBoundObject*, bool> get_form_swap(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
 		{
 			const auto seasonManager = SeasonManager::GetSingleton();
-		    const auto replaceBase = a_base && !a_base->IsDynamicForm() && seasonManager->IsSwapAllowed(a_base) ? seasonManager->GetSwapForm(a_base) : nullptr;
+			const auto replaceBase = a_base && !a_base->IsDynamicForm() && seasonManager->IsSwapAllowed(a_base) ? seasonManager->GetSwapForm(a_base) : nullptr;
 
 			if (replaceBase && SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater()) {
 				return { replaceBase, true };
@@ -50,7 +46,6 @@ namespace FormSwap
 		static inline std::array snowShaderBlackList = {
 			R"(Effects\)"sv,
 			R"(Sky\)"sv,
-			"Marker"sv,
 			"WetRocks"sv,
 			"DynDOLOD"sv
 		};
@@ -85,7 +80,7 @@ namespace FormSwap
 					init = true;
 				}
 				if (node->SetProjectedUVData(projectedParams, projectedColor, true)) {
-                    if (const auto snowShaderData = RE::NiBooleanExtraData::Create("SOS_SNOW_SHADER", true)) {
+					if (const auto snowShaderData = RE::NiBooleanExtraData::Create("SOS_SNOW_SHADER", true)) {
 						node->AddExtraData(snowShaderData);
 					}
 				}

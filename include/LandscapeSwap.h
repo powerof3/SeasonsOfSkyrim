@@ -36,9 +36,10 @@ namespace LandscapeSwap
 		{
 			static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
 			{
-				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapGrass() && !detail::is_underwater_grass(a_landTexture->textureGrassList)) {
+				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapGrass()) {
 					const auto newLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
-					return newLandTexture ? newLandTexture->textureGrassList : a_landTexture->textureGrassList;
+
+				    return newLandTexture && !detail::is_underwater_grass(a_landTexture->textureGrassList) ? newLandTexture->textureGrassList : a_landTexture->textureGrassList;
 				}
 				return a_landTexture->textureGrassList;
 			}
@@ -75,7 +76,7 @@ namespace LandscapeSwap
 		stl::write_thunk_call<Texture::GetAsShaderTextureSet>(create_land_geometry.address() + 0x18B);
 		stl::write_thunk_call<Texture::GetAsShaderTextureSet>(create_land_geometry.address() + 0x1E6);
 
-		stl::asm_replace<Grass::GetGrassList>();
+	    stl::asm_replace<Grass::GetGrassList>();
 		stl::asm_replace<Material::GetHavokMaterialType>();
 	}
 }
