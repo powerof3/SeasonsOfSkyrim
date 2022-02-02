@@ -13,7 +13,7 @@ namespace FormSwap
 				return false;
 			}
 
-			if (a_base->IsNot(RE::FormType::Static, RE::FormType::MovableStatic) || a_ref->IsInWater()) {
+			if (a_base->IsNot(RE::FormType::Static, RE::FormType::MovableStatic, RE::FormType::Container) || a_ref->IsInWater()) {
 				return false;
 			}
 
