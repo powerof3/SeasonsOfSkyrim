@@ -9,53 +9,36 @@ namespace FormSwap
 		static bool can_apply_snow_shader(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base, RE::NiAVObject* a_node)
 		{
 			const auto seasonManager = SeasonManager::GetSingleton();
-			if (!a_base || !a_node || seasonManager->GetSeasonType() != SEASON::kWinter) {
+			if (!a_base || !a_node || seasonManager->GetSeasonType() != SEASON::kWinter || !seasonManager->IsSwapAllowed(a_base)) {
 				return false;
 			}
 
-			if (a_base->IsNot(RE::FormType::Activator, RE::FormType::Container, RE::FormType::Furniture, RE::FormType::MovableStatic, RE::FormType::Static)) {
-				return false;
-			}
-
-			if (!seasonManager->IsSwapAllowed(a_base) || a_base->IsMarker() || a_base->IsHeadingMarker() || a_base->IsWater()) {
-				return false;
-			}
-
-			if (a_base->Is(RE::FormType::Activator, RE::FormType::Furniture) && a_node->HasAnimation()) {  // no grindstones, mills
-				return false;
-			}
-
-			const auto waterLevel = a_ref->GetSubmergedWaterLevel(a_ref->GetPositionZ(), a_ref->GetParentCell());
-			if (waterLevel >= 0.01f) {
+			if (a_base->Is(RE::FormType::Activator) && a_node->HasAnimation() || a_base->IsMarker() || a_base->IsHeadingMarker() || a_base->IsWater() || a_ref->IsInWater()) {
 				return false;
 			}
 
 			if (const auto model = a_base->As<RE::TESModel>(); model) {
-				if (const std::string path = model->model.c_str(); path.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) { return string::icontains(path, str); })) {
+				if (model->model.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) { return string::icontains(model->model, str); }) || util::contains_textureset(model, "Snow"sv)) {
 					return false;
 				}
 			}
 
-			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat && stat->HasTreeLOD()) {
+			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat->data.materialObj || stat->HasTreeLOD()) {
 				return false;
 			}
 
 			return true;
 		}
 
-		static bool can_swap_static(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
+		static std::pair<RE::TESBoundObject*, bool> get_form_swap(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
 		{
-			const auto seasonManager = SeasonManager::GetSingleton();
-			if (!a_base || a_base->IsDynamicForm() || !seasonManager->IsSwapAllowed()) {
-				return false;
+			const auto replaceBase = a_base && !a_base->IsDynamicForm() ? SeasonManager::GetSingleton()->GetSwapForm(a_base) : nullptr;
+
+			if (replaceBase && SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater()) {
+				return { replaceBase, true };
 			}
 
-			if (seasonManager->GetSeasonType() != SEASON::kWinter) {
-				const auto waterLevel = a_ref->GetSubmergedWaterLevel(a_ref->GetPositionZ(), a_ref->GetParentCell());
-				return waterLevel >= 0.01f;
-			}
-
-			return true;
+			return { replaceBase, false };
 		}
 
 	private:
@@ -63,7 +46,8 @@ namespace FormSwap
 			R"(Effects\)"sv,
 			R"(Sky\)"sv,
 			"Marker"sv,
-			"WetRocks"sv
+			"WetRocks"sv,
+			"DynDOLOD"sv
 		};
 	};
 
@@ -72,9 +56,9 @@ namespace FormSwap
 		static RE::NiAVObject* thunk(RE::TESObjectREFR* a_ref, bool a_backgroundLoading)
 		{
 			const auto base = a_ref->GetBaseObject();
-			const auto replaceBase = detail::can_swap_static(a_ref, base) ? SeasonManager::GetSingleton()->GetSwapForm(base) : nullptr;
+			const auto& [replaceBase, rejected] = detail::get_form_swap(a_ref, base);
 
-			if (replaceBase) {
+			if (replaceBase && !rejected) {
 				a_ref->SetObjectReference(replaceBase);
 			}
 
@@ -96,7 +80,7 @@ namespace FormSwap
 					init = true;
 				}
 				if (node->SetProjectedUVData(projectedParams, projectedColor, true)) {
-					if (const auto snowShaderData = RE::NiBooleanExtraData::Create("SOS_SNOW_SHADER", true); snowShaderData) {
+                    if (const auto snowShaderData = RE::NiBooleanExtraData::Create("SOS_SNOW_SHADER", true)) {
 						node->AddExtraData(snowShaderData);
 					}
 				}

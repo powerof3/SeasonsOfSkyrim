@@ -223,7 +223,7 @@ bool Season::IsSwapAllowed() const
 
 bool Season::IsSwapAllowed(const RE::TESForm* a_form) const
 {
-	return IsSwapAllowed() && is_valid_swap_type(a_form);
+	return is_valid_swap_type(a_form) && IsSwapAllowed();
 }
 
 const std::pair<std::string, std::string>& Season::GetID() const
