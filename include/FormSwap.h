@@ -4,67 +4,116 @@
 
 namespace FormSwap
 {
-	struct detail
+	using FormSwapData = std::pair<RE::TESBoundObject*, bool>;
+
+	struct util
 	{
-		static bool can_apply_snow_shader(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base, RE::NiAVObject* a_node)
+		static RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref)
 		{
-			const auto seasonManager = SeasonManager::GetSingleton();
-			if (!a_base || !a_node || seasonManager->GetSeasonType() != SEASON::kWinter) {
+			const auto it = originals.find(a_ref->GetFormID());
+			return it != originals.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) : a_ref->GetBaseObject();
+		}
+
+		static void set_original_base(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase)
+		{
+			originals.emplace(a_ref->GetFormID(), a_originalBase->GetFormID());
+		}
+
+		static FormSwapData get_form_swap(RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
+		{
+			const auto can_swap_base = [&]() {
+				return !a_ref->IsDynamicForm() && !a_base->IsDynamicForm() && SeasonManager::GetSingleton()->IsSwapAllowed(a_base->GetFormType());
+			};
+
+		    if (const auto origBase = a_ref && can_swap_base() ? get_original_base(a_ref) : nullptr) {
+				const auto seasonManager = SeasonManager::GetSingleton();
+				const auto replaceBase = seasonManager->GetSwapForm(origBase);
+
+				if (replaceBase && seasonManager->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater()) {
+					return { replaceBase, true };
+				}
+
+				return { replaceBase, false };
+			}
+			return { nullptr, true };
+		}
+
+		static bool has_form_swap(RE::TESBoundObject* a_base)
+		{
+			return SeasonManager::GetSingleton()->GetSwapForm(a_base) != nullptr;
+		}
+
+		static bool can_apply_snow_shader(RE::TESObjectREFR* a_ref)
+		{
+			if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->GetSeasonType() != SEASON::kWinter) {
 				return false;
 			}
 
-			if (a_base->IsNot(RE::FormType::Static, RE::FormType::MovableStatic, RE::FormType::Container) || a_ref->IsInWater()) {
+			const auto base = get_original_base(a_ref);
+
+			if (!base || has_form_swap(base) || base->IsNot(RE::FormType::Static, RE::FormType::MovableStatic, RE::FormType::Container) || base->IsMarker() || base->IsHeadingMarker()) {
 				return false;
 			}
 
-			if (const auto model = a_base->As<RE::TESModel>(); model && (model->model.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) {
+			if (a_ref->IsInWater()) {
+				return false;
+			}
+
+			if (const auto model = base->As<RE::TESModel>(); model && (model->model.empty() || std::ranges::any_of(snowShaderBlackList, [&](const auto str) {
 					return string::icontains(model->model, str);
 				}))) {
 				return false;
 			}
 
-			if (const auto stat = a_base->As<RE::TESObjectSTAT>(); stat && stat->data.materialObj) {
+			if (const auto stat = base->As<RE::TESObjectSTAT>(); stat && (stat->HasTreeLOD() || stat->IsSkyObject())) {
 				return false;
 			}
 
 			return true;
 		}
 
-		static std::pair<RE::TESBoundObject*, bool> get_form_swap(const RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
-		{
-			const auto seasonManager = SeasonManager::GetSingleton();
-			const auto replaceBase = a_base && !a_base->IsDynamicForm() && seasonManager->IsSwapAllowed(a_base) ? seasonManager->GetSwapForm(a_base) : nullptr;
-
-			if (replaceBase && SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater()) {
-				return { replaceBase, true };
-			}
-
-			return { replaceBase, false };
-		}
-
 	private:
 		static inline std::array snowShaderBlackList = {
 			R"(Effects\)"sv,
-			R"(Sky\)"sv,
 			"WetRocks"sv,
 			"DynDOLOD"sv
 		};
+
+		static inline Map::FormID originals{};
+	};
+
+	struct GetHandle
+	{
+		static RE::RefHandle& thunk(RE::TESObjectREFR* a_ref, RE::RefHandle& a_handle)
+		{
+			if (const auto base = a_ref ? a_ref->GetBaseObject() : nullptr; a_ref && base) {
+				const auto& [replaceBase, rejected] = util::get_form_swap(a_ref, base);
+
+				if (replaceBase) {
+					util::set_original_base(a_ref, base);
+					if (!rejected) {
+						a_ref->SetObjectReference(replaceBase);
+					}
+				} else if (!a_ref->IsDynamicForm()) {
+					const auto origBase = util::get_original_base(a_ref);
+					if (origBase && a_ref->GetBaseObject() != origBase) {
+						a_ref->SetObjectReference(origBase);
+					}
+				}
+			}
+
+			return func(a_ref, a_handle);
+		}
+		static inline REL::Relocation<decltype(thunk)> func;
 	};
 
 	struct Load3D
 	{
 		static RE::NiAVObject* thunk(RE::TESObjectREFR* a_ref, bool a_backgroundLoading)
 		{
-			const auto base = a_ref->GetBaseObject();
-			const auto& [replaceBase, rejected] = detail::get_form_swap(a_ref, base);
-
-			if (replaceBase && !rejected) {
-				a_ref->SetObjectReference(replaceBase);
-			}
-
 			const auto node = func(a_ref, a_backgroundLoading);
 
-			if (!replaceBase && detail::can_apply_snow_shader(a_ref, base, node)) {
+			if (util::can_apply_snow_shader(a_ref) && node) {
 				auto& [init, projectedParams, projectedColor] = defaultObj;
 				if (!init) {
 					const auto snowMat = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P");
@@ -105,6 +154,9 @@ namespace FormSwap
 
 	inline void Install()
 	{
+		REL::Relocation<std::uintptr_t> model_loader_queue_ref{ REL::ID(12910) };
+		stl::write_thunk_call<GetHandle>(model_loader_queue_ref.address() + 0x3E);
+
 		stl::write_vfunc<RE::TESObjectREFR, Load3D>();
 		logger::info("Installed form swapper"sv);
 	}

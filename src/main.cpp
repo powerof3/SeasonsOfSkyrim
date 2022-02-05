@@ -8,13 +8,15 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kPostLoad:
 		{
-			logger::info("{:*^30}", "HOOKS");
+			SeasonManager::GetSingleton()->LoadSettings();
 
-			FormSwap::Install();
-			LandscapeSwap::Install();
-			LODSwap::Install();
+	        logger::info("{:*^30}", "HOOKS");
 
 			SeasonManager::InstallHooks();
+
+	        FormSwap::Install();
+			LandscapeSwap::Install();
+			LODSwap::Install();
 		}
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
@@ -69,7 +71,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 	log->flush_on(spdlog::level::info);
 
 	spdlog::set_default_logger(std::move(log));
-	spdlog::set_pattern("%v"s);
+	spdlog::set_pattern("[%l] %v"s);
 
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
 
@@ -96,8 +98,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	logger::info("loaded plugin");
 
 	SKSE::Init(a_skse);
-
-	SeasonManager::GetSingleton()->LoadSettings();
 
 	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);

@@ -89,6 +89,8 @@ void SeasonManager::LoadSettings()
 
 	ini.LoadFile(path);
 
+	logger::info("{:*^30}", "SETTINGS");
+
 	INI::get_value(ini, seasonType, "Settings", "Season Type", ";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n;3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal");
 	logger::info("seasonal type is {}", stl::to_underlying(seasonType));
 
@@ -271,10 +273,10 @@ bool SeasonManager::CanSwapGrass()
 	return season ? season->get().CanSwapGrass() : false;
 }
 
-std::pair<bool, std::string> SeasonManager::CanSwapLOD()
+std::pair<bool, std::string> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
 {
 	const auto season = GetSeason();
-	return season ? std::make_pair(season->get().CanSwapLOD(), season->get().GetID().second) : std::make_pair(false, "");
+	return season ? std::make_pair(season->get().CanSwapLOD(a_type), season->get().GetID().second) : std::make_pair(false, "");
 }
 
 bool SeasonManager::IsLandscapeSwapAllowed()
@@ -283,10 +285,10 @@ bool SeasonManager::IsLandscapeSwapAllowed()
 	return season ? season->get().IsLandscapeSwapAllowed() : false;
 }
 
-bool SeasonManager::IsSwapAllowed(const RE::TESForm* a_form)
+bool SeasonManager::IsSwapAllowed(RE::FormType a_formType)
 {
 	const auto season = GetSeason();
-	return season ? season->get().IsSwapAllowed(a_form) : false;
+	return season ? season->get().IsSwapAllowed(a_formType) : false;
 }
 
 RE::TESBoundObject* SeasonManager::GetSwapForm(const RE::TESForm* a_form)

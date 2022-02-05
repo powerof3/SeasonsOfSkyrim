@@ -39,10 +39,10 @@ public:
 	[[nodiscard]] SEASON GetSeasonType();
 	[[nodiscard]] bool CanSwapGrass();
 
-	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD();
+	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD(LOD_TYPE a_type);
 
 	[[nodiscard]] bool IsLandscapeSwapAllowed();
-	[[nodiscard]] bool IsSwapAllowed(const RE::TESForm* a_form);
+	[[nodiscard]] bool IsSwapAllowed(RE::FormType a_formType);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
@@ -70,7 +70,8 @@ protected:
 
 				const auto manager = GetSingleton();
 				manager->SetExterior(!a_isInterior);
-				if (!a_isInterior) {
+
+			    if (!a_isInterior) {
 					manager->UpdateSeason();
 				}
 			}

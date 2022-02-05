@@ -6,10 +6,10 @@ namespace LODSwap
 {
 	struct detail
 	{
-		template <typename T>
+		template <class T>
 		static std::string get_lod_filename()
 		{
-			const auto [canSwap, season] = SeasonManager::GetSingleton()->CanSwapLOD();
+			const auto [canSwap, season] = SeasonManager::GetSingleton()->CanSwapLOD(T::type);
 			return canSwap ? fmt::format(T::seasonalPath, season) : T::defaultPath;
 		}
 	};
@@ -29,6 +29,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.{}.BTR)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.BTR)" };
+
+			static inline auto type = LOD_TYPE::kTerrain;
 		};
 
 		struct BuildDiffuseTextureFileName
@@ -44,6 +46,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.DDS)" };
+
+			static inline auto type = LOD_TYPE::kTerrain;
 		};
 
 		struct BuildNormalTextureFileName
@@ -59,6 +63,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}_n.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i_n.DDS)" };
+
+			static inline auto type = LOD_TYPE::kTerrain;
 		};
 
 		inline void Install()
@@ -84,6 +90,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.{}.BTO)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.BTO)" };
+
+			static inline auto type = LOD_TYPE::kObject;
 		};
 
 		struct BuildDiffuseTextureAtlasFileName
@@ -99,6 +107,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.DDS)" };
+
+			static inline auto type = LOD_TYPE::kObject;
 		};
 
 		struct BuildNormalTextureAtlasFileName
@@ -114,6 +124,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}_n.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects_n.DDS)" };
+
+			static inline auto type = LOD_TYPE::kObject;
 		};
 
 		inline void Install()
@@ -139,6 +151,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.{}.BTT)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.BTT)" };
+
+			static inline auto type = LOD_TYPE::kTree;
 		};
 
 		struct BuildTextureFileName
@@ -154,6 +168,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.{}.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.DDS)" };
+
+			static inline auto type = LOD_TYPE::kTree;
 		};
 
 		struct BuildTypeListFileName
@@ -169,6 +185,8 @@ namespace LODSwap
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.{}.LST)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.LST)" };
+
+			static inline auto type = LOD_TYPE::kTree;
 		};
 
 		inline void Install()
