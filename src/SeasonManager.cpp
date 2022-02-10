@@ -240,7 +240,6 @@ void SeasonManager::CleanupSerializedSeasonList() const
 	ini.SetUnicode();
 
 	if (const auto rc = ini.LoadFile(serializedSeasonList); rc < 0) {
-		logger::error("	couldn't read INI");
 		return;
 	}
 
