@@ -14,7 +14,7 @@ void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini, bool a_writeComment)
 	INI::get_value(a_ini, swapStatics, seasonType.c_str(), "Statics", nullptr);
 	INI::get_value(a_ini, swapTrees, seasonType.c_str(), "Trees", nullptr);
 
-	INI::get_value(a_ini, swapObjectLOD, seasonType.c_str(), "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 65/SSELODGen Beta 86 or higher.\n;See https://dyndolod.info/Help/Seasons for more info" : "");
+	INI::get_value(a_ini, swapObjectLOD, seasonType.c_str(), "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n;See https://dyndolod.info/Help/Seasons for more info" : "");
 	INI::get_value(a_ini, swapTerrainLOD, seasonType.c_str(), "Terrain LOD", nullptr);
 	INI::get_value(a_ini, swapTreeLOD, seasonType.c_str(), "Tree LOD", nullptr);
 
