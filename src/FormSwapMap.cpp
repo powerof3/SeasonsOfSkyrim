@@ -102,21 +102,21 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini)
 		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty()) {
 			save = true;
 
-			if (type == "Statics") {
-				TempFormSwapMap<RE::TESObjectSTAT> staticMap;
-				get_snow_variants(a_ini, type, staticMap);
+			if (type == "LandTextures") {
+				TempFormSwapMap<RE::TESLandTexture> landTxstMap;
+				get_snow_variants(a_ini, type, landTxstMap);
 			} else if (type == "Activators") {
 				TempFormSwapMap<RE::TESObjectACTI> activatorMap;
 				get_snow_variants(a_ini, type, activatorMap);
 			} else if (type == "Furniture") {
 				TempFormSwapMap<RE::TESFurniture> activatorMap;
 				get_snow_variants(a_ini, type, activatorMap);
-			} else if (type == "LandTextures") {
-				TempFormSwapMap<RE::TESLandTexture> landTxstMap;
-				get_snow_variants(a_ini, type, landTxstMap);
 			} else if (type == "MovableStatics") {
 				TempFormSwapMap<RE::BGSMovableStatic> movStaticMap;
 				get_snow_variants(a_ini, type, movStaticMap);
+			} else if (type == "Statics") {
+				TempFormSwapMap<RE::TESObjectSTAT> staticMap;
+				get_snow_variants(a_ini, type, staticMap);
 			} else if (type == "Trees") {
 				TempFormSwapMap<RE::TESObjectTREE> treeMap;
 				get_snow_variants(a_ini, type, treeMap);

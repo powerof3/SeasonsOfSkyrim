@@ -111,10 +111,10 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 			}
 		}
 	} else if constexpr (std::is_same_v<T, RE::TESObjectSTAT>) {
-		std::array blackList = { "Ice"sv, "Frozen"sv, "LoadScreen"sv, "_INTERIOR"sv, "INV"sv, "DynDOLOD"sv };
+		std::array snowBlackList = { "Ice"sv, "Icicle"sv, "Frozen"sv };
+		std::array blackList = { "Ice"sv, "Icicle"sv, "Frozen"sv, "LoadScreen"sv, "INTERIOR"sv, "INV"sv, "DynDOLOD"sv };
 
-		using StaticModelMap = std::map<std::string, RE::TESObjectSTAT*>;
-		StaticModelMap processedSnowStats;
+		std::map<std::string, RE::TESObjectSTAT*> processedSnowStats;
 
 		auto& statics = dataHandler->GetFormArray<RE::TESObjectSTAT>();
 
@@ -130,22 +130,30 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 			}
 		}
 
+		constexpr auto is_in_blacklist = []<auto N>(const RE::TESObjectSTAT* a_stat, const std::array<std::string_view, N>& a_blacklist)
+		{
+			const auto editorID = util::get_editorID(a_stat);
+			return std::ranges::any_of(a_blacklist, [&](const auto& str) { return string::icontains(editorID, str); });
+		};
+
 		for (auto& stat : statics) {
 			const auto mat = stat->data.materialObj;
 			if (mat && util::is_snow_shader(mat) && util::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || util::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
 				std::string path = stat->GetModel();
-				if (path.empty()) {
+				if (path.empty() || is_in_blacklist(stat, snowBlackList)) {
 					continue;
 				}
 				processedSnowStats.emplace(util::process_model_path(path), stat);
 			}
 		}
 
-		for (auto& [path, snowStat] : processedSnowStats) {
+		for (auto& [snowPath, snowStat] : processedSnowStats) {
 			for (auto& stat : statics) {
-				if (string::icontains(stat->GetModel(), path) && snowStat != stat) {
+				std::string path = stat->GetModel();
+				string::replace_last_instance(path, "Moss"sv, ""sv);
+				if (string::icontains(path, snowPath) && snowStat != stat) {
 					if (const auto mat = stat->data.materialObj; !mat || !util::is_snow_shader(mat)) {
-						if (const auto editorID = util::get_editorID(stat); std::ranges::any_of(blackList, [&](const auto str) { return editorID.find(str) != std::string::npos; })) {
+						if (is_in_blacklist(stat, blackList)) {
 							continue;
 						}
 						a_tempFormMap.emplace(stat, snowStat);

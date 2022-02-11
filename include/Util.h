@@ -21,8 +21,8 @@ namespace util
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			for (const auto& textures : altTextures) {
 				const auto txst = textures.textureSet;
-				std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				if (path.find(a_txstPath) != std::string::npos) {
+				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
+				if (string::icontains(path, a_txstPath)) {
 					return true;
 				}
 			}
@@ -37,8 +37,8 @@ namespace util
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				const auto txst = textures.textureSet;
-				std::string path = txst ? txst->textures[0].textureName.c_str() : "";
-				return path.find(a_txstPath.first) != std::string::npos || path.find(a_txstPath.second) != std::string::npos;
+                const std::string path = txst ? txst->textures[0].textureName.c_str() : "";
+				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
 			});
 		}
 
@@ -51,8 +51,8 @@ namespace util
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				const auto txst = textures.textureSet;
-				std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return path.find(a_txstPath) != std::string::npos;
+                const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
+				return string::icontains(path, a_txstPath);
 			});
 		}
 
@@ -65,8 +65,8 @@ namespace util
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				const auto txst = textures.textureSet;
-				std::string path = txst ? txst->textures[0].textureName.c_str() : "";
-				return path.find(a_txstPath.first) != std::string::npos || path.find(a_txstPath.second) != std::string::npos;
+				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
+				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
 			});
 		}
 
