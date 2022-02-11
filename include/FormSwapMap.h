@@ -44,14 +44,14 @@ public:
 
 private:
 	template <class T>
-    using TempFormSwapMap = std::multimap<T*, T*>;
+	using TempFormSwapMap = std::multimap<T*, T*>;
 
-    static inline std::array<std::string, 6>
+	static inline std::array<std::string, 6>
 		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
 
 	void LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values);
 
-    static RE::TESLandTexture* GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture);
+	static RE::TESLandTexture* GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture);
 
 	template <class T>
 	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap<T>& a_tempFormMap);
@@ -117,6 +117,19 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 		StaticModelMap processedSnowStats;
 
 		auto& statics = dataHandler->GetFormArray<RE::TESObjectSTAT>();
+
+		if (const auto snowOverSkyrim = dataHandler->LookupModByName("SnowOverSkyrim.esp")) {
+			for (auto& stat : statics) {
+				if (stat && snowOverSkyrim->IsFormInMod(stat->GetFormID())) {
+					std::string path = stat->GetModel();
+					if (path.empty()) {
+						continue;
+					}
+					processedSnowStats.emplace(util::process_model_path(path), stat);
+				}
+			}
+		}
+
 		for (auto& stat : statics) {
 			const auto mat = stat->data.materialObj;
 			if (mat && util::is_snow_shader(mat) && util::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || util::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
