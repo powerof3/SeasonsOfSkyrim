@@ -27,12 +27,17 @@ void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini, bool a_writeComment)
 			const auto folderPath = fmt::format(a_folderName, worldSpaceName);
 
 			bool exists = false;
-			for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
-				if (entry.is_regular_file() && entry.path().string().contains(suffix)) {
-					exists = true;
-					break;
+
+			try {
+				if (std::filesystem::exists(folderPath)) {
+					for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
+						if (entry.exists() && entry.is_regular_file() && entry.path().string().contains(suffix)) {
+							exists = true;
+							break;
+						}
+					}
 				}
-			}
+			} catch (...) {}
 
 			if (!exists) {
 				a_swaplod = false;
