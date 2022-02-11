@@ -22,10 +22,10 @@ namespace FormSwap
 		static FormSwapData get_form_swap(RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_base)
 		{
 			const auto can_swap_base = [&]() {
-				return !a_ref->IsDynamicForm() && !a_base->IsDynamicForm() && SeasonManager::GetSingleton()->IsSwapAllowed(a_base->GetFormType());
+				return !a_ref->IsDynamicForm() && !a_base->IsDynamicForm() && SeasonManager::GetSingleton()->CanSwapForm(a_base->GetFormType());
 			};
 
-		    if (const auto origBase = a_ref && can_swap_base() ? get_original_base(a_ref) : nullptr) {
+			if (const auto origBase = a_ref && can_swap_base() ? get_original_base(a_ref) : nullptr) {
 				const auto seasonManager = SeasonManager::GetSingleton();
 				const auto replaceBase = seasonManager->GetSwapForm(origBase);
 
@@ -45,7 +45,7 @@ namespace FormSwap
 
 		static bool can_apply_snow_shader(RE::TESObjectREFR* a_ref)
 		{
-			if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->GetSeasonType() != SEASON::kWinter) {
+			if (!SeasonManager::GetSingleton()->CanApplySnowShader()) {
 				return false;
 			}
 

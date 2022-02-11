@@ -38,12 +38,11 @@ public:
 
 	void LoadSettingsAndVerify(CSimpleIniA& a_ini, bool a_writeComment = false);
 
-	[[nodiscard]] bool CanSwapGrass() const;
-
+	[[nodiscard]] bool CanApplySnowShader() const;
+	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType) const;
+    [[nodiscard]] bool CanSwapGrass() const;
 	[[nodiscard]] bool CanSwapLOD(LOD_TYPE a_type) const;
-	
-	[[nodiscard]] bool IsLandscapeSwapAllowed() const;
-	[[nodiscard]] bool IsSwapAllowed(RE::FormType a_formType) const;
+    [[nodiscard]] bool CanSwapLandscape() const;
 
 	[[nodiscard]] const std::pair<std::string, std::string>& GetID() const;
 	[[nodiscard]] SEASON GetType() const;

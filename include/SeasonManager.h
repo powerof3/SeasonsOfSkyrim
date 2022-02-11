@@ -37,12 +37,13 @@ public:
 	bool UpdateSeason();
 
 	[[nodiscard]] SEASON GetSeasonType();
-	[[nodiscard]] bool CanSwapGrass();
+	[[nodiscard]] bool CanApplySnowShader();
+    [[nodiscard]] bool CanSwapGrass();
 
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD(LOD_TYPE a_type);
 
-	[[nodiscard]] bool IsLandscapeSwapAllowed();
-	[[nodiscard]] bool IsSwapAllowed(RE::FormType a_formType);
+	[[nodiscard]] bool CanSwapLandscape();
+	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);

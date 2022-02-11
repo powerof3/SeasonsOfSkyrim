@@ -53,13 +53,32 @@ void Season::LoadSettingsAndVerify(CSimpleIniA& a_ini, bool a_writeComment)
 	check_if_lod_exists(swapTreeLOD, "Tree", R"(Data\Meshes\Terrain\{}\Trees)");
 }
 
+bool Season::CanApplySnowShader() const
+{
+	return season == SEASON::kWinter && is_in_valid_worldspace();
+}
+
+bool Season::CanSwapForm(RE::FormType a_formType) const
+{
+	return is_valid_swap_type(a_formType) && is_in_valid_worldspace();
+}
+
 bool Season::CanSwapGrass() const
 {
-	return swapGrass;
+	return swapGrass && is_in_valid_worldspace();
+}
+
+bool Season::CanSwapLandscape() const
+{
+	return is_in_valid_worldspace();
 }
 
 bool Season::CanSwapLOD(const LOD_TYPE a_type) const
 {
+	if (!is_in_valid_worldspace()) {
+		return false;
+	}
+
 	switch (a_type) {
 	case LOD_TYPE::kTerrain:
 		return swapTerrainLOD;
@@ -70,16 +89,6 @@ bool Season::CanSwapLOD(const LOD_TYPE a_type) const
 	default:
 		return false;
 	}
-}
-
-bool Season::IsLandscapeSwapAllowed() const
-{
-	return is_in_valid_worldspace();
-}
-
-bool Season::IsSwapAllowed(RE::FormType a_formType) const
-{
-	return is_valid_swap_type(a_formType) && is_in_valid_worldspace();
 }
 
 const std::pair<std::string, std::string>& Season::GetID() const

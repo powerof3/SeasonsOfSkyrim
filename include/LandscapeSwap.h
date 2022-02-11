@@ -10,7 +10,7 @@ namespace LandscapeSwap
 		{
 			static RE::BSTextureSet* thunk(RE::BGSTextureSet* a_textureSet)
 			{
-				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->IsLandscapeSwapAllowed()) {
+				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapLandscape()) {
 					const auto newLandTexture = seasonManager->GetSwapLandTextureFromTextureSet(a_textureSet);
 					return newLandTexture ? newLandTexture->textureSet : a_textureSet;
 				}
@@ -55,7 +55,7 @@ namespace LandscapeSwap
 		{
 			static RE::MATERIAL_ID func(const RE::TESLandTexture* a_landTexture)
 			{
-				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->IsLandscapeSwapAllowed()) {
+				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapLandscape()) {
 					const auto newLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
 					const auto materialType = newLandTexture ? newLandTexture->materialType : a_landTexture->materialType;
 

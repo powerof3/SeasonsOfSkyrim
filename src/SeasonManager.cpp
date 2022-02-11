@@ -266,6 +266,12 @@ SEASON SeasonManager::GetSeasonType()
 	return season ? season->get().GetType() : SEASON::kNone;
 }
 
+bool SeasonManager::CanApplySnowShader()
+{
+	const auto season = GetSeason();
+	return season ? season->get().CanApplySnowShader() : false;
+}
+
 bool SeasonManager::CanSwapGrass()
 {
 	const auto season = GetSeason();
@@ -278,16 +284,16 @@ std::pair<bool, std::string> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
 	return season ? std::make_pair(season->get().CanSwapLOD(a_type), season->get().GetID().second) : std::make_pair(false, "");
 }
 
-bool SeasonManager::IsLandscapeSwapAllowed()
+bool SeasonManager::CanSwapLandscape()
 {
 	const auto season = GetSeason();
-	return season ? season->get().IsLandscapeSwapAllowed() : false;
+	return season ? season->get().CanSwapLandscape() : false;
 }
 
-bool SeasonManager::IsSwapAllowed(RE::FormType a_formType)
+bool SeasonManager::CanSwapForm(RE::FormType a_formType)
 {
 	const auto season = GetSeason();
-	return season ? season->get().IsSwapAllowed(a_formType) : false;
+	return season ? season->get().CanSwapForm(a_formType) : false;
 }
 
 RE::TESBoundObject* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
