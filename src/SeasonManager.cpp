@@ -106,8 +106,6 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 {
 	constexpr auto path = L"Data/Seasons/MainFormSwap_WIN.ini";
 
-	logger::info("{:*^30}", "CONFIG");
-
 	logger::info("Loading main WIN formswap settings");
 
 	CSimpleIniA ini;

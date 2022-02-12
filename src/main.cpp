@@ -10,11 +10,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		{
 			SeasonManager::GetSingleton()->LoadSettings();
 
-	        logger::info("{:*^30}", "HOOKS");
+			logger::info("{:*^30}", "HOOKS");
 
 			SeasonManager::InstallHooks();
 
-	        FormSwap::Install();
+			FormSwap::Install();
 			LandscapeSwap::Install();
 			LODSwap::Install();
 		}
@@ -22,6 +22,14 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
 			Cache::DataHolder::GetSingleton()->GetData();
+
+			logger::info("{:*^30}", "CONFIG");
+
+			std::filesystem::path seasonsPath{ "Data/Seasons"sv };
+			if (std::filesystem::directory_entry seasonsFolder{ seasonsPath }; !seasonsFolder.exists()) {
+				logger::info("Existing Seasons folder not found, creating it");
+				std::filesystem::create_directory(seasonsPath);
+			}
 
 			const auto manager = SeasonManager::GetSingleton();
 			manager->LoadOrGenerateWinterFormSwap();
