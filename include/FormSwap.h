@@ -65,7 +65,7 @@ namespace FormSwap
 				return false;
 			}
 
-			if (const auto stat = base->As<RE::TESObjectSTAT>(); stat && (stat->HasTreeLOD() || stat->IsSkyObject())) {
+			if (const auto stat = base->As<RE::TESObjectSTAT>(); stat && (stat->HasTreeLOD() || stat->IsSkyObject() || stat->data.materialObj != nullptr)) {
 				return false;
 			}
 

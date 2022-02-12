@@ -55,7 +55,7 @@ private:
 
 	std::vector<std::string> allowedWorldspaces{
 		"Tamriel",
-		"MarkathWorld",
+		"MarkarthWorld",
 		"RiftenWorld",
 		"SolitudeWorld",
 		"WhiterunWorld",

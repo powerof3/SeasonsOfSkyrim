@@ -174,7 +174,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 
 		for (auto& [path, snowTree] : processedSnowTrees) {
 			for (auto& tree : trees) {
-				if (string::icontains(tree->GetModel(), path) && !string::icontains(tree->GetModel(), "Snow")) {
+				if (string::icontains(tree->GetModel(), path) && tree != snowTree) {
 					a_tempFormMap.emplace(tree, snowTree);
 				}
 			}
