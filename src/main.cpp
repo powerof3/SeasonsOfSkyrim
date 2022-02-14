@@ -1,6 +1,7 @@
 #include "FormSwap.h"
 #include "LODSwap.h"
 #include "LandscapeSwap.h"
+#include "MergeMapper.h"
 #include "SeasonManager.h"
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
@@ -112,6 +113,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	logger::info("loaded plugin");
 
 	SKSE::Init(a_skse);
+	MergeMapper::GetMerges();
 
 	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);
