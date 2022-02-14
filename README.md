@@ -34,7 +34,21 @@ SKSE plugin that adds dynamic seasons with model/LOD swapping and snow coverage
 ```
 git clone https://github.com/powerof3/SeasonsOfSkyrim.git
 cd SeasonsOfSkyrim
-cmake -B build -S .
+# pull commonlib /extern to override the path settings
+git submodule init
+# to update submodules to checked in build
+git submodule update
+```
+
+### SSE
+```
+cmake --preset vs2022-windows-vcpkg
+cmake --build build --config Release
+```
+### VR
+```
+cmake --preset vs2022-windows-vcpkg-vr
+cmake --build buildvr --config Release
 ```
 ## License
 [MIT](LICENSE)
