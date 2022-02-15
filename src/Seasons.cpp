@@ -63,11 +63,6 @@ bool Season::CanSwapForm(RE::FormType a_formType) const
 	return is_valid_swap_type(a_formType) && is_in_valid_worldspace();
 }
 
-bool Season::CanSwapGrass() const
-{
-	return swapGrass && is_in_valid_worldspace();
-}
-
 bool Season::CanSwapLandscape() const
 {
 	return is_in_valid_worldspace();
@@ -104,4 +99,18 @@ SEASON Season::GetType() const
 FormSwapMap& Season::GetFormSwapMap()
 {
 	return formMap;
+}
+
+void Season::LoadFormSwaps(const CSimpleIniA& a_ini)
+{
+	formMap.LoadFormSwaps(a_ini);
+
+	if (const auto values = a_ini.GetSection("Grass"); values && !values->empty()) {
+		useAltGrass = true;
+	}
+}
+
+bool Season::GetUseAltGrass() const
+{
+	return useAltGrass;
 }

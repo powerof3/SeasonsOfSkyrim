@@ -38,7 +38,6 @@ public:
 
 	[[nodiscard]] SEASON GetSeasonType();
 	[[nodiscard]] bool CanApplySnowShader();
-    [[nodiscard]] bool CanSwapGrass();
 
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD(LOD_TYPE a_type);
 
@@ -46,10 +45,14 @@ public:
 	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
+	template <class T>
+	T* GetSwapForm(const RE::TESForm* a_form);
+
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
 	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
+	[[nodiscard]] bool GetUseAltGrass();
 
-	bool GetExterior();
+    [[nodiscard]] bool GetExterior();
 	void SetExterior(bool a_isExterior);
 
 protected:
@@ -118,3 +121,10 @@ private:
 
 	const wchar_t* serializedSeasonList{ L"Data/Seasons/Serialization.ini" };
 };
+
+template <class T>
+T* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
+{
+	auto swapForm = GetSwapForm(a_form);
+	return swapForm ? swapForm->As<T>() : nullptr;
+}

@@ -154,7 +154,7 @@ void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
 			continue;
 		}
 
-		a_season.GetFormSwapMap().LoadFormSwaps(ini);
+		a_season.LoadFormSwaps(ini);
 	}
 }
 
@@ -270,12 +270,6 @@ bool SeasonManager::CanApplySnowShader()
 	return season ? season->get().CanApplySnowShader() : false;
 }
 
-bool SeasonManager::CanSwapGrass()
-{
-	const auto season = GetSeason();
-	return season ? season->get().CanSwapGrass() : false;
-}
-
 std::pair<bool, std::string> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
 {
 	const auto season = GetSeason();
@@ -310,6 +304,12 @@ RE::TESLandTexture* SeasonManager::GetSwapLandTextureFromTextureSet(const RE::BG
 {
 	const auto season = GetSeason();
 	return season ? season->get().GetFormSwapMap().GetSwapLandTextureFromTextureSet(a_txst) : nullptr;
+}
+
+bool SeasonManager::GetUseAltGrass()
+{
+	const auto season = GetSeason();
+	return season ? season->get().GetUseAltGrass() : false;
 }
 
 bool SeasonManager::GetExterior()

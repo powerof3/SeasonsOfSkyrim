@@ -10,13 +10,13 @@ namespace Cache
 			for (auto& [id, form] : *map) {
 				switch (form->GetFormType()) {
 				case RE::FormType::Activator:
-				case RE::FormType::Container:
 				case RE::FormType::Furniture:
 				case RE::FormType::MaterialObject:
 				case RE::FormType::MovableStatic:
 				case RE::FormType::LandTexture:
 				case RE::FormType::Static:
 				case RE::FormType::Tree:
+				case RE::FormType::Grass:
 					{
 						_formIDToEditorIDMap.emplace(form->GetFormID(), id.c_str());
 					}
