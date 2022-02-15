@@ -40,7 +40,6 @@ public:
 
 	[[nodiscard]] bool CanApplySnowShader() const;
 	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType) const;
-    [[nodiscard]] bool CanSwapGrass() const;
 	[[nodiscard]] bool CanSwapLOD(LOD_TYPE a_type) const;
     [[nodiscard]] bool CanSwapLandscape() const;
 
@@ -48,6 +47,9 @@ public:
 	[[nodiscard]] SEASON GetType() const;
 
 	[[nodiscard]] FormSwapMap& GetFormSwapMap();
+	void LoadFormSwaps(const CSimpleIniA& a_ini);
+
+	[[nodiscard]] bool GetUseAltGrass() const;
 
 private:
 	SEASON season{};
@@ -74,6 +76,7 @@ private:
 	bool swapTreeLOD{ true };
 
 	bool swapGrass{ true };
+	bool useAltGrass{ false };
 
 	FormSwapMap formMap{};
 
@@ -90,6 +93,8 @@ private:
 			return swapStatics;
 		case RE::FormType::Tree:
 			return swapTrees;
+		case RE::FormType::Grass:
+			return swapGrass;
 		default:
 			return false;
 		}

@@ -32,11 +32,14 @@ public:
 			return _formMap["Statics"];
 		case RE::FormType::Tree:
 			return _formMap["Trees"];
+		case RE::FormType::Grass:
+			return _formMap["Grass"];
 		default:
 			return _nullMap;
 		}
 	}
-	Map::FormID& get_map(const std::string& a_section)
+
+    Map::FormID& get_map(const std::string& a_section)
 	{
 		const auto it = _formMap.find(a_section);
 		return it != _formMap.end() ? it->second : _nullMap;
@@ -44,10 +47,10 @@ public:
 
 private:
 	template <class T>
-	using TempFormSwapMap = std::multimap<T*, T*>;
+	using TempFormSwapMap = std::map<T*, T*>;
 
-	static inline std::array<std::string, 6>
-		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
+	static inline std::array<std::string, 7>
+		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees", "Grass" };
 
 	void LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values);
 
@@ -98,16 +101,13 @@ template <class T>
 void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap)
 {
 	const auto dataHandler = RE::TESDataHandler::GetSingleton();
-	const auto EID = Cache::DataHolder::GetSingleton();
 
 	auto& formIDMap = get_map(a_type);
 
 	if constexpr (std::is_same_v<T, RE::TESLandTexture>) {
-		auto& landTextures = dataHandler->GetFormArray<RE::TESLandTexture>();
-
-		for (auto& landTexture : landTextures) {
-			if (const auto snowVariantLT = GenerateLandTextureSnowVariant(landTexture)) {
-				a_tempFormMap.emplace(landTexture, snowVariantLT);
+		for (auto& landLT : dataHandler->GetFormArray<RE::TESLandTexture>()) {
+			if (const auto snowLT = GenerateLandTextureSnowVariant(landLT)) {
+				a_tempFormMap.emplace(landLT, snowLT);
 			}
 		}
 	} else if constexpr (std::is_same_v<T, RE::TESObjectSTAT>) {
@@ -187,8 +187,8 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 		formIDMap.emplace(form->GetFormID(), swapForm->GetFormID());
 
 		//write values
-		auto formEID = EID->GetEditorID(form->GetFormID());
-		auto swapEID = EID->GetEditorID(swapForm->GetFormID());
+		auto formEID = util::get_editorID(form);
+		auto swapEID = util::get_editorID(swapForm);
 
 		std::string comment = fmt::format(";{}|{}", formEID, swapEID);
 		std::string value = fmt::format("0x{:X}~{}|0x{:X}~{}", form->GetLocalFormID(), form->GetFile(0)->fileName, swapForm->GetLocalFormID(), swapForm->GetFile(0)->fileName);
