@@ -1,84 +1,25 @@
 #pragma once
 
-namespace Map
-{
-	using FormEditorID = robin_hood::unordered_flat_map<RE::FormID, std::string>;
-
-	using FormID = robin_hood::unordered_flat_map<RE::FormID, RE::FormID>;
-	using FormIDType = robin_hood::unordered_flat_map<std::string, FormID>;
-}
-
-namespace Set
-{
-	using FormID = robin_hood::unordered_flat_set<RE::FormID>;
-}
-
 namespace util
 {
-	inline bool contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
+	inline std::string get_editorID(const RE::TESForm* a_form)
 	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			for (const auto& textures : altTextures) {
-				const auto txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				if (string::icontains(path, a_txstPath)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+		return Cache::DataHolder::GetSingleton()->GetEditorID(a_form->GetFormID());
 	}
 
-	inline bool only_contains_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
+	inline RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref)
 	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
-                const std::string path = txst ? txst->textures[0].textureName.c_str() : "";
-				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
-			});
-		}
-
-		return true;
+		return Cache::DataHolder::GetSingleton()->GetOriginalBase(a_ref);
 	}
 
-	inline bool only_contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
+	inline void set_original_base(RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_originalBase)
 	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
-                const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return string::icontains(path, a_txstPath);
-			});
-		}
-
-		return false;
+	    Cache::DataHolder::GetSingleton()->SetOriginalBase(a_ref, a_originalBase);
 	}
 
-	inline bool must_only_contain_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
+	inline bool is_snow_shader(const RE::BGSMaterialObject* a_shader)
 	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
-			});
-		}
-
-		return false;
-	}
-
-	inline std::string& process_model_path(std::string& a_path)
-	{
-		if (const auto it = a_path.rfind('\\'); it != std::string::npos) {
-			a_path = a_path.substr(it);
-		}
-		return a_path;
+		return Cache::DataHolder::GetSingleton()->IsSnowShader(a_shader);
 	}
 }
 
@@ -109,5 +50,21 @@ namespace INI
 		a_value = string::split(tempValue, a_deliminator);
 
 		a_ini.SetValue(a_section, a_key, string::join(a_value, a_deliminator).c_str(), a_comment);
+	}
+
+	inline RE::FormID parse_form(const std::string& a_str)
+	{
+		if (a_str.find('~') != std::string::npos) {
+			const auto formPair = string::split(a_str, "~");
+
+			const auto processedFormPair = std::make_pair(
+				string::lexical_cast<RE::FormID>(formPair[0], true), formPair[1]);
+
+			return RE::TESDataHandler::GetSingleton()->LookupFormID(processedFormPair.first, processedFormPair.second);
+		}
+		if (const auto form = RE::TESForm::LookupByEditorID(a_str); form) {
+			return form->GetFormID();
+		}
+		return static_cast<RE::FormID>(0);
 	}
 }

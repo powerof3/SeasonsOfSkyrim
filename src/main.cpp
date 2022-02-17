@@ -1,6 +1,7 @@
 #include "FormSwap.h"
 #include "LODSwap.h"
 #include "LandscapeSwap.h"
+#include "SnowSwap.h"
 #include "SeasonManager.h"
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
@@ -17,6 +18,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			FormSwap::Install();
 			LandscapeSwap::Install();
 			LODSwap::Install();
+			SnowSwap::Install();
 		}
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
@@ -30,6 +32,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 				logger::info("Existing Seasons folder not found, creating it");
 				std::filesystem::create_directory(seasonsPath);
 			}
+
+		    SnowSwap::Manager::GetSingleton()->LoadSnowShaderBlacklist();
 
 			const auto manager = SeasonManager::GetSingleton();
 			manager->LoadOrGenerateWinterFormSwap();

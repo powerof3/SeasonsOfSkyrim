@@ -128,7 +128,7 @@ void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
 
 	for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 		if (entry.exists() && !entry.path().empty() && entry.path().extension() == ".ini"sv) {
-			if (const auto path = entry.path().string(); path.rfind(suffix) != std::string::npos && path.find("MainFormSwap") == std::string::npos) {
+			if (const auto path = entry.path().string(); path.contains(suffix) && !path.contains("MainFormSwap"sv)) {
 				configs.push_back(path);
 			}
 		}
