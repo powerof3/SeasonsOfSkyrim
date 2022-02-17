@@ -18,7 +18,7 @@ public:
 
 	static void RegisterEvents()
 	{
-		if (auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
+		if (const auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
 			scripts->AddEventSink<RE::TESActivateEvent>(GetSingleton());
 			logger::info("Registered {}"sv, typeid(RE::TESActivateEvent).name());
 		}
@@ -26,7 +26,7 @@ public:
 
 	void LoadSettings();
 	void LoadOrGenerateWinterFormSwap();
-	void LoadFormSwaps();
+	void LoadSeasonData();
 
 	//Calendar is not initialized using savegame values when it is loaded from start
 	void SaveSeason(std::string_view a_savePath);
@@ -62,7 +62,7 @@ protected:
 	SeasonPtr GetSeason();
 	SeasonPtr GetCurrentSeason();
 
-	static void LoadFormSwaps_Impl(Season& a_season);
+	static void LoadSeasonData(Season& a_season, CSimpleIniA& a_settings);
 
 	struct Hooks
 	{
@@ -119,6 +119,7 @@ private:
 
 	bool loadedFromSave{ false };
 
+	const wchar_t* settings{ L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini" };
 	const wchar_t* serializedSeasonList{ L"Data/Seasons/Serialization.ini" };
 };
 
