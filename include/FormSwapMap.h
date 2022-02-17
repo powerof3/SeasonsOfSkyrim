@@ -1,74 +1,5 @@
 #pragma once
 
-namespace detail
-{
-	inline bool contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
-	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			for (const auto& textures : altTextures) {
-				const auto txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				if (string::icontains(path, a_txstPath)) {
-					return true;
-				}
-			}
-		}
-
-		return false;
-	}
-
-	inline bool only_contains_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
-	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : "";
-				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
-			});
-		}
-
-		return true;
-	}
-
-	inline bool only_contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
-	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return string::icontains(path, a_txstPath);
-			});
-		}
-
-		return false;
-	}
-
-	inline bool must_only_contain_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
-	{
-		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
-			});
-		}
-
-		return false;
-	}
-
-	inline std::string& process_model_path(std::string& a_path)
-	{
-		if (const auto it = a_path.rfind('\\'); it != std::string::npos) {
-			a_path = a_path.substr(it);
-		}
-		return a_path;
-	}
-}
-
 class FormSwapMap
 {
 public:
@@ -147,19 +78,19 @@ void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, T
 	std::map<std::string, T*> processedSnowForms;
 	for (auto& baseForm : forms) {
 		const auto form = skyrim_cast<T*>(baseForm);
-		if (form && detail::only_contains_textureset(form, "Snow"sv)) {
+		if (form && model::only_contains_textureset(form, "Snow"sv)) {
 			std::string path = form->GetModel();
 			if (path.empty()) {
 				continue;
 			}
-			processedSnowForms.emplace(detail::process_model_path(path), form);
+			processedSnowForms.emplace(model::process_model_path(path), form);
 		}
 	}
 
 	for (auto& [path, snowForm] : processedSnowForms) {
 		for (auto& baseForm : forms) {
 			const auto form = skyrim_cast<T*>(baseForm);
-			if (form && string::icontains(form->model, path) && !detail::contains_textureset(form, "Snow"sv) && !detail::contains_textureset(form, "Frozen"sv)) {
+			if (form && string::icontains(form->model, path) && !model::contains_textureset(form, "Snow"sv) && !model::contains_textureset(form, "Frozen"sv)) {
 				if (std::ranges::any_of(blackList, [&](const auto& str) { return string::icontains(form->model, str); })) {
 					continue;
 				}
@@ -197,7 +128,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 					if (path.empty()) {
 						continue;
 					}
-					processedSnowStats.emplace(detail::process_model_path(path), stat);
+					processedSnowStats.emplace(model::process_model_path(path), stat);
 				}
 			}
 		}
@@ -210,12 +141,12 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 
 		for (auto& stat : statics) {
 			const auto mat = stat->data.materialObj;
-			if (mat && util::is_snow_shader(mat) && detail::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || detail::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
+			if (mat && util::is_snow_shader(mat) && model::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || model::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
 				std::string path = stat->GetModel();
 				if (path.empty() || is_in_blacklist(stat, snowBlackList)) {
 					continue;
 				}
-				processedSnowStats.emplace(detail::process_model_path(path), stat);
+				processedSnowStats.emplace(model::process_model_path(path), stat);
 			}
 		}
 

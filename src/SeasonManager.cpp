@@ -82,24 +82,22 @@ SeasonManager::SeasonPtr SeasonManager::GetSeason()
 
 void SeasonManager::LoadSettings()
 {
-	constexpr auto path = L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini";
-
 	CSimpleIniA ini;
 	ini.SetUnicode();
 
-	ini.LoadFile(path);
+	ini.LoadFile(settings);
 
 	logger::info("{:*^30}", "SETTINGS");
 
 	INI::get_value(ini, seasonType, "Settings", "Season Type", ";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n;3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal");
-	logger::info("seasonal type is {}", stl::to_underlying(seasonType));
+	logger::info("season type is {}", stl::to_underlying(seasonType));
 
-	winter.LoadSettingsAndVerify(ini, true);
-	spring.LoadSettingsAndVerify(ini);
-	summer.LoadSettingsAndVerify(ini);
-	autumn.LoadSettingsAndVerify(ini);
+	winter.LoadSettings(ini, true);
+	spring.LoadSettings(ini);
+	summer.LoadSettings(ini);
+	autumn.LoadSettings(ini);
 
-	(void)ini.SaveFile(path);
+	(void)ini.SaveFile(settings);
 }
 
 void SeasonManager::LoadOrGenerateWinterFormSwap()
@@ -120,7 +118,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 	}
 }
 
-void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
+void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 {
 	std::vector<std::string> configs;
 
@@ -154,16 +152,26 @@ void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
 			continue;
 		}
 
-		a_season.LoadFormSwaps(ini);
+		a_season.LoadData(ini);
 	}
+
+	//save worldspaces to settings so DynDOLOD can read them
+	a_season.SaveData(a_settings);
 }
 
-void SeasonManager::LoadFormSwaps()
+void SeasonManager::LoadSeasonData()
 {
-	LoadFormSwaps_Impl(winter);
-	LoadFormSwaps_Impl(spring);
-	LoadFormSwaps_Impl(summer);
-	LoadFormSwaps_Impl(autumn);
+	CSimpleIniA settingsINI;
+	settingsINI.SetUnicode();
+
+	settingsINI.LoadFile(settings);
+
+    LoadSeasonData(winter, settingsINI);
+	LoadSeasonData(spring, settingsINI);
+	LoadSeasonData(summer, settingsINI);
+	LoadSeasonData(autumn, settingsINI);
+
+	(void)settingsINI.SaveFile(settings);
 }
 
 void SeasonManager::SaveSeason(std::string_view a_savePath)
@@ -273,7 +281,7 @@ bool SeasonManager::CanApplySnowShader()
 std::pair<bool, std::string> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
 {
 	const auto season = GetSeason();
-	return season ? std::make_pair(season->get().CanSwapLOD(a_type), season->get().GetID().second) : std::make_pair(false, "");
+	return season ? std::make_pair(season->get().CanSwapLOD(a_type), season->get().GetID().suffix) : std::make_pair(false, "");
 }
 
 bool SeasonManager::CanSwapLandscape()
