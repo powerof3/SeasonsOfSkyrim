@@ -52,15 +52,18 @@ public:
 	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
 	[[nodiscard]] bool GetUseAltGrass();
 
-    [[nodiscard]] bool GetExterior();
+	[[nodiscard]] bool GetExterior();
 	void SetExterior(bool a_isExterior);
 
 protected:
+	using MONTH = RE::Calendar::Month;
 	using EventResult = RE::BSEventNotifyControl;
 	using SeasonPtr = std::optional<std::reference_wrapper<Season>>;
 
 	SeasonPtr GetSeason();
 	SeasonPtr GetCurrentSeason();
+
+	void LoadMonthToSeasonMap(CSimpleIniA& a_ini);
 
 	static void LoadSeasonData(Season& a_season, CSimpleIniA& a_settings);
 
@@ -75,7 +78,7 @@ protected:
 				const auto manager = GetSingleton();
 				manager->SetExterior(!a_isInterior);
 
-			    if (!a_isInterior) {
+				if (!a_isInterior) {
 					manager->UpdateSeason();
 				}
 			}
@@ -106,6 +109,36 @@ private:
 	SeasonManager& operator=(SeasonManager&&) = delete;
 
 	SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
+
+	std::map<MONTH, SEASON> monthToSeasons{
+		{ MONTH::kMorningStar, SEASON::kWinter },
+		{ MONTH::kSunsDawn, SEASON::kWinter },
+		{ MONTH::kFirstSeed, SEASON::kSpring },
+		{ MONTH::kRainsHand, SEASON::kSpring },
+		{ MONTH::kSecondSeed, SEASON::kSpring },
+		{ MONTH::kMidyear, SEASON::kSummer },
+		{ MONTH::kSunsHeight, SEASON::kSummer },
+		{ MONTH::kLastSeed, SEASON::kSummer },
+		{ MONTH::kHearthfire, SEASON::kAutumn },
+		{ MONTH::kFrostfall, SEASON::kAutumn },
+		{ MONTH::kSunsDusk, SEASON::kAutumn },
+		{ MONTH::kEveningStar, SEASON::kWinter }
+	};
+
+	frozen::map<MONTH, std::pair<std::string_view, std::string_view>, 12> monthNames{
+		{ MONTH::kMorningStar, std::make_pair("Morning Star"sv, ";January"sv) },
+		{ MONTH::kSunsDawn, std::make_pair("Sun's Dawn"sv, ";February"sv) },
+		{ MONTH::kFirstSeed, std::make_pair("First Seed"sv, ";March"sv) },
+		{ MONTH::kRainsHand, std::make_pair("Rain's Hand"sv, ";April"sv) },
+		{ MONTH::kSecondSeed, std::make_pair("Second Seed"sv, ";May"sv) },
+		{ MONTH::kMidyear, std::make_pair("Mid Year"sv, ";June"sv) },
+		{ MONTH::kSunsHeight, std::make_pair("Suns Height"sv, ";July"sv) },
+		{ MONTH::kLastSeed, std::make_pair("Last Seed"sv, ";August"sv) },
+		{ MONTH::kHearthfire, std::make_pair("Hearthfire"sv, ";September"sv) },
+		{ MONTH::kFrostfall, std::make_pair("Frost Fall"sv, ";October"sv) },
+		{ MONTH::kSunsDusk, std::make_pair("Sun's Dusk"sv, ";November"sv) },
+		{ MONTH::kEveningStar, std::make_pair("Evening Star"sv, ";December"sv) }
+	};
 
 	Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
 	Season spring{ SEASON::kSpring, { "Spring", "SPR" } };

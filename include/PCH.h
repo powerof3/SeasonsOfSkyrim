@@ -6,6 +6,7 @@
 #include <ranges>
 #include <ShlObj.h>
 
+#include <frozen/map.h>
 #include <robin_hood.h>
 #include <SimpleIni.h>
 #include <fmt/format.h>
