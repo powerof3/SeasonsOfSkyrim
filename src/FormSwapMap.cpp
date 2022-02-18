@@ -79,12 +79,12 @@ void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 }
 
 //only covers winter
-bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini)
+bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 {
 	bool save = false;
 
 	for (auto& type : formTypes) {
-		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty()) {
+		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty() || a_forceRegenerate) {
 			save = true;
 
 			if (type == "LandTextures") {

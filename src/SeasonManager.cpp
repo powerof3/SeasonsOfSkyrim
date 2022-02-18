@@ -79,7 +79,7 @@ SeasonManager::SeasonPtr SeasonManager::GetSeason()
 
 void SeasonManager::LoadMonthToSeasonMap(CSimpleIniA& a_ini)
 {
-    for (const auto& [month, monthName] : monthNames) {
+	for (const auto& [month, monthName] : monthNames) {
 		auto& [tes, irl] = monthName;
 		INI::get_value(a_ini, monthToSeasons.at(month), "Settings", tes.data(),
 			month == MONTH::kMorningStar ? ";0 - no season\n;1 - winter\n;2 - spring\n;3 - summer\n;4 - autumn\n\n;January" : irl.data());
@@ -96,7 +96,7 @@ void SeasonManager::LoadSettings()
 	logger::info("{:*^30}", "SETTINGS");
 
 	//delete and recreate ini if new month-season settings are not found.
-    if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Settings", "Morning Star", "-1")); value == -1) {
+	if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Settings", "Morning Star", "-1")); value == -1) {
 		ini.Delete("Settings", nullptr);
 		ini.Delete("Winter", nullptr);
 		ini.Delete("Spring", nullptr);
@@ -118,6 +118,33 @@ void SeasonManager::LoadSettings()
 	(void)ini.SaveFile(settings);
 }
 
+bool SeasonManager::ShouldRegenerateWinterFormSwap() const
+{
+	CSimpleIniA ini;
+	ini.SetUnicode();
+
+	ini.LoadFile(serializedSeasonList);
+
+	const auto& mods = RE::TESDataHandler::GetSingleton()->compiledFileCollection;
+	const size_t actualModCount = mods.files.size() + mods.smallFiles.size();
+
+	const auto expectedModCount = string::lexical_cast<size_t>(ini.GetValue("Game", "Mod Count", "0"));
+
+	const auto shouldRegenerate = actualModCount != expectedModCount;
+
+	if (shouldRegenerate) {
+		ini.SetValue("Game", "Mod Count", std::to_string(actualModCount).c_str(), nullptr);
+		if (expectedModCount != 0) {
+			logger::info("Mod count has changed since last run ({} -> {}), regenerating main WIN formswap", expectedModCount, actualModCount);
+		} else {
+			logger::info("Regenerating main WIN formswap since last update");
+		}
+		(void)ini.SaveFile(serializedSeasonList);
+	}
+
+	return shouldRegenerate;
+}
+
 void SeasonManager::LoadOrGenerateWinterFormSwap()
 {
 	constexpr auto path = L"Data/Seasons/MainFormSwap_WIN.ini";
@@ -131,7 +158,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 
 	ini.LoadFile(path);
 
-	if (winter.GetFormSwapMap().GenerateFormSwaps(ini)) {
+	if (winter.GetFormSwapMap().GenerateFormSwaps(ini, ShouldRegenerateWinterFormSwap())) {
 		(void)ini.SaveFile(path);
 	}
 }
