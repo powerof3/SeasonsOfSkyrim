@@ -137,8 +137,6 @@ namespace SnowSwap
 		inline void Install()
 		{
 			stl::write_vfunc<RE::TESObjectSTAT, Clone3D>();
-
-			logger::info("Installed dynamic snow manager"sv);
 		}
 	}
 
