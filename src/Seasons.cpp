@@ -23,11 +23,9 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 	//make sure LOD has been generated! No need to check form swaps
 	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderName) {
 		if (a_swaplod) {
-			const auto worldSpaceName = !validWorldspaces.empty() ? validWorldspaces[0] : "Tamriel";
-			const auto folderPath = fmt::format(a_folderName, worldSpaceName);
+			const auto folderPath = fmt::format(a_folderName, "Tamriel");
 
 			bool exists = false;
-
 			try {
 				if (std::filesystem::exists(folderPath)) {
 					for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
@@ -41,7 +39,7 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 
 			if (!exists) {
 				a_swaplod = false;
-				logger::error(" {} LOD files not found! Default LOD will be used instead", a_lodType);
+				logger::warn(" {} LOD files not found! Default LOD will be used instead", a_lodType);
 			} else {
 				logger::info(" {} LOD files found", a_lodType);
 			}
