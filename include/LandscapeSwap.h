@@ -38,7 +38,7 @@ namespace LandscapeSwap
 			{
 				static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
 				{
-					if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapForm(RE::FormType::Grass) && !seasonManager->GetUseAltGrass()) {
+					if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapForm(RE::FormType::Grass)) {
 						const auto swapLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
 
 						return swapLandTexture ? swapLandTexture->textureGrassList : a_landTexture->textureGrassList;
@@ -101,8 +101,13 @@ namespace LandscapeSwap
 
 		inline void Install()
 		{
-			Standard::Install();
-			Alt::Install();
+			if (SeasonManager::GetSingleton()->GetUseAltGrass()) {
+				logger::info("Using alternate grass generation");
+			    Alt::Install();
+			} else {
+				logger::info("Using standard grass generation");
+				Standard::Install();
+			}
 		}
 	}
 
