@@ -12,7 +12,7 @@ public:
 	};
 
 	void LoadFormSwaps(const CSimpleIniA& a_ini);
-	bool GenerateFormSwaps(CSimpleIniA& a_ini);
+	bool GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 
@@ -39,7 +39,7 @@ public:
 		}
 	}
 
-    MapPair<RE::FormID>& get_map(const std::string& a_section)
+	MapPair<RE::FormID>& get_map(const std::string& a_section)
 	{
 		const auto it = _formMap.find(a_section);
 		return it != _formMap.end() ? it->second : _nullMap;
@@ -48,7 +48,7 @@ public:
 private:
 	using RecordType = std::string;
 
-    template <class T>
+	template <class T>
 	using TempFormSwapMap = std::map<T*, T*>;
 
 	static inline std::array<std::string, 7>
@@ -63,9 +63,9 @@ private:
 	template <class T>
 	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap);
 
-    Map<RecordType, MapPair<RE::FormID>> _formMap;
+	Map<RecordType, MapPair<RE::FormID>> _formMap;
 
-    MapPair<RE::FormID> _nullMap{};
+	MapPair<RE::FormID> _nullMap{};
 };
 
 template <class T>

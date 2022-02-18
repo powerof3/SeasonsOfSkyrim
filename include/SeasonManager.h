@@ -67,6 +67,8 @@ protected:
 
 	static void LoadSeasonData(Season& a_season, CSimpleIniA& a_settings);
 
+	bool ShouldRegenerateWinterFormSwap() const;
+
 	struct Hooks
 	{
 		struct SetInterior
