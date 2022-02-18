@@ -178,11 +178,13 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 	}
 
 	if (configs.empty()) {
-		logger::warn("No .ini files with _{} suffix were found in the Data/Seasons folder, skipping {} formswaps for {}...", suffix, suffix == "WIN" ? "secondary" : "", type);
+		logger::warn("No .ini files with _{} suffix were found in the Data/Seasons folder, skipping {} formswaps for {}...", suffix, suffix == "WIN" ? "secondary" : "all", type);
 		return;
 	}
 
 	logger::info("{} matching inis found", configs.size());
+
+	std::ranges::sort(configs);
 
 	for (auto& path : configs) {
 		logger::info("	INI : {}", path);
