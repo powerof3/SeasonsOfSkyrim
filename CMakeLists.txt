@@ -104,6 +104,7 @@ source_group(
 		${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
 )
 
+find_package(frozen CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # ---- Create DLL ----
@@ -142,6 +143,7 @@ target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 		CommonLibSSE::CommonLibSSE
+		frozen::frozen
 )
 
 target_precompile_headers(

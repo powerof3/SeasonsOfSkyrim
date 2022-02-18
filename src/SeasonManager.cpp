@@ -13,28 +13,25 @@ SeasonManager::SeasonPtr SeasonManager::GetCurrentSeason()
 		return autumn;
 	case SEASON_TYPE::kSeasonal:
 		{
-			using MONTH = RE::Calendar::Month;
+			const auto calendar = RE::Calendar::GetSingleton();
+			const auto month = calendar ? calendar->GetMonth() : 7;
 
-			switch (const auto calendar = RE::Calendar::GetSingleton(); calendar ? calendar->GetMonth() : 7) {
-			case MONTH::kEveningStar:
-			case MONTH::kSunsDawn:
-			case MONTH::kMorningStar:
-				return winter;
-			case MONTH::kFirstSeed:
-			case MONTH::kRainsHand:
-			case MONTH::kSecondSeed:
-				return spring;
-			case MONTH::kMidyear:
-			case MONTH::kSunsHeight:
-			case MONTH::kLastSeed:
-				return summer;
-			case MONTH::kHearthfire:
-			case MONTH::kFrostfall:
-			case MONTH::kSunsDusk:
-				return autumn;
-			default:
-				return std::nullopt;
+			if (const auto it = monthToSeasons.find(static_cast<MONTH>(month)); it != monthToSeasons.end()) {
+				switch (it->second) {
+				case SEASON::kWinter:
+					return winter;
+				case SEASON::kSpring:
+					return spring;
+				case SEASON::kSummer:
+					return summer;
+				case SEASON::kAutumn:
+					return autumn;
+				default:
+					return std::nullopt;
+				}
 			}
+
+			return std::nullopt;
 		}
 	default:
 		return std::nullopt;
@@ -80,6 +77,15 @@ SeasonManager::SeasonPtr SeasonManager::GetSeason()
 	}
 }
 
+void SeasonManager::LoadMonthToSeasonMap(CSimpleIniA& a_ini)
+{
+    for (const auto& [month, monthName] : monthNames) {
+		auto& [tes, irl] = monthName;
+		INI::get_value(a_ini, monthToSeasons.at(month), "Settings", tes.data(),
+			month == MONTH::kMorningStar ? ";0 - no season\n;1 - winter\n;2 - spring\n;3 - summer\n;4 - autumn\n\n;January" : irl.data());
+	}
+}
+
 void SeasonManager::LoadSettings()
 {
 	CSimpleIniA ini;
@@ -89,8 +95,20 @@ void SeasonManager::LoadSettings()
 
 	logger::info("{:*^30}", "SETTINGS");
 
+	//delete and recreate ini if new month-season settings are not found.
+    if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Settings", "Morning Star", "-1")); value == -1) {
+		ini.Delete("Settings", nullptr);
+		ini.Delete("Winter", nullptr);
+		ini.Delete("Spring", nullptr);
+		ini.Delete("Summer", nullptr);
+		ini.Delete("Autumn", nullptr);
+	}
+
 	INI::get_value(ini, seasonType, "Settings", "Season Type", ";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n;3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal");
+
 	logger::info("season type is {}", stl::to_underlying(seasonType));
+
+	LoadMonthToSeasonMap(ini);
 
 	winter.LoadSettings(ini, true);
 	spring.LoadSettings(ini);
@@ -166,7 +184,7 @@ void SeasonManager::LoadSeasonData()
 
 	settingsINI.LoadFile(settings);
 
-    LoadSeasonData(winter, settingsINI);
+	LoadSeasonData(winter, settingsINI);
 	LoadSeasonData(spring, settingsINI);
 	LoadSeasonData(summer, settingsINI);
 	LoadSeasonData(autumn, settingsINI);
