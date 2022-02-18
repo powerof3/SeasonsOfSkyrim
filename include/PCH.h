@@ -6,6 +6,7 @@
 #include <ranges>
 #include <ShlObj.h>
 
+#include <frozen/map.h>
 #include <robin_hood.h>
 #include <SimpleIni.h>
 #include <fmt/format.h>
@@ -41,13 +42,28 @@ namespace stl
 		T::func = trampoline.write_call<5>(a_src, T::thunk);
 	}
 
+	template <class F, size_t index, class T>
+	void write_vfunc()
+	{
+		REL::Relocation<std::uintptr_t> vtbl{ F::VTABLE[index] };
+		T::func = vtbl.write_vfunc(T::size, T::thunk);
+	}
+
 	template <class F, class T>
 	void write_vfunc()
 	{
-		REL::Relocation<std::uintptr_t> vtbl{ F::VTABLE[0] };
-		T::func = vtbl.write_vfunc(T::size, T::thunk);
+		write_vfunc<F, 0, T>();
 	}
 }
+
+template <class T1, class T2>
+using Map = robin_hood::unordered_flat_map<T1, T2>;
+
+template <class T>
+using MapPair = robin_hood::unordered_flat_map<T, T>;
+
+template <class T>
+using Set = robin_hood::unordered_flat_set<T>;
 
 #include "Version.h"
 #include "Cache.h"

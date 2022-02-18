@@ -18,7 +18,7 @@ public:
 
 	static void RegisterEvents()
 	{
-		if (auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
+		if (const auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
 			scripts->AddEventSink<RE::TESActivateEvent>(GetSingleton());
 			logger::info("Registered {}"sv, typeid(RE::TESActivateEvent).name());
 		}
@@ -26,7 +26,7 @@ public:
 
 	void LoadSettings();
 	void LoadOrGenerateWinterFormSwap();
-	void LoadFormSwaps();
+	void LoadSeasonData();
 
 	//Calendar is not initialized using savegame values when it is loaded from start
 	void SaveSeason(std::string_view a_savePath);
@@ -38,7 +38,6 @@ public:
 
 	[[nodiscard]] SEASON GetSeasonType();
 	[[nodiscard]] bool CanApplySnowShader();
-    [[nodiscard]] bool CanSwapGrass();
 
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD(LOD_TYPE a_type);
 
@@ -46,20 +45,29 @@ public:
 	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
+	template <class T>
+	T* GetSwapForm(const RE::TESForm* a_form);
+
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
 	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
+	[[nodiscard]] bool GetUseAltGrass();
 
-	bool GetExterior();
+	[[nodiscard]] bool GetExterior();
 	void SetExterior(bool a_isExterior);
 
 protected:
+	using MONTH = RE::Calendar::Month;
 	using EventResult = RE::BSEventNotifyControl;
 	using SeasonPtr = std::optional<std::reference_wrapper<Season>>;
 
 	SeasonPtr GetSeason();
 	SeasonPtr GetCurrentSeason();
 
-	static void LoadFormSwaps_Impl(Season& a_season);
+	void LoadMonthToSeasonMap(CSimpleIniA& a_ini);
+
+	static void LoadSeasonData(Season& a_season, CSimpleIniA& a_settings);
+
+	bool ShouldRegenerateWinterFormSwap() const;
 
 	struct Hooks
 	{
@@ -72,7 +80,7 @@ protected:
 				const auto manager = GetSingleton();
 				manager->SetExterior(!a_isInterior);
 
-			    if (!a_isInterior) {
+				if (!a_isInterior) {
 					manager->UpdateSeason();
 				}
 			}
@@ -104,6 +112,36 @@ private:
 
 	SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
 
+	std::map<MONTH, SEASON> monthToSeasons{
+		{ MONTH::kMorningStar, SEASON::kWinter },
+		{ MONTH::kSunsDawn, SEASON::kWinter },
+		{ MONTH::kFirstSeed, SEASON::kSpring },
+		{ MONTH::kRainsHand, SEASON::kSpring },
+		{ MONTH::kSecondSeed, SEASON::kSpring },
+		{ MONTH::kMidyear, SEASON::kSummer },
+		{ MONTH::kSunsHeight, SEASON::kSummer },
+		{ MONTH::kLastSeed, SEASON::kSummer },
+		{ MONTH::kHearthfire, SEASON::kAutumn },
+		{ MONTH::kFrostfall, SEASON::kAutumn },
+		{ MONTH::kSunsDusk, SEASON::kAutumn },
+		{ MONTH::kEveningStar, SEASON::kWinter }
+	};
+
+	frozen::map<MONTH, std::pair<std::string_view, std::string_view>, 12> monthNames{
+		{ MONTH::kMorningStar, std::make_pair("Morning Star"sv, ";January"sv) },
+		{ MONTH::kSunsDawn, std::make_pair("Sun's Dawn"sv, ";February"sv) },
+		{ MONTH::kFirstSeed, std::make_pair("First Seed"sv, ";March"sv) },
+		{ MONTH::kRainsHand, std::make_pair("Rain's Hand"sv, ";April"sv) },
+		{ MONTH::kSecondSeed, std::make_pair("Second Seed"sv, ";May"sv) },
+		{ MONTH::kMidyear, std::make_pair("Mid Year"sv, ";June"sv) },
+		{ MONTH::kSunsHeight, std::make_pair("Suns Height"sv, ";July"sv) },
+		{ MONTH::kLastSeed, std::make_pair("Last Seed"sv, ";August"sv) },
+		{ MONTH::kHearthfire, std::make_pair("Hearthfire"sv, ";September"sv) },
+		{ MONTH::kFrostfall, std::make_pair("Frost Fall"sv, ";October"sv) },
+		{ MONTH::kSunsDusk, std::make_pair("Sun's Dusk"sv, ";November"sv) },
+		{ MONTH::kEveningStar, std::make_pair("Evening Star"sv, ";December"sv) }
+	};
+
 	Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
 	Season spring{ SEASON::kSpring, { "Spring", "SPR" } };
 	Season summer{ SEASON::kSummer, { "Summer", "SUM" } };
@@ -116,5 +154,13 @@ private:
 
 	bool loadedFromSave{ false };
 
+	const wchar_t* settings{ L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini" };
 	const wchar_t* serializedSeasonList{ L"Data/Seasons/Serialization.ini" };
 };
+
+template <class T>
+T* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
+{
+	auto swapForm = GetSwapForm(a_form);
+	return swapForm ? swapForm->As<T>() : nullptr;
+}

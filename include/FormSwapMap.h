@@ -12,14 +12,14 @@ public:
 	};
 
 	void LoadFormSwaps(const CSimpleIniA& a_ini);
-	bool GenerateFormSwaps(CSimpleIniA& a_ini);
+	bool GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESForm* a_form);
 	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
 
-	Map::FormID& get_map(RE::FormType a_formType)
+	MapPair<RE::FormID>& get_map(RE::FormType a_formType)
 	{
 		switch (a_formType) {
 		case RE::FormType::Activator:
@@ -32,22 +32,27 @@ public:
 			return _formMap["Statics"];
 		case RE::FormType::Tree:
 			return _formMap["Trees"];
+		case RE::FormType::Grass:
+			return _formMap["Grass"];
 		default:
 			return _nullMap;
 		}
 	}
-	Map::FormID& get_map(const std::string& a_section)
+
+	MapPair<RE::FormID>& get_map(const std::string& a_section)
 	{
 		const auto it = _formMap.find(a_section);
 		return it != _formMap.end() ? it->second : _nullMap;
 	}
 
 private:
-	template <class T>
-	using TempFormSwapMap = std::multimap<T*, T*>;
+	using RecordType = std::string;
 
-	static inline std::array<std::string, 6>
-		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
+	template <class T>
+	using TempFormSwapMap = std::map<T*, T*>;
+
+	static inline std::array<std::string, 7>
+		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees", "Grass" };
 
 	void LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values);
 
@@ -58,8 +63,9 @@ private:
 	template <class T>
 	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap);
 
-	Map::FormIDType _formMap;
-	Map::FormID _nullMap{};
+	Map<RecordType, MapPair<RE::FormID>> _formMap;
+
+	MapPair<RE::FormID> _nullMap{};
 };
 
 template <class T>
@@ -72,20 +78,20 @@ void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, T
 	std::map<std::string, T*> processedSnowForms;
 	for (auto& baseForm : forms) {
 		const auto form = skyrim_cast<T*>(baseForm);
-		if (form && util::only_contains_textureset(form, "Snow"sv)) {
+		if (form && model::only_contains_textureset(form, "Snow"sv)) {
 			std::string path = form->GetModel();
 			if (path.empty()) {
 				continue;
 			}
-			processedSnowForms.emplace(util::process_model_path(path), form);
+			processedSnowForms.emplace(model::process_model_path(path), form);
 		}
 	}
 
 	for (auto& [path, snowForm] : processedSnowForms) {
 		for (auto& baseForm : forms) {
 			const auto form = skyrim_cast<T*>(baseForm);
-			if (form && string::icontains(form->model, path) && !util::contains_textureset(form, "Snow"sv) && !util::contains_textureset(form, "Frozen"sv)) {
-				if (std::ranges::any_of(blackList, [&](const auto str) { return string::icontains(form->model, str); })) {
+			if (form && string::icontains(form->model, path) && !model::contains_textureset(form, "Snow"sv) && !model::contains_textureset(form, "Frozen"sv)) {
+				if (std::ranges::any_of(blackList, [&](const auto& str) { return string::icontains(form->model, str); })) {
 					continue;
 				}
 				a_tempFormMap.emplace(form, snowForm);
@@ -98,16 +104,13 @@ template <class T>
 void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap)
 {
 	const auto dataHandler = RE::TESDataHandler::GetSingleton();
-	const auto EID = Cache::DataHolder::GetSingleton();
 
 	auto& formIDMap = get_map(a_type);
 
 	if constexpr (std::is_same_v<T, RE::TESLandTexture>) {
-		auto& landTextures = dataHandler->GetFormArray<RE::TESLandTexture>();
-
-		for (auto& landTexture : landTextures) {
-			if (const auto snowVariantLT = GenerateLandTextureSnowVariant(landTexture)) {
-				a_tempFormMap.emplace(landTexture, snowVariantLT);
+		for (auto& landLT : dataHandler->GetFormArray<RE::TESLandTexture>()) {
+			if (const auto snowLT = GenerateLandTextureSnowVariant(landLT)) {
+				a_tempFormMap.emplace(landLT, snowLT);
 			}
 		}
 	} else if constexpr (std::is_same_v<T, RE::TESObjectSTAT>) {
@@ -125,7 +128,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 					if (path.empty()) {
 						continue;
 					}
-					processedSnowStats.emplace(util::process_model_path(path), stat);
+					processedSnowStats.emplace(model::process_model_path(path), stat);
 				}
 			}
 		}
@@ -138,12 +141,12 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 
 		for (auto& stat : statics) {
 			const auto mat = stat->data.materialObj;
-			if (mat && util::is_snow_shader(mat) && util::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || util::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
+			if (mat && util::is_snow_shader(mat) && model::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || model::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
 				std::string path = stat->GetModel();
 				if (path.empty() || is_in_blacklist(stat, snowBlackList)) {
 					continue;
 				}
-				processedSnowStats.emplace(util::process_model_path(path), stat);
+				processedSnowStats.emplace(model::process_model_path(path), stat);
 			}
 		}
 
@@ -187,8 +190,8 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 		formIDMap.emplace(form->GetFormID(), swapForm->GetFormID());
 
 		//write values
-		auto formEID = EID->GetEditorID(form->GetFormID());
-		auto swapEID = EID->GetEditorID(swapForm->GetFormID());
+		auto formEID = util::get_editorID(form);
+		auto swapEID = util::get_editorID(swapForm);
 
 		std::string comment = fmt::format(";{}|{}", formEID, swapEID);
 		std::string value = fmt::format("0x{:X}~{}|0x{:X}~{}", form->GetLocalFormID(), form->GetFile(0)->fileName, swapForm->GetLocalFormID(), swapForm->GetFile(0)->fileName);

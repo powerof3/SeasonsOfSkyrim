@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Util.h"
-
 namespace Cache
 {
 	class DataHolder
@@ -19,7 +17,11 @@ namespace Cache
 
 		RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
 
-		bool IsSnowShader(const RE::TESForm* a_form) const;
+		[[nodiscard]] bool IsSnowShader(const RE::TESForm* a_form) const;
+
+        RE::TESBoundObject* GetOriginalBase(RE::TESObjectREFR* a_ref);
+
+		void SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase);
 
 	protected:
 		DataHolder() = default;
@@ -31,23 +33,17 @@ namespace Cache
 		DataHolder& operator=(DataHolder&&) = delete;
 
 	private:
-		Map::FormEditorID _formIDToEditorIDMap;
+		using EditorID = std::string;
+	    using Lock = std::mutex;
+		using Locker = std::scoped_lock<Lock>;
 
-	    Map::FormID _textureToLandMap;
+		Map<RE::FormID, EditorID> _formIDToEditorIDMap;
 
-		Set::FormID _snowShaders;
+		MapPair<RE::FormID> _textureToLandMap;
+
+		Set<RE::FormID> _snowShaders;
+
+		mutable Lock _originalsLock;
+		MapPair<RE::FormID> _originals;
 	};
-}
-
-namespace util
-{
-	inline std::string get_editorID(const RE::TESForm* a_form)
-	{
-		return Cache::DataHolder::GetSingleton()->GetEditorID(a_form->GetFormID());
-	}
-
-	inline bool is_snow_shader(const RE::BGSMaterialObject* a_matObj)
-	{
-		return Cache::DataHolder::GetSingleton()->IsSnowShader(a_matObj);
-	}
 }

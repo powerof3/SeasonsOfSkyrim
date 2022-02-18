@@ -1,12 +1,13 @@
 {
   "name": "seasons-of-skyrim",
-  "version-string": "1.3.0",
+  "version-string": "1.4.0",
   "description": "Seasons Of Skyrim",
   "homepage": "",
   "license": "MIT",
   "dependencies": [
     "boost-stl-interfaces",
     "nlohmann-json",
+    "frozen",
     "robin-hood-hashing",
     "rsm-binary-io",
     "simpleini",

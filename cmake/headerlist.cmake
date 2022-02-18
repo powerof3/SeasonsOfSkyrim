@@ -8,5 +8,6 @@ set(headers ${headers}
 	include/PCH.h
 	include/SeasonManager.h
 	include/Seasons.h
+	include/SnowSwap.h
 	include/Util.h
 )

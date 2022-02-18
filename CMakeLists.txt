@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 set(NAME "po3_SeasonsOfSkyrim")
-set(VERSION 1.3.0)
+set(VERSION 1.4.0)
 set(VR_VERSION 1)
 
 # ---- Options ----
@@ -141,6 +141,7 @@ source_group(
 		${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
 )
 
+find_package(frozen CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # ---- Create DLL ----
@@ -179,6 +180,7 @@ target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 		${CommonLibName}::${CommonLibName}
+		frozen::frozen
 )
 
 target_precompile_headers(

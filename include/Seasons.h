@@ -21,6 +21,13 @@ enum class SEASON_TYPE : std::uint32_t
 	kSeasonal
 };
 
+//type, suffix (Winter, WIN)
+struct SEASON_ID
+{
+	std::string type{};
+	std::string suffix{};
+};
+
 enum class LOD_TYPE : std::uint32_t
 {
 	kTerrain = 0,
@@ -31,29 +38,32 @@ enum class LOD_TYPE : std::uint32_t
 class Season
 {
 public:
-	explicit Season(SEASON a_season, std::pair<std::string, std::string> a_ID) :
+	explicit Season(SEASON a_season, SEASON_ID a_ID) :
 		season(a_season),
 		ID(std::move(a_ID))
 	{}
 
-	void LoadSettingsAndVerify(CSimpleIniA& a_ini, bool a_writeComment = false);
+	void LoadSettings(CSimpleIniA& a_ini, bool a_writeComment = false);
 
 	[[nodiscard]] bool CanApplySnowShader() const;
 	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType) const;
-    [[nodiscard]] bool CanSwapGrass() const;
 	[[nodiscard]] bool CanSwapLOD(LOD_TYPE a_type) const;
-    [[nodiscard]] bool CanSwapLandscape() const;
+	[[nodiscard]] bool CanSwapLandscape() const;
 
-	[[nodiscard]] const std::pair<std::string, std::string>& GetID() const;
+	[[nodiscard]] const SEASON_ID& GetID() const;
 	[[nodiscard]] SEASON GetType() const;
 
 	[[nodiscard]] FormSwapMap& GetFormSwapMap();
+	void LoadData(const CSimpleIniA& a_ini);
+	void SaveData(CSimpleIniA& a_ini);
+
+	[[nodiscard]] bool GetUseAltGrass() const;
 
 private:
 	SEASON season{};
-	std::pair<std::string, std::string> ID{};  //type, suffix (Winter, WIN)
+	SEASON_ID ID{};
 
-	std::vector<std::string> allowedWorldspaces{
+	std::vector<std::string> validWorldspaces{
 		"Tamriel",
 		"MarkarthWorld",
 		"RiftenWorld",
@@ -74,6 +84,7 @@ private:
 	bool swapTreeLOD{ true };
 
 	bool swapGrass{ true };
+	bool useAltGrass{ false };
 
 	FormSwapMap formMap{};
 
@@ -90,14 +101,16 @@ private:
 			return swapStatics;
 		case RE::FormType::Tree:
 			return swapTrees;
+		case RE::FormType::Grass:
+			return swapGrass;
 		default:
 			return false;
 		}
 	}
 
-    [[nodiscard]] bool is_in_valid_worldspace() const
+	[[nodiscard]] bool is_in_valid_worldspace() const
 	{
 		const auto worldSpace = RE::TES::GetSingleton()->worldSpace;
-		return worldSpace && std::ranges::find(allowedWorldspaces, worldSpace->GetFormEditorID()) != allowedWorldspaces.end();
+		return worldSpace && std::ranges::find(validWorldspaces, worldSpace->GetFormEditorID()) != validWorldspaces.end();
 	}
 };

@@ -1,39 +1,9 @@
 #include "FormSwapMap.h"
-#include "MergeMapper.h"
 
 FormSwapMap::FormSwapMap()
 {
 	for (auto& type : formTypes) {
-		_formMap.emplace(type, Map::FormID{});
-	}
-}
-
-void FormSwapMap::LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values)
-{
-	auto& map = get_map(a_type);
-	for (const auto& key : a_values) {
-		const auto formPair = string::split(key, "|");
-
-		constexpr auto get_form = [](const std::string& a_str) {
-			if (a_str.find('~') != std::string::npos) {
-				const auto formPair = string::split(a_str, "~");
-
-				const auto processedFormPair = MergeMapper::GetNewFormID(formPair[1], formPair[0]);
-
-				return RE::TESDataHandler::GetSingleton()->LookupFormID(processedFormPair.second, processedFormPair.first);
-			}
-			if (const auto form = RE::TESForm::LookupByEditorID(a_str); form) {
-				return form->GetFormID();
-			}
-			return static_cast<RE::FormID>(0);
-		};
-
-		auto formID = get_form(formPair[kBase]);
-		auto swapFormID = get_form(formPair[kSwap]);
-
-		if (swapFormID != 0 && formID != 0) {
-			map.insert_or_assign(formID, swapFormID);
-		}
+		_formMap.emplace(type, MapPair<RE::FormID>{});
 	}
 }
 
@@ -79,6 +49,21 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 	return RE::TESForm::LookupByID<RE::TESLandTexture>(formID);
 }
 
+void FormSwapMap::LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values)
+{
+	auto& map = get_map(a_type);
+	for (const auto& key : a_values) {
+		const auto formPair = string::split(key, "|");
+
+		auto formID = INI::parse_form(formPair[kBase]);
+		auto swapFormID = INI::parse_form(formPair[kSwap]);
+
+		if (swapFormID != 0 && formID != 0) {
+			map.insert_or_assign(formID, swapFormID);
+		}
+	}
+}
+
 void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 {
 	for (auto& type : formTypes) {
@@ -94,12 +79,12 @@ void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 }
 
 //only covers winter
-bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini)
+bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 {
 	bool save = false;
 
 	for (auto& type : formTypes) {
-		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty()) {
+		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty() || a_forceRegenerate) {
 			save = true;
 
 			if (type == "LandTextures") {

@@ -5,5 +5,6 @@ set(sources ${sources}
 	src/PCH.cpp
 	src/SeasonManager.cpp
 	src/Seasons.cpp
+	src/SnowSwap.cpp
 	src/main.cpp
 )

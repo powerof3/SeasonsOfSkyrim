@@ -13,28 +13,25 @@ SeasonManager::SeasonPtr SeasonManager::GetCurrentSeason()
 		return autumn;
 	case SEASON_TYPE::kSeasonal:
 		{
-			using MONTH = RE::Calendar::Month;
+			const auto calendar = RE::Calendar::GetSingleton();
+			const auto month = calendar ? calendar->GetMonth() : 7;
 
-			switch (const auto calendar = RE::Calendar::GetSingleton(); calendar ? calendar->GetMonth() : 7) {
-			case MONTH::kEveningStar:
-			case MONTH::kSunsDawn:
-			case MONTH::kMorningStar:
-				return winter;
-			case MONTH::kFirstSeed:
-			case MONTH::kRainsHand:
-			case MONTH::kSecondSeed:
-				return spring;
-			case MONTH::kMidyear:
-			case MONTH::kSunsHeight:
-			case MONTH::kLastSeed:
-				return summer;
-			case MONTH::kHearthfire:
-			case MONTH::kFrostfall:
-			case MONTH::kSunsDusk:
-				return autumn;
-			default:
-				return std::nullopt;
+			if (const auto it = monthToSeasons.find(static_cast<MONTH>(month)); it != monthToSeasons.end()) {
+				switch (it->second) {
+				case SEASON::kWinter:
+					return winter;
+				case SEASON::kSpring:
+					return spring;
+				case SEASON::kSummer:
+					return summer;
+				case SEASON::kAutumn:
+					return autumn;
+				default:
+					return std::nullopt;
+				}
 			}
+
+			return std::nullopt;
 		}
 	default:
 		return std::nullopt;
@@ -80,26 +77,72 @@ SeasonManager::SeasonPtr SeasonManager::GetSeason()
 	}
 }
 
+void SeasonManager::LoadMonthToSeasonMap(CSimpleIniA& a_ini)
+{
+	for (const auto& [month, monthName] : monthNames) {
+		auto& [tes, irl] = monthName;
+		INI::get_value(a_ini, monthToSeasons.at(month), "Settings", tes.data(),
+			month == MONTH::kMorningStar ? ";0 - no season\n;1 - winter\n;2 - spring\n;3 - summer\n;4 - autumn\n\n;January" : irl.data());
+	}
+}
+
 void SeasonManager::LoadSettings()
 {
-	constexpr auto path = L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini";
-
 	CSimpleIniA ini;
 	ini.SetUnicode();
 
-	ini.LoadFile(path);
+	ini.LoadFile(settings);
 
 	logger::info("{:*^30}", "SETTINGS");
 
+	//delete and recreate ini if new month-season settings are not found.
+	if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Settings", "Morning Star", "-1")); value == -1) {
+		ini.Delete("Settings", nullptr);
+		ini.Delete("Winter", nullptr);
+		ini.Delete("Spring", nullptr);
+		ini.Delete("Summer", nullptr);
+		ini.Delete("Autumn", nullptr);
+	}
+
 	INI::get_value(ini, seasonType, "Settings", "Season Type", ";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n;3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal");
-	logger::info("seasonal type is {}", stl::to_underlying(seasonType));
 
-	winter.LoadSettingsAndVerify(ini, true);
-	spring.LoadSettingsAndVerify(ini);
-	summer.LoadSettingsAndVerify(ini);
-	autumn.LoadSettingsAndVerify(ini);
+	logger::info("season type is {}", stl::to_underlying(seasonType));
 
-	(void)ini.SaveFile(path);
+	LoadMonthToSeasonMap(ini);
+
+	winter.LoadSettings(ini, true);
+	spring.LoadSettings(ini);
+	summer.LoadSettings(ini);
+	autumn.LoadSettings(ini);
+
+	(void)ini.SaveFile(settings);
+}
+
+bool SeasonManager::ShouldRegenerateWinterFormSwap() const
+{
+	CSimpleIniA ini;
+	ini.SetUnicode();
+
+	ini.LoadFile(serializedSeasonList);
+
+	const auto& mods = RE::TESDataHandler::GetSingleton()->compiledFileCollection;
+	const size_t actualModCount = mods.files.size() + mods.smallFiles.size();
+
+	const auto expectedModCount = string::lexical_cast<size_t>(ini.GetValue("Game", "Mod Count", "0"));
+
+	const auto shouldRegenerate = actualModCount != expectedModCount;
+
+	if (shouldRegenerate) {
+		ini.SetValue("Game", "Mod Count", std::to_string(actualModCount).c_str(), nullptr);
+		if (expectedModCount != 0) {
+			logger::info("Mod count has changed since last run ({} -> {}), regenerating main WIN formswap", expectedModCount, actualModCount);
+		} else {
+			logger::info("Regenerating main WIN formswap since last update");
+		}
+		(void)ini.SaveFile(serializedSeasonList);
+	}
+
+	return shouldRegenerate;
 }
 
 void SeasonManager::LoadOrGenerateWinterFormSwap()
@@ -115,12 +158,12 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 
 	ini.LoadFile(path);
 
-	if (winter.GetFormSwapMap().GenerateFormSwaps(ini)) {
+	if (winter.GetFormSwapMap().GenerateFormSwaps(ini, ShouldRegenerateWinterFormSwap())) {
 		(void)ini.SaveFile(path);
 	}
 }
 
-void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
+void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 {
 	std::vector<std::string> configs;
 
@@ -128,7 +171,7 @@ void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
 
 	for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 		if (entry.exists() && !entry.path().empty() && entry.path().extension() == ".ini"sv) {
-			if (const auto path = entry.path().string(); path.rfind(suffix) != std::string::npos && path.find("MainFormSwap") == std::string::npos) {
+			if (const auto path = entry.path().string(); path.contains(suffix) && !path.contains("MainFormSwap"sv)) {
 				configs.push_back(path);
 			}
 		}
@@ -154,16 +197,26 @@ void SeasonManager::LoadFormSwaps_Impl(Season& a_season)
 			continue;
 		}
 
-		a_season.GetFormSwapMap().LoadFormSwaps(ini);
+		a_season.LoadData(ini);
 	}
+
+	//save worldspaces to settings so DynDOLOD can read them
+	a_season.SaveData(a_settings);
 }
 
-void SeasonManager::LoadFormSwaps()
+void SeasonManager::LoadSeasonData()
 {
-	LoadFormSwaps_Impl(winter);
-	LoadFormSwaps_Impl(spring);
-	LoadFormSwaps_Impl(summer);
-	LoadFormSwaps_Impl(autumn);
+	CSimpleIniA settingsINI;
+	settingsINI.SetUnicode();
+
+	settingsINI.LoadFile(settings);
+
+	LoadSeasonData(winter, settingsINI);
+	LoadSeasonData(spring, settingsINI);
+	LoadSeasonData(summer, settingsINI);
+	LoadSeasonData(autumn, settingsINI);
+
+	(void)settingsINI.SaveFile(settings);
 }
 
 void SeasonManager::SaveSeason(std::string_view a_savePath)
@@ -274,16 +327,10 @@ bool SeasonManager::CanApplySnowShader()
 	return season ? season->get().CanApplySnowShader() : false;
 }
 
-bool SeasonManager::CanSwapGrass()
-{
-	const auto season = GetSeason();
-	return season ? season->get().CanSwapGrass() : false;
-}
-
 std::pair<bool, std::string> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
 {
 	const auto season = GetSeason();
-	return season ? std::make_pair(season->get().CanSwapLOD(a_type), season->get().GetID().second) : std::make_pair(false, "");
+	return season ? std::make_pair(season->get().CanSwapLOD(a_type), season->get().GetID().suffix) : std::make_pair(false, "");
 }
 
 bool SeasonManager::CanSwapLandscape()
@@ -314,6 +361,12 @@ RE::TESLandTexture* SeasonManager::GetSwapLandTextureFromTextureSet(const RE::BG
 {
 	const auto season = GetSeason();
 	return season ? season->get().GetFormSwapMap().GetSwapLandTextureFromTextureSet(a_txst) : nullptr;
+}
+
+bool SeasonManager::GetUseAltGrass()
+{
+	const auto season = GetSeason();
+	return season ? season->get().GetUseAltGrass() : false;
 }
 
 bool SeasonManager::GetExterior()
