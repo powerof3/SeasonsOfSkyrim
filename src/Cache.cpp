@@ -38,6 +38,12 @@ namespace Cache
 				}
 			}
 		}
+		if (const auto sosShaderSP = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SOS_WIN_SnowMaterialObjectSP")) {
+			const auto& spColor = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P")->directionalData.singlePassColor;
+			if (spColor.red != 0.0f && spColor.green != 0.0f && spColor.blue != 0.0f) {
+				sosShaderSP->directionalData.singlePassColor = spColor;
+			}
+		}
 	}
 
 	std::string DataHolder::GetEditorID(RE::FormID a_formID)
