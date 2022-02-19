@@ -125,9 +125,16 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 
 	ini.LoadFile(serializedSeasonList);
 
+#ifndef SKYRIMVR
 	const auto& mods = RE::TESDataHandler::GetSingleton()->compiledFileCollection;
 	const size_t actualModCount = mods.files.size() + mods.smallFiles.size();
-
+#else
+	auto& mods = RE::TESDataHandler::GetSingleton()->files;
+	size_t actualModCount = 0;
+	for (const auto mod : mods) 
+		if (mod)
+			actualModCount++;
+#endif
 	const auto expectedModCount = string::lexical_cast<size_t>(ini.GetValue("Game", "Mod Count", "0"));
 
 	const auto shouldRegenerate = actualModCount != expectedModCount;
