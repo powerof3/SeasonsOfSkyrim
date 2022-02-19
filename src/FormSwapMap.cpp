@@ -68,7 +68,7 @@ void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 {
 	for (auto& type : formTypes) {
 		if (const auto values = a_ini.GetSection(type.c_str()); values && !values->empty()) {
-			logger::info("	[{}] read {} variants", type, values ? values->size() : -1);
+			logger::info("		[{}] read {} variants", type, values ? values->size() : -1);
 
 			std::vector<std::string> vec;
 			std::ranges::transform(*values, std::back_inserter(vec), [&](const auto& val) { return val.first.pItem; });
