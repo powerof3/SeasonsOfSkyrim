@@ -277,7 +277,11 @@ void SeasonManager::CleanupSerializedSeasonList() const
 		}
 
 		std::filesystem::path path = knownPath.get();
+#ifndef SKYRIMVR
 		path /= "My Games/Skyrim Special Edition/"sv;
+#else
+		path /= "My Games/Skyrim VR/"sv;
+#endif
 		path /= RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString();
 		return path;
 	};
