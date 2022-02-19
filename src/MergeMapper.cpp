@@ -8,7 +8,7 @@ namespace MergeMapper
 		logger::info("Searching for merges within the Data folder");
 		auto constexpr folder = R"(Data\)";
 		json json_data;
-		auto total = 0;
+		size_t total = 0;
 		for (const auto& entry : std::filesystem::directory_iterator(folder)) {
 			// zMerge folders have name "merge - 018auri"
 			auto constexpr mergePrefix = R"(Data\merge - )";
@@ -27,7 +27,7 @@ namespace MergeMapper
 				if (!json_data.empty()) {
 					for (auto& [esp, idmap] : json_data.items()) {
 						auto espkey = esp;
-						std::transform(espkey.begin(), espkey.end(), espkey.begin(), ::tolower);
+						std::transform(espkey.begin(), espkey.end(), espkey.begin(), [](auto ch) { return static_cast<char>(std::tolower(ch)); });
 						if (idmap.size()) {
 							logger::info(" Found {} maps to {} with {} mappings", esp, merged, idmap.size());
 							total += idmap.size();
@@ -38,9 +38,9 @@ namespace MergeMapper
 						if (!idmap.empty()) {
 							for (auto& [key, value] : idmap.items()) {
 								auto storedKey = std::to_string(std::stoi(key, 0, 16));
-								std::transform(storedKey.begin(), storedKey.end(), storedKey.begin(), ::tolower);
+								std::transform(storedKey.begin(), storedKey.end(), storedKey.begin(), [](auto ch) { return static_cast<char>(std::tolower(ch)); });
 								auto storedValue = std::to_string(std::stoi(value.get<std::string>(), 0, 16));
-								std::transform(storedValue.begin(), storedValue.end(), storedValue.begin(), ::tolower);
+								std::transform(storedValue.begin(), storedValue.end(), storedValue.begin(), [](auto ch) { return static_cast<char>(std::tolower(ch)); });
 								mergeMap[espkey]["map"][storedKey] = storedValue;
 							}
 						}
@@ -60,14 +60,14 @@ namespace MergeMapper
 	{
 		auto modName = oldName;
 		auto espkey = oldName;
-		std::transform(espkey.begin(), espkey.end(), espkey.begin(), ::tolower);
+		std::transform(espkey.begin(), espkey.end(), espkey.begin(), [](auto ch) { return static_cast<char>(std::tolower(ch)); });
 		RE::FormID formID = std::stoi(oldFormID, 0, 16);
 		//check for merged esps
 		if (mergeMap.contains(espkey)) {
 			modName = mergeMap[espkey]["name"];
 			auto storedKey = std::to_string(formID);
 			if (!mergeMap[espkey]["map"].empty()) {
-				std::transform(storedKey.begin(), storedKey.end(), storedKey.begin(), ::tolower);
+				std::transform(storedKey.begin(), storedKey.end(), storedKey.begin(), [](auto ch) { return static_cast<char>(std::tolower(ch)); });
 				if (mergeMap[espkey]["map"].contains(storedKey)) {
 					formID = std::stoi(mergeMap[espkey]["map"][storedKey].get<std::string>());
 				}
