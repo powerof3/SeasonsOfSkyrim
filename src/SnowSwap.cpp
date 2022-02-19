@@ -74,39 +74,41 @@ namespace SnowSwap
 		return true;
 	}
 
-	bool Manager::CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const
+	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const
 	{
-		if (!SeasonManager::GetSingleton()->CanApplySnowShader() || !a_ref || a_ref->IsDeleted()) {
-			return false;
+		if (!SeasonManager::GetSingleton()->CanApplySnowShader()) {
+			return SWAP_RESULT::kSeasonFail;
+		}
+
+	    if (!a_ref || a_ref->IsDeleted() || a_ref->IsInWater()) {
+			return SWAP_RESULT::kRefFail;
 		}
 
 		const auto base = util::get_original_base(a_ref); 
 
 		if (base != a_static || a_static->IsMarker() || a_static->IsHeadingMarker() || GetInSnowShaderBlacklist(a_static)) {
-			return false;
+			return SWAP_RESULT::kBaseFail;
 		}
 
 	    if (const auto matObject = a_static->data.materialObj; matObject && (util::is_snow_shader(matObject) || util::get_editorID(matObject).contains("Ice"sv))) {
-			return false;
+			return SWAP_RESULT::kBaseFail;
 		}
 
 		if (a_static->IsSnowObject() || a_static->IsSkyObject() || a_static->HasTreeLOD()) {
-			return false;
+			return SWAP_RESULT::kBaseFail;
 		}
 
-		if (a_ref->IsInWater()) {
-			return false;
-		}
-
-		return true;
+		return SWAP_RESULT::kSuccess;
 	}
 
 	SNOW_TYPE Manager::GetSnowType(RE::NiAVObject* a_node)
 	{
-		bool hasShape = false; //has trishapes (crash)
-		bool hasInvalidShape = false; //has non-zero vertices (crash)
+		using Flag = RE::BSShaderProperty::EShaderPropertyFlag;
 
-	    bool hasLightingShaderProp = true;  //has lighting prop/not skinned (crash)
+	    bool hasShape = false; //no trishapes (crash)
+		bool hasInvalidShape = false; //zero vertices/no fade node (crash)
+
+	    bool hasLightingShaderProp = true;  //no lighting prop/not skinned (crash)
 		bool hasAlphaProp = false;          //no alpha prop (broken)
 
 		RE::BSVisit::TraverseScenegraphGeometries(a_node, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
@@ -117,9 +119,26 @@ namespace SnowSwap
 				return RE::BSVisit::BSVisitControl::kStop;
 		    }
 
+			bool hasFadeNode = false;
+
+		    if (auto parent = a_geometry->parent; parent) {
+				while (parent) {
+				    if (parent->AsFadeNode()) {
+						hasFadeNode = true;
+						break;
+					}
+				    parent = parent->parent;
+				}
+			}
+
+			if (!hasFadeNode) {
+				hasInvalidShape = true;
+				return RE::BSVisit::BSVisitControl::kStop;
+			}
+
 		    const auto effect = a_geometry->properties[RE::BSGeometry::States::kEffect];
 			const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get());
-			if (!lightingShader || lightingShader->flags.any(RE::BSShaderProperty::EShaderPropertyFlag::kSkinned)) {
+			if (!lightingShader || lightingShader->flags.any(Flag::kSkinned)) {
 				hasLightingShaderProp = false;
 				return RE::BSVisit::BSVisitControl::kStop;
 			}
@@ -149,14 +168,11 @@ namespace SnowSwap
 
 		auto& [init, projectedParams, projectedColor] = _defaultObj;
 		if (!init) {
-			const auto snowMat = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P");
+			const auto snowMat = GetSinglePassSnowShader();
 
 			projectedColor = snowMat->directionalData.singlePassColor;
-			if (projectedColor.red == 0.0f && projectedColor.green == 0.0f && projectedColor.blue == 0.0f) {  //if using MP shader with black single pass color, use vanilla default values
-				projectedColor = { 0.4196f, 0.4549f, 0.4941f };
-			}
 
-			projectedParams = RE::NiColorA{
+		    projectedParams = RE::NiColorA{
 				snowMat->directionalData.falloffScale,
 				snowMat->directionalData.falloffBias,
 				1.0f / snowMat->directionalData.noiseUVScale,

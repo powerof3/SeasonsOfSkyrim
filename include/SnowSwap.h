@@ -8,6 +8,14 @@ namespace SnowSwap
 		kMultiPass
 	};
 
+	enum class SWAP_RESULT
+	{
+		kSeasonFail,
+		kRefFail,
+		kBaseFail,
+		kSuccess
+	};
+
 	class Manager
 	{
 	public:
@@ -32,19 +40,19 @@ namespace SnowSwap
 
 		void LoadSnowShaderBlacklist();
 
-		bool CanApplySnowShader(RE::TESObjectREFR* a_ref) const;
-		bool CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const;
+		[[nodiscard]] bool CanApplySnowShader(RE::TESObjectREFR* a_ref) const;
+		[[nodiscard]] SWAP_RESULT CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const;
 
-		static SNOW_TYPE GetSnowType(RE::NiAVObject* a_node);
+		[[nodiscard]] static SNOW_TYPE GetSnowType(RE::NiAVObject* a_node);
 
 		void ApplySinglePassSnow(RE::NiAVObject* a_node);
 		void ApplySnowMaterialPatch(RE::NiAVObject* a_node);
 
-		std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
+		[[nodiscard]] std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
 		void SetSnowInfo(const RE::TESObjectSTAT* a_static, RE::BGSMaterialObject* a_originalMat, SNOW_TYPE a_snowType);
 
-		RE::BGSMaterialObject* GetMultiPassSnowShader();
-		RE::BGSMaterialObject* GetSinglePassSnowShader();
+		[[nodiscard]] RE::BGSMaterialObject* GetMultiPassSnowShader();
+		[[nodiscard]] RE::BGSMaterialObject* GetSinglePassSnowShader();
 
 	protected:
 		Manager() = default;
@@ -72,7 +80,7 @@ namespace SnowSwap
 		RE::BGSMaterialObject* _multiPassSnowShader{ nullptr };
 		RE::BGSMaterialObject* _singlePassSnowShader{ nullptr };
 
-		Set<std::string> _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD" };
+		Set<std::string> _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD", "Marker" };
 	};
 
 	namespace Statics
@@ -82,9 +90,11 @@ namespace SnowSwap
 			static RE::NiAVObject* thunk(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref, bool a_arg3)
 			{
 				const auto manager = Manager::GetSingleton();
-				auto snowInfo = manager->GetSnowInfo(a_static);
 
-				if (manager->CanApplySnowShader(a_static, a_ref)) {
+				auto snowInfo = manager->GetSnowInfo(a_static);
+				const auto result = manager->CanApplySnowShader(a_static, a_ref);
+
+				if (result == SWAP_RESULT::kSuccess) {
 					if (snowInfo) {
 						auto& [origShader, snowType] = *snowInfo;
 						if (snowType == SNOW_TYPE::kSinglePass) {
@@ -106,9 +116,11 @@ namespace SnowSwap
 							tempNode = nullptr;
 						}
 					}
-				} else if (snowInfo) {
+				} else if ((result == SWAP_RESULT::kSeasonFail || result == SWAP_RESULT::kRefFail) && snowInfo) {
 					auto& [origShaderID, snowType] = *snowInfo;
-					a_static->data.materialObj = RE::TESForm::LookupByID<RE::BGSMaterialObject>(origShaderID);
+					a_static->data.materialObj = origShaderID != 0 ?
+					                                 RE::TESForm::LookupByID<RE::BGSMaterialObject>(origShaderID) :
+                                                     nullptr;
 				}
 
 				return func(a_static, a_ref, a_arg3);
