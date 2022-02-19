@@ -55,7 +55,7 @@ bool SeasonManager::UpdateSeason()
 
 SeasonManager::SeasonPtr SeasonManager::GetSeason()
 {
-	if (!isExterior) {
+	if (!GetExterior()) {
 		return std::nullopt;
 	}
 
