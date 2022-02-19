@@ -203,4 +203,12 @@ namespace SnowSwap
 		}
 		return _multiPassSnowShader;
 	}
+
+	RE::BGSMaterialObject* Manager::GetSinglePassSnowShader()
+	{
+		if (!_singlePassSnowShader) {
+			_singlePassSnowShader = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SOS_WIN_SnowMaterialObjectSP");
+		}
+		return _singlePassSnowShader;
+	}
 }

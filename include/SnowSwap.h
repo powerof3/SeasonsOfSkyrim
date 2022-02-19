@@ -36,14 +36,15 @@ namespace SnowSwap
 		bool CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const;
 
 		static SNOW_TYPE GetSnowType(RE::NiAVObject* a_node);
-		void ApplySinglePassSnow(RE::NiAVObject* a_node);
 
-		static void ApplySnowMaterialPatch(RE::NiAVObject* a_node);
+	    void ApplySinglePassSnow(RE::NiAVObject* a_node);
+        void ApplySnowMaterialPatch(RE::NiAVObject* a_node);
 
-		std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
+        std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
 		void SetSnowInfo(const RE::TESObjectSTAT* a_static, RE::BGSMaterialObject* a_originalMat, SNOW_TYPE a_snowType);
 
 		RE::BGSMaterialObject* GetMultiPassSnowShader();
+		RE::BGSMaterialObject* GetSinglePassSnowShader();
 
 	protected:
 		Manager() = default;
@@ -69,6 +70,7 @@ namespace SnowSwap
 		ProjectedUV _defaultObj{};
 
 		RE::BGSMaterialObject* _multiPassSnowShader{ nullptr };
+		RE::BGSMaterialObject* _singlePassSnowShader{ nullptr };
 
 		Set<std::string> _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD" };
 	};
@@ -79,8 +81,6 @@ namespace SnowSwap
 		{
 			static RE::NiAVObject* thunk(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref, bool a_arg3)
 			{
-				bool applyMultiPassShader = false;
-
 				const auto manager = Manager::GetSingleton();
 				auto snowInfo = manager->GetSnowInfo(a_static);
 
@@ -88,33 +88,22 @@ namespace SnowSwap
 					if (snowInfo) {
 						auto& [origShader, snowType] = *snowInfo;
 						if (snowType == SNOW_TYPE::kSinglePass) {
-							const auto node = func(a_static, a_ref, a_arg3);
-
-							manager->ApplySinglePassSnow(node);
-
-							return node;
+							a_static->data.materialObj = manager->GetSinglePassSnowShader();
 						} else {
-							applyMultiPassShader = true;
-
 							a_static->data.materialObj = manager->GetMultiPassSnowShader();
 						}
 					} else {
 						if (auto tempNode = func(a_static, a_ref, a_arg3); tempNode) {
 							const auto snowType = Manager::GetSnowType(tempNode);
-
 							manager->SetSnowInfo(a_static, a_static->data.materialObj, snowType);
 
 							if (snowType == SNOW_TYPE::kMultiPass) {
-								applyMultiPassShader = true;
-
 								a_static->data.materialObj = manager->GetMultiPassSnowShader();
-
-								tempNode->DeleteThis();  //refCount is zero, nothing else should touch this.
-								tempNode = nullptr;
 							} else {
-								manager->ApplySinglePassSnow(tempNode);
-								return tempNode;
+								a_static->data.materialObj = manager->GetSinglePassSnowShader();
 							}
+							tempNode->DeleteThis();  //refCount is zero, nothing else should touch this.
+							tempNode = nullptr;
 						}
 					}
 				} else if (snowInfo) {
@@ -123,11 +112,7 @@ namespace SnowSwap
 					}
 				}
 
-				const auto node = func(a_static, a_ref, a_arg3);
-				if (applyMultiPassShader) {
-					Manager::ApplySnowMaterialPatch(node);
-				}
-				return node;
+				return func(a_static, a_ref, true);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
