@@ -37,10 +37,10 @@ namespace SnowSwap
 
 		static SNOW_TYPE GetSnowType(RE::NiAVObject* a_node);
 
-	    void ApplySinglePassSnow(RE::NiAVObject* a_node);
-        void ApplySnowMaterialPatch(RE::NiAVObject* a_node);
+		void ApplySinglePassSnow(RE::NiAVObject* a_node);
+		void ApplySnowMaterialPatch(RE::NiAVObject* a_node);
 
-        std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
+		std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
 		void SetSnowInfo(const RE::TESObjectSTAT* a_static, RE::BGSMaterialObject* a_originalMat, SNOW_TYPE a_snowType);
 
 		RE::BGSMaterialObject* GetMultiPassSnowShader();
@@ -97,22 +97,21 @@ namespace SnowSwap
 							const auto snowType = Manager::GetSnowType(tempNode);
 							manager->SetSnowInfo(a_static, a_static->data.materialObj, snowType);
 
-							if (snowType == SNOW_TYPE::kMultiPass) {
-								a_static->data.materialObj = manager->GetMultiPassSnowShader();
-							} else {
+							if (snowType == SNOW_TYPE::kSinglePass) {
 								a_static->data.materialObj = manager->GetSinglePassSnowShader();
+							} else {
+								a_static->data.materialObj = manager->GetMultiPassSnowShader();
 							}
 							tempNode->DeleteThis();  //refCount is zero, nothing else should touch this.
 							tempNode = nullptr;
 						}
 					}
 				} else if (snowInfo) {
-					if (auto& [origShader, snowType] = *snowInfo; origShader != 0) {
-						a_static->data.materialObj = RE::TESForm::LookupByID<RE::BGSMaterialObject>(origShader);
-					}
+					auto& [origShaderID, snowType] = *snowInfo;
+					a_static->data.materialObj = RE::TESForm::LookupByID<RE::BGSMaterialObject>(origShaderID);
 				}
 
-				return func(a_static, a_ref, true);
+				return func(a_static, a_ref, a_arg3);
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
