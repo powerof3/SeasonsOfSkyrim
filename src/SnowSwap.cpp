@@ -16,7 +16,7 @@ namespace SnowSwap
 		}
 
 		if (configs.empty()) {
-			logger::warn("No .ini files with _{} suffix were found in the Data/Seasons folder. Snow Shader blacklist is not loaded");
+			logger::info("No .ini files with _{} suffix were found in the Data/Seasons folder. Snow Shader blacklist is not loaded", "NOSNOW");
 			return;
 		}
 

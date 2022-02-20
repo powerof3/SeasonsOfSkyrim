@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 set(NAME "po3_SeasonsOfSkyrim")
-set(VERSION 1.4.3)
+set(VERSION 1.5.0)
 set(VR_VERSION 1)
 
 # ---- Options ----
