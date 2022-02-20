@@ -70,6 +70,8 @@ namespace SnowSwap
 
 		bool GetInSnowShaderBlacklist(const RE::TESForm* a_form) const;
 
+	    bool IsBaseBlacklisted(const RE::TESForm* a_form) const;
+
 		Set<RE::FormID> _snowShaderBlacklist{};
 
 		mutable Lock _snowInfoLock;
