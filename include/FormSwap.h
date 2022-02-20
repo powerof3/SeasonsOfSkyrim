@@ -6,12 +6,17 @@ namespace FormSwap
 {
 	struct detail
 	{
+		static bool should_reject_winter_swap(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
+		{
+			return SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater() && a_base->IsNot(RE::FormType::Tree);
+		}
+
 		static std::pair<RE::TESBoundObject*, bool> get_form_swap(RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
 		{
 			const auto seasonManager = SeasonManager::GetSingleton();
 
 			if (const auto origBase = seasonManager->CanSwapForm(a_base->GetFormType()) ? util::get_original_base(a_ref) : nullptr; origBase) {
-				return { seasonManager->GetSwapForm(origBase), seasonManager->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater() };
+				return { seasonManager->GetSwapForm(origBase), should_reject_winter_swap(a_ref, origBase) };
 			}
 
 			return { nullptr, true };
@@ -31,10 +36,8 @@ namespace FormSwap
 					if (!rejected) {
 						a_ref->SetObjectReference(replaceBase);
 					}
-				} else {
-					if (const auto origBase = util::get_original_base(a_ref); origBase && origBase != base) {
-						a_ref->SetObjectReference(origBase);
-					}
+				} else if (const auto origBase = util::get_original_base(a_ref); origBase && origBase != base) {
+					a_ref->SetObjectReference(origBase);
 				}
 			}
 
