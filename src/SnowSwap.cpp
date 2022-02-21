@@ -60,23 +60,23 @@ namespace SnowSwap
 		return model.empty() || std::ranges::any_of(_snowShaderModelBlackList, [&](const auto& str) { return string::icontains(model, str); });
 	}
 
-	bool Manager::CanApplySnowShader(RE::TESObjectREFR* a_ref) const
+	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectREFR* a_ref) const
 	{
 		if (!SeasonManager::GetSingleton()->CanApplySnowShader()) {
-			return false;
+			return SWAP_RESULT::kSeasonFail;
 		}
 
 		if (!a_ref || a_ref->IsDeleted() || a_ref->IsInWater() || !a_ref->IsDynamicForm() && GetInSnowShaderBlacklist(a_ref)) {
-			return false;
+			return SWAP_RESULT::kRefFail;
 		}
 
 		const auto base = util::get_original_base(a_ref);
 
 		if (base != a_ref->GetBaseObject() || base->IsNot(RE::FormType::MovableStatic, RE::FormType::Container) || base->IsMarker() || base->IsHeadingMarker() || GetInSnowShaderBlacklist(base)) {
-			return false;
+			return SWAP_RESULT::kBaseFail;
 		}
 
-		return true;
+		return SWAP_RESULT::kSuccess;
 	}
 
 	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const
@@ -160,12 +160,12 @@ namespace SnowSwap
 
 		if (hasShape && !hasInvalidShape && hasLightingShaderProp && !hasAlphaProp) {
 			return SNOW_TYPE::kMultiPass;
-		} 
+		}
 
 		return SNOW_TYPE::kSinglePass;
 	}
 
-	void Manager::ApplySinglePassSnow(RE::NiAVObject* a_node)
+	void Manager::ApplySinglePassSnow(RE::NiAVObject* a_node, float a_angle = 90.0f)
 	{
 		if (!a_node) {
 			return;
@@ -188,15 +188,33 @@ namespace SnowSwap
 		}
 
 		if (a_node->SetProjectedUVData(projectedParams, projectedColor, true)) {
-			ApplySnowMaterialPatch(a_node);
+			if (const auto snowShaderData = RE::NiBooleanExtraData::Create("SOS_SNOW_SHADER", true)) {
+				a_node->AddExtraData(snowShaderData);
+			}
 		}
 	}
 
-	void Manager::ApplySnowMaterialPatch(RE::NiAVObject* a_node)
+	void Manager::RemoveSinglePassSnow(RE::NiAVObject* a_node)
 	{
-		if (const auto snowShaderData = RE::NiBooleanExtraData::Create("SOS_SNOW_SHADER", true)) {
-			a_node->AddExtraData(snowShaderData);
+		if (!a_node) {
+			return;
 		}
+
+		using Flag8 = RE::BSShaderProperty::EShaderPropertyFlag8;
+
+		RE::BSVisit::TraverseScenegraphGeometries(a_node, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
+
+			const auto effect = a_geometry->properties[RE::BSGeometry::States::kEffect];
+			const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get());
+			if (lightingShader) {
+				lightingShader->SetFlags(Flag8::kProjectedUV, false);
+				lightingShader->SetFlags(Flag8::kSnow, false);
+			}
+
+			return RE::BSVisit::BSVisitControl::kContinue;
+		});
+
+		a_node->RemoveExtraData("SOS_SNOW_SHADER");
 	}
 
 	std::optional<Manager::SnowInfo> Manager::GetSnowInfo(const RE::TESObjectSTAT* a_static)
