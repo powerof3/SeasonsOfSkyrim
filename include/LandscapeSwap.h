@@ -103,7 +103,7 @@ namespace LandscapeSwap
 		{
 			if (SeasonManager::GetSingleton()->GetUseAltGrass()) {
 				logger::info("Using alternate grass generation");
-			    Alt::Install();
+				Alt::Install();
 			} else {
 				logger::info("Using standard grass generation");
 				Standard::Install();

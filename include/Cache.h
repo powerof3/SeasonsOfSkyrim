@@ -19,7 +19,7 @@ namespace Cache
 
 		[[nodiscard]] bool IsSnowShader(const RE::TESForm* a_form) const;
 
-        RE::TESBoundObject* GetOriginalBase(RE::TESObjectREFR* a_ref);
+		RE::TESBoundObject* GetOriginalBase(RE::TESObjectREFR* a_ref);
 
 		void SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase);
 
@@ -34,7 +34,7 @@ namespace Cache
 
 	private:
 		using EditorID = std::string;
-	    using Lock = std::mutex;
+		using Lock = std::mutex;
 		using Locker = std::scoped_lock<Lock>;
 
 		Map<RE::FormID, EditorID> _formIDToEditorIDMap;

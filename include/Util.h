@@ -15,7 +15,7 @@ namespace util
 
 	inline void set_original_base(RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_originalBase)
 	{
-	    Cache::DataHolder::GetSingleton()->SetOriginalBase(a_ref, a_originalBase);
+		Cache::DataHolder::GetSingleton()->SetOriginalBase(a_ref, a_originalBase);
 	}
 
 	inline bool is_snow_shader(const RE::BGSMaterialObject* a_shader)

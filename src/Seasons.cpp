@@ -13,6 +13,8 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 	INI::get_value(a_ini, swapMovableStatics, seasonType.c_str(), "Movable Statics", nullptr);
 	INI::get_value(a_ini, swapStatics, seasonType.c_str(), "Statics", nullptr);
 	INI::get_value(a_ini, swapTrees, seasonType.c_str(), "Trees", nullptr);
+	INI::get_value(a_ini, swapFlora, seasonType.c_str(), "Flora", nullptr);
+	INI::get_value(a_ini, swapVFX, seasonType.c_str(), "Visual Effects", nullptr);
 
 	INI::get_value(a_ini, swapObjectLOD, seasonType.c_str(), "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n;See https://dyndolod.info/Help/Seasons for more info" : ";");
 	INI::get_value(a_ini, swapTerrainLOD, seasonType.c_str(), "Terrain LOD", nullptr);
@@ -117,7 +119,7 @@ void Season::SaveData(CSimpleIniA& a_ini)
 	std::ranges::sort(validWorldspaces);
 	validWorldspaces.erase(std::ranges::unique(validWorldspaces).begin(), validWorldspaces.end());
 
-    INI::set_value(a_ini, validWorldspaces, ID.type.c_str(), "Worldspaces", ";Valid worldspaces");
+	INI::set_value(a_ini, validWorldspaces, ID.type.c_str(), "Worldspaces", ";Valid worldspaces");
 }
 
 bool Season::GetUseAltGrass() const

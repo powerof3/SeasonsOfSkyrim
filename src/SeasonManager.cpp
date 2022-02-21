@@ -131,14 +131,14 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 #else
 	auto& mods = RE::TESDataHandler::GetSingleton()->files;
 	size_t actualModCount = 0;
-	for (const auto mod : mods) 
+	for (const auto mod : mods)
 		if (mod)
 			actualModCount++;
 #endif
 	//1.6.0 - delete old serialized value to force regeneration
-    ini.DeleteValue("Game", "Mod Count", nullptr);
+	ini.DeleteValue("Game", "Mod Count", nullptr);
 
-    const auto expectedModCount = string::lexical_cast<size_t>(ini.GetValue("Game", "Total Mod Count", "0"));
+	const auto expectedModCount = string::lexical_cast<size_t>(ini.GetValue("Game", "Total Mod Count", "0"));
 
 	const auto shouldRegenerate = actualModCount != expectedModCount;
 

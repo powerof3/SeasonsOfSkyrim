@@ -85,7 +85,7 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 
 	for (auto& type : recordTypes) {
 		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty() || a_forceRegenerate) {
-		    save = true;
+			save = true;
 
 			if (a_forceRegenerate) {
 				a_ini.Delete(type.c_str(), nullptr, true);

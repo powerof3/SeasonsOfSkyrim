@@ -3,8 +3,8 @@
 #include "LandscapeSwap.h"
 #include "MergeMapper.h"
 #include "Papyrus.h"
-#include "SnowSwap.h"
 #include "SeasonManager.h"
+#include "SnowSwap.h"
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
@@ -35,7 +35,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 				std::filesystem::create_directory(seasonsPath);
 			}
 
-		    SnowSwap::Manager::GetSingleton()->LoadSnowShaderSettings();
+			SnowSwap::Manager::GetSingleton()->LoadSnowShaderSettings();
 
 			const auto manager = SeasonManager::GetSingleton();
 			manager->LoadOrGenerateWinterFormSwap();

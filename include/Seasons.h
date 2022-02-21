@@ -78,6 +78,8 @@ private:
 	bool swapMovableStatics{ true };
 	bool swapStatics{ true };
 	bool swapTrees{ true };
+	bool swapFlora{ true };
+	bool swapVFX{ true };
 
 	bool swapObjectLOD{ true };
 	bool swapTerrainLOD{ true };
@@ -103,6 +105,10 @@ private:
 			return swapTrees;
 		case RE::FormType::Grass:
 			return swapGrass;
+		case RE::FormType::Flora:
+			return swapFlora;
+		case RE::FormType::ReferenceEffect:
+			return swapVFX;
 		default:
 			return false;
 		}
