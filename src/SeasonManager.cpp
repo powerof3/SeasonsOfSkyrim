@@ -95,15 +95,15 @@ void SeasonManager::LoadSettings()
 
 	logger::info("{:*^30}", "SETTINGS");
 
-	//delete and recreate settings if new month-season settings are not found.
-	if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Settings", "Morning Star", "-1")); value == -1) {
-		ini.Delete("Settings", nullptr);
-	}
+	//delete and recreate settings if new settings are not found.
+	const auto month = ini.GetLongValue("Settings", "Morning Star", -1);
+	const std::string flora = ini.GetValue("Winter", "Flora", "-1");
 
-	//delete and recreate ini if new form swap settings are not found.
-	if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Winter", "Flora", "-1")); value == -1) {
+	if (month == -1 || flora == "-1") {
 		ini.Delete("Settings", nullptr);
-	    ini.Delete("Winter", nullptr);
+
+		ini.Delete("Settings", nullptr);
+		ini.Delete("Winter", nullptr);
 		ini.Delete("Spring", nullptr);
 		ini.Delete("Summer", nullptr);
 		ini.Delete("Autumn", nullptr);
