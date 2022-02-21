@@ -1,6 +1,7 @@
 #include "FormSwap.h"
 #include "LODSwap.h"
 #include "LandscapeSwap.h"
+#include "Papyrus.h"
 #include "SnowSwap.h"
 #include "SeasonManager.h"
 
@@ -109,6 +110,9 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);
+
+	const auto papyrus = SKSE::GetPapyrusInterface();
+	papyrus->Register(Papyrus::Bind);
 
 	return true;
 }
