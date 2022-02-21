@@ -160,7 +160,7 @@ namespace SnowSwap
 
 		if (hasShape && !hasInvalidShape && hasLightingShaderProp && !hasAlphaProp) {
 			return SNOW_TYPE::kMultiPass;
-		}
+		} 
 
 		return SNOW_TYPE::kSinglePass;
 	}

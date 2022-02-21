@@ -70,7 +70,7 @@ namespace SnowSwap
 
 		bool GetInSnowShaderBlacklist(const RE::TESForm* a_form) const;
 
-	    bool IsBaseBlacklisted(const RE::TESForm* a_form) const;
+		bool IsBaseBlacklisted(const RE::TESForm* a_form) const;
 
 		Set<RE::FormID> _snowShaderBlacklist{};
 
@@ -96,36 +96,45 @@ namespace SnowSwap
 				auto snowInfo = manager->GetSnowInfo(a_static);
 				const auto result = manager->CanApplySnowShader(a_static, a_ref);
 
+				bool applySinglePassSnow = false;
+
 				if (result == SWAP_RESULT::kSuccess) {
 					if (snowInfo) {
 						auto& [origShader, snowType] = *snowInfo;
-						if (snowType == SNOW_TYPE::kSinglePass) {
-							a_static->data.materialObj = manager->GetSinglePassSnowShader();
-						} else {
+						if (snowType == SNOW_TYPE::kMultiPass) {
 							a_static->data.materialObj = manager->GetMultiPassSnowShader();
+						} else {
+							applySinglePassSnow = true;
 						}
 					} else {
 						if (auto tempNode = func(a_static, a_ref, a_arg3); tempNode) {
 							const auto snowType = Manager::GetSnowType(tempNode);
 							manager->SetSnowInfo(a_static, a_static->data.materialObj, snowType);
 
-							if (snowType == SNOW_TYPE::kSinglePass) {
-								a_static->data.materialObj = manager->GetSinglePassSnowShader();
-							} else {
+							if (snowType == SNOW_TYPE::kMultiPass) {
 								a_static->data.materialObj = manager->GetMultiPassSnowShader();
+
+								tempNode->DeleteThis();  //refCount is zero, nothing else should touch this.
+								tempNode = nullptr;
+
+							} else {
+								manager->ApplySinglePassSnow(tempNode);
+								return tempNode;
 							}
-							tempNode->DeleteThis();  //refCount is zero, nothing else should touch this.
-							tempNode = nullptr;
 						}
 					}
 				} else if ((result == SWAP_RESULT::kSeasonFail || result == SWAP_RESULT::kRefFail) && snowInfo) {
 					auto& [origShaderID, snowType] = *snowInfo;
-					a_static->data.materialObj = origShaderID != 0 ?
+				    a_static->data.materialObj = origShaderID != 0 ?
 					                                 RE::TESForm::LookupByID<RE::BGSMaterialObject>(origShaderID) :
                                                      nullptr;
 				}
 
-				return func(a_static, a_ref, a_arg3);
+                const auto node = func(a_static, a_ref, a_arg3);
+				if (applySinglePassSnow) {
+					manager->ApplySinglePassSnow(node);
+				}
+				return node;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
