@@ -8,7 +8,7 @@ namespace FormSwap
 	{
 		static bool should_reject_winter_swap(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
 		{
-			return SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater() && a_base->IsNot(RE::FormType::Tree);
+			return SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter && a_ref->IsInWater() && a_base->Is(RE::FormType::Static, RE::FormType::MovableStatic);
 		}
 
 		static std::pair<RE::TESBoundObject*, bool> get_form_swap(RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)

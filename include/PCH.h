@@ -3,13 +3,13 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
-#include <ranges>
 #include <ShlObj.h>
+#include <ranges>
 
-#include <frozen/map.h>
-#include <robin_hood.h>
 #include <SimpleIni.h>
 #include <fmt/format.h>
+#include <frozen/map.h>
+#include <robin_hood.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <xbyak/xbyak.h>
 
@@ -38,7 +38,7 @@ namespace stl
 	{
 		SKSE::AllocTrampoline(14);
 
-	    auto& trampoline = SKSE::GetTrampoline();
+		auto& trampoline = SKSE::GetTrampoline();
 		T::func = trampoline.write_call<5>(a_src, T::thunk);
 	}
 
@@ -65,6 +65,6 @@ using MapPair = robin_hood::unordered_flat_map<T, T>;
 template <class T>
 using Set = robin_hood::unordered_flat_set<T>;
 
-#include "Version.h"
 #include "Cache.h"
 #include "Util.h"
+#include "Version.h"

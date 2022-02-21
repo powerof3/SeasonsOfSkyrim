@@ -13,6 +13,6 @@ namespace Papyrus
 	{
 		std::uint32_t GetCurrentSeason(VM*, StackID, RE::StaticFunctionTag*);
 
-        void Bind(VM& a_vm);
-    }
+		void Bind(VM& a_vm);
+	}
 }

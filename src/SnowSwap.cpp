@@ -71,9 +71,9 @@ namespace SnowSwap
 
 	bool Manager::GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const
 	{
-        const std::string model = a_form->As<RE::TESModel>()->GetModel();
+		const std::string model = a_form->As<RE::TESModel>()->GetModel();
 
-        const auto it = std::ranges::find_if(_multipassSnowWhitelist, [&](const auto& a_type) {
+		const auto it = std::ranges::find_if(_multipassSnowWhitelist, [&](const auto& a_type) {
 			if (std::holds_alternative<std::string>(a_type)) {
 				return string::icontains(model, std::get<std::string>(a_type));
 			}
@@ -129,7 +129,7 @@ namespace SnowSwap
 	}
 
 	SNOW_TYPE Manager::GetSnowType(const RE::TESObjectSTAT* a_static, RE::NiAVObject* a_node) const
-    {
+	{
 		using Flag = RE::BSShaderProperty::EShaderPropertyFlag;
 
 		if (GetWhitelistedForMultiPassSnow(a_static)) {
