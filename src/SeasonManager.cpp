@@ -135,12 +135,15 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 		if (mod)
 			actualModCount++;
 #endif
-	const auto expectedModCount = string::lexical_cast<size_t>(ini.GetValue("Game", "Mod Count", "0"));
+	//1.6.0 - delete old serialized value to force regeneration
+    ini.DeleteValue("Game", "Mod Count", nullptr);
+
+    const auto expectedModCount = string::lexical_cast<size_t>(ini.GetValue("Game", "Total Mod Count", "0"));
 
 	const auto shouldRegenerate = actualModCount != expectedModCount;
 
 	if (shouldRegenerate) {
-		ini.SetValue("Game", "Mod Count", std::to_string(actualModCount).c_str(), nullptr);
+		ini.SetValue("Game", "Total Mod Count", std::to_string(actualModCount).c_str(), nullptr);
 		if (expectedModCount != 0) {
 			logger::info("Mod count has changed since last run ({} -> {}), regenerating main WIN formswap", expectedModCount, actualModCount);
 		} else {

@@ -34,7 +34,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 				std::filesystem::create_directory(seasonsPath);
 			}
 
-		    SnowSwap::Manager::GetSingleton()->LoadSnowShaderBlacklist();
+		    SnowSwap::Manager::GetSingleton()->LoadSnowShaderSettings();
 
 			const auto manager = SeasonManager::GetSingleton();
 			manager->LoadOrGenerateWinterFormSwap();
