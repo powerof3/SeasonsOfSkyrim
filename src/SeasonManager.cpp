@@ -82,7 +82,7 @@ void SeasonManager::LoadMonthToSeasonMap(CSimpleIniA& a_ini)
 	for (const auto& [month, monthName] : monthNames) {
 		auto& [tes, irl] = monthName;
 		INI::get_value(a_ini, monthToSeasons.at(month), "Settings", tes.data(),
-			month == MONTH::kMorningStar ? ";0 - no season\n;1 - winter\n;2 - spring\n;3 - summer\n;4 - autumn\n\n;January" : irl.data());
+			month == MONTH::kMorningStar ? ";0 - none\n;1 - winter\n;2 - spring\n;3 - summer\n;4 - autumn\n\n;January" : irl.data());
 	}
 }
 
@@ -95,10 +95,15 @@ void SeasonManager::LoadSettings()
 
 	logger::info("{:*^30}", "SETTINGS");
 
-	//delete and recreate ini if new month-season settings are not found.
+	//delete and recreate settings if new month-season settings are not found.
 	if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Settings", "Morning Star", "-1")); value == -1) {
 		ini.Delete("Settings", nullptr);
-		ini.Delete("Winter", nullptr);
+	}
+
+	//delete and recreate ini if new form swap settings are not found.
+	if (const auto value = string::lexical_cast<std::int32_t>(ini.GetValue("Winter", "Flora", "-1")); value == -1) {
+		ini.Delete("Settings", nullptr);
+	    ini.Delete("Winter", nullptr);
 		ini.Delete("Spring", nullptr);
 		ini.Delete("Summer", nullptr);
 		ini.Delete("Autumn", nullptr);

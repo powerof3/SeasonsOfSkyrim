@@ -135,7 +135,7 @@ private:
 		{ MONTH::kRainsHand, std::make_pair("Rain's Hand"sv, ";April"sv) },
 		{ MONTH::kSecondSeed, std::make_pair("Second Seed"sv, ";May"sv) },
 		{ MONTH::kMidyear, std::make_pair("Mid Year"sv, ";June"sv) },
-		{ MONTH::kSunsHeight, std::make_pair("Suns Height"sv, ";July"sv) },
+		{ MONTH::kSunsHeight, std::make_pair("Sun's Height"sv, ";July"sv) },
 		{ MONTH::kLastSeed, std::make_pair("Last Seed"sv, ";August"sv) },
 		{ MONTH::kHearthfire, std::make_pair("Hearthfire"sv, ";September"sv) },
 		{ MONTH::kFrostfall, std::make_pair("Frost Fall"sv, ";October"sv) },
