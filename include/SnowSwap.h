@@ -45,14 +45,14 @@ namespace SnowSwap
 			return std::addressof(singleton);
 		}
 
-		void LoadSnowShaderBlacklist();
+		void LoadSnowShaderSettings();
 
 		[[nodiscard]] SWAP_RESULT CanApplySnowShader(RE::TESObjectREFR* a_ref) const;
 		[[nodiscard]] SWAP_RESULT CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const;
 
-		[[nodiscard]] static SNOW_TYPE GetSnowType(RE::NiAVObject* a_node);
+		[[nodiscard]] SNOW_TYPE GetSnowType(const RE::TESObjectSTAT* a_static, RE::NiAVObject* a_node) const;
 
-		void ApplySinglePassSnow(RE::NiAVObject* a_node);
+		void ApplySinglePassSnow(RE::NiAVObject* a_node, float a_angle = 90.0f);
 		void RemoveSinglePassSnow(RE::NiAVObject* a_node);
 
 		[[nodiscard]] std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
@@ -75,11 +75,13 @@ namespace SnowSwap
 		using Locker = std::scoped_lock<Lock>;
 		using SnowInfoMap = Map<RE::FormID, SnowInfo>;
 
-		bool GetInSnowShaderBlacklist(const RE::TESForm* a_form) const;
+		bool GetBlacklisted(const RE::TESForm* a_form) const;
+		bool GetBaseBlacklisted(const RE::TESForm* a_form) const;
 
-		bool IsBaseBlacklisted(const RE::TESForm* a_form) const;
+		bool GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const;
 
 		Set<RE::FormID> _snowShaderBlacklist{};
+		Set<std::variant<RE::FormID, std::string>> _multipassSnowWhitelist{};
 
 		mutable Lock _snowInfoLock;
 		SnowInfoMap _snowInfoMap{};
@@ -115,7 +117,7 @@ namespace SnowSwap
 						}
 					} else {
 						if (auto tempNode = func(a_static, a_ref, a_arg3); tempNode) {
-							const auto snowType = Manager::GetSnowType(tempNode);
+							const auto snowType = manager->GetSnowType(a_static, tempNode);
 							manager->SetSnowInfo(a_static, a_static->data.materialObj, snowType);
 
 							if (snowType == SNOW_TYPE::kMultiPass) {
@@ -144,7 +146,7 @@ namespace SnowSwap
 				const auto node = func(a_static, a_ref, a_arg3);
 
 				if (singlePassSnowState == SWAP_TYPE::kApply) {
-					manager->ApplySinglePassSnow(node);
+					manager->ApplySinglePassSnow(node, a_static->data.materialThresholdAngle);
 				} else if (singlePassSnowState == SWAP_TYPE::kRemove) {
 					manager->RemoveSinglePassSnow(node);
 				}
