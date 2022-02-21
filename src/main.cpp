@@ -14,7 +14,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		    try {
 				SeasonManager::GetSingleton()->LoadSettings();
 			} catch (...) {
-				logger::error("Exception caught when loading settings! Check whether your setting values are valid (no extra spaces). Default values will be used instead");
+				logger::error("Exception caught when loading settings! Check whether your setting values are valid. Default values will be used instead");
 			}
 
 			logger::info("{:*^30}", "HOOKS");
