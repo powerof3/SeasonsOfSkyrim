@@ -327,6 +327,12 @@ void SeasonManager::CleanupSerializedSeasonList() const
 	(void)ini.SaveFile(serializedSeasonList);
 }
 
+SEASON SeasonManager::GetCurrentSeasonType()
+{
+	const auto season = GetCurrentSeason();
+	return season ? season->get().GetType() : SEASON::kNone;
+}
+
 SEASON SeasonManager::GetSeasonType()
 {
 	const auto season = GetSeason();

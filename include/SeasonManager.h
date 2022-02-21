@@ -36,7 +36,8 @@ public:
 
 	bool UpdateSeason();
 
-	[[nodiscard]] SEASON GetSeasonType();
+	[[nodiscard]] SEASON GetCurrentSeasonType();
+    [[nodiscard]] SEASON GetSeasonType();
 	[[nodiscard]] bool CanApplySnowShader();
 
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD(LOD_TYPE a_type);

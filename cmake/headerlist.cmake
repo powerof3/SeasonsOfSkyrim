@@ -6,6 +6,7 @@ set(headers ${headers}
 	include/LandscapeSwap.h
 	include/MergeMapper.h
 	include/PCH.h
+	include/Papyrus.h
 	include/SeasonManager.h
 	include/Seasons.h
 	include/SnowSwap.h
