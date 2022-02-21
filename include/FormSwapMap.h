@@ -34,6 +34,8 @@ public:
 			return _formMap["Trees"];
 		case RE::FormType::Grass:
 			return _formMap["Grass"];
+		case RE::FormType::Flora:
+			return _formMap["Flora"];
 		default:
 			return _nullMap;
 		}
@@ -51,8 +53,8 @@ private:
 	template <class T>
 	using TempFormSwapMap = std::map<T*, T*>;
 
-	static inline std::array<std::string, 7>
-		formTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees", "Grass" };
+	static inline std::array<RecordType, 8>
+		recordTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees", "Grass", "Flora" };
 
 	void LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values);
 

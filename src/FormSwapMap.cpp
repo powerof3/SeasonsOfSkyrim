@@ -2,7 +2,7 @@
 
 FormSwapMap::FormSwapMap()
 {
-	for (auto& type : formTypes) {
+	for (auto& type : recordTypes) {
 		_formMap.emplace(type, MapPair<RE::FormID>{});
 	}
 }
@@ -66,7 +66,7 @@ void FormSwapMap::LoadFormSwaps_Impl(const std::string& a_type, const std::vecto
 
 void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 {
-	for (auto& type : formTypes) {
+	for (auto& type : recordTypes) {
 		if (const auto values = a_ini.GetSection(type.c_str()); values && !values->empty()) {
 			logger::info("		[{}] read {} variants", type, values ? values->size() : -1);
 
@@ -83,7 +83,7 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 {
 	bool save = false;
 
-	for (auto& type : formTypes) {
+	for (auto& type : recordTypes) {
 		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty() || a_forceRegenerate) {
 			save = true;
 
