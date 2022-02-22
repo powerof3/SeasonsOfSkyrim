@@ -16,8 +16,8 @@ public:
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 
-	RE::TESLandTexture* GetSwapLandTexture(const RE::TESForm* a_form);
-	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
+	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
+	RE::TESLandTexture* GetSwapLandTexture(const RE::BGSTextureSet* a_txst);
 
 	MapPair<RE::FormID>& get_map(RE::FormType a_formType)
 	{

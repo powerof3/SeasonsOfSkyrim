@@ -380,10 +380,10 @@ RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::TESLandTexture* 
 	return season ? season->get().GetFormSwapMap().GetSwapLandTexture(a_landTxst) : nullptr;
 }
 
-RE::TESLandTexture* SeasonManager::GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
+RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::BGSTextureSet* a_txst)
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetFormSwapMap().GetSwapLandTextureFromTextureSet(a_txst) : nullptr;
+	return season ? season->get().GetFormSwapMap().GetSwapLandTexture(a_txst) : nullptr;
 }
 
 bool SeasonManager::GetUseAltGrass()
