@@ -9,32 +9,37 @@ namespace MergeMapper
 		auto constexpr folder = R"(Data\)";
 		json json_data;
 		size_t total = 0;
+		auto constexpr mergePrefix = L"Data\\merge - ";
 		for (const auto& entry : std::filesystem::directory_iterator(folder)) {
 			// zMerge folders have name "merge - 018auri"
-			auto constexpr mergePrefix = R"(Data\merge - )";
-			if (entry.exists() && entry.is_directory() && entry.path().string().starts_with(mergePrefix)) {
-				const auto path = entry.path().string();
-
-				auto file = path + "/map.json";
-				auto merged = path.substr(13) + ".esp";
+			std::wstring path = L"";
+			try {
+				path = entry.path().wstring();
+			} catch (std::exception& e) {
+				logger::warn("	Unable to convert path to string: {}", e.what());
+			}
+			if (entry.exists() && entry.is_directory() && path.starts_with(mergePrefix)) {
+				auto file = path + L"\\map.json";
+				auto merged = path.substr(13) + L".esp";
 				try {
 					std::ifstream json_file(file);
 					json_file >> json_data;
 					json_file.close();
 				} catch (std::exception& e) {
-					logger::warn("	Unable to open {}:{}", file, e.what());
+					logger::warn("	Unable to open {}:{}", stl::utf16_to_utf8(file).value_or("<unicode conversion error>"s), e.what());
 				}
-				if (!json_data.empty()) {
+				auto converted_merged = stl::utf16_to_utf8(merged).value_or(""s); //json requires wstring conversion to utf encoding https://json.nlohmann.me/home/faq/#parse-errors-reading-non-ascii-characters
+				if (converted_merged != "" && !json_data.empty()) {
 					for (auto& [esp, idmap] : json_data.items()) {
 						auto espkey = esp;
 						std::transform(espkey.begin(), espkey.end(), espkey.begin(), [](auto ch) { return static_cast<char>(std::tolower(ch)); });
 						if (idmap.size()) {
-							logger::info(" Found {} maps to {} with {} mappings", esp, merged, idmap.size());
+							logger::info(" Found {} maps to {} with {} mappings", esp, converted_merged, idmap.size());
 							total += idmap.size();
 						}
 						if (mergeMap.contains(espkey))
-							logger::warn(" Duplicate {} found in {}", esp, merged);
-						mergeMap[espkey]["name"] = merged;
+							logger::warn(" Duplicate {} found in {}", esp, converted_merged);
+						mergeMap[espkey]["name"] = converted_merged;
 						if (!idmap.empty()) {
 							for (auto& [key, value] : idmap.items()) {
 								auto storedKey = std::to_string(std::stoi(key, 0, 16));
@@ -54,6 +59,14 @@ namespace MergeMapper
 		}
 		logger::info("	{} merges found with {} mappings", mergeMap.size(), total);
 		return true;
+	}
+
+	std::pair<std::string, RE::FormID> GetNewFormID(std::wstring oldName, std::string oldFormID)
+	{
+		auto converted_oldName = stl::utf16_to_utf8(oldName).value_or(""s);  //json requires wstring conversion to utf https://json.nlohmann.me/home/faq/#parse-errors-reading-non-ascii-characters
+		if (converted_oldName == "")
+			logger::error(" Unable to convert oldName to UTF encoding; no mapping possible");
+		return std::make_pair(converted_oldName, std::stoi(oldFormID, 0, 16));
 	}
 
 	std::pair<std::string, RE::FormID> GetNewFormID(std::string oldName, std::string oldFormID)
