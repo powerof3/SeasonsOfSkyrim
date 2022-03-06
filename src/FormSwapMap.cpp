@@ -134,18 +134,18 @@ RE::TESBoundObject* FormSwapMap::GetSwapForm(const RE::TESForm* a_form)
 	return it != map.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) : nullptr;
 }
 
-RE::TESLandTexture* FormSwapMap::GetSwapLandTexture(const RE::TESForm* a_form)
+RE::TESLandTexture* FormSwapMap::GetSwapLandTexture(const RE::TESLandTexture* a_landTxst)
 {
 	const auto& map = _formMap["LandTextures"];
 	if (map.empty()) {
 		return nullptr;
 	}
 
-	const auto it = map.find(a_form->GetFormID());
+	const auto it = map.find(a_landTxst->GetFormID());
 	return it != map.end() ? RE::TESForm::LookupByID<RE::TESLandTexture>(it->second) : nullptr;
 }
 
-RE::TESLandTexture* FormSwapMap::GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
+RE::TESLandTexture* FormSwapMap::GetSwapLandTexture(const RE::BGSTextureSet* a_txst)
 {
 	const auto landTexture = Cache::DataHolder::GetSingleton()->GetLandTextureFromTextureSet(a_txst);
 	return GetSwapLandTexture(landTexture);
