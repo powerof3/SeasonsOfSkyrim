@@ -6,27 +6,73 @@ namespace LandscapeSwap
 {
 	namespace Texture
 	{
-		struct GetAsShaderTextureSet
+		static inline REL::Relocation<std::uintptr_t> create_land_geometry{ REL::ID(18368) };
+
+		struct IsConsideredSnow
 		{
-			static RE::BSTextureSet* thunk(RE::BGSTextureSet* a_textureSet)
+			static float thunk(const RE::TESLandTexture* a_LT)
 			{
-				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapLandscape()) {
-					const auto newLandTexture = seasonManager->GetSwapLandTextureFromTextureSet(a_textureSet);
-					return newLandTexture ? newLandTexture->textureSet : a_textureSet;
-				}
-				return a_textureSet;
+				const auto manager = SeasonManager::GetSingleton();
+
+				const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_LT) : nullptr;
+				return swapLT ? swapLT->shaderTextureIndex != 0 : a_LT->shaderTextureIndex != 0;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
+
+			static void Install()
+			{
+				constexpr std::array<std::uint64_t, 2> offsets{ 0x155, 0x1C9 };
+				for (const auto& offset : offsets) {
+					stl::write_thunk_call<IsConsideredSnow>(create_land_geometry.address() + offset);
+				}
+			}
+		};
+
+		struct GetSpecularComponent
+		{
+			static float thunk(const RE::TESLandTexture* a_LT)
+			{
+				const auto manager = SeasonManager::GetSingleton();
+
+				const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_LT) : nullptr;
+				return swapLT ? swapLT->specularExponent : a_LT->specularExponent;
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			static void Install()
+			{
+				constexpr std::array<std::uint64_t, 2> offsets{ 0x160, 0x1D4 };
+				for (const auto& offset : offsets) {
+					stl::write_thunk_call<GetSpecularComponent>(create_land_geometry.address() + offset);
+				}
+			}
+		};
+
+		struct GetAsShaderTextureSet
+		{
+			static RE::BSTextureSet* thunk(RE::BGSTextureSet* a_txst)
+			{
+				const auto manager = SeasonManager::GetSingleton();
+
+				const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_txst) : nullptr;
+				return swapLT ? swapLT->textureSet : a_txst;
+			}
+			static inline REL::Relocation<decltype(thunk)> func;
+
+			static void Install()
+			{
+				constexpr std::array<std::uint64_t, 3> offsets{ 0x172, 0x18B, 0x1E6 };
+				for (const auto& offset : offsets) {
+					stl::write_thunk_call<GetAsShaderTextureSet>(create_land_geometry.address() + offset);
+				}
+			}
 		};
 
 		inline void Install()
 		{
-			REL::Relocation<std::uintptr_t> create_land_geometry{ REL::ID(18368) };
-			constexpr std::array<std::uint64_t, 3> offsets{ 0x172, 0x18B, 0x1E6 };
-
-			for (const auto& offset : offsets) {
-				stl::write_thunk_call<GetAsShaderTextureSet>(create_land_geometry.address() + offset);
-			}
+			IsConsideredSnow::Install();
+			GetSpecularComponent::Install();
+			GetAsShaderTextureSet::Install();
 		}
 	}
 

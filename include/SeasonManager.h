@@ -50,7 +50,7 @@ public:
 	T* GetSwapForm(const RE::TESForm* a_form);
 
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
-	RE::TESLandTexture* GetSwapLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
+	RE::TESLandTexture* GetSwapLandTexture(const RE::BGSTextureSet* a_txst);
 	[[nodiscard]] bool GetUseAltGrass();
 
 	[[nodiscard]] bool GetExterior();
