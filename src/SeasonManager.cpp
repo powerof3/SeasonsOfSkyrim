@@ -1,7 +1,27 @@
 #include "SeasonManager.h"
 
+Season* SeasonManager::GetSeasonImpl(SEASON a_season)
+{
+	switch (a_season) {
+	case SEASON::kWinter:
+		return &winter;
+	case SEASON::kSpring:
+		return &spring;
+	case SEASON::kSummer:
+		return &summer;
+	case SEASON::kAutumn:
+		return &autumn;
+	default:
+		return nullptr;
+	}
+}
+
 Season* SeasonManager::GetCurrentSeason()
 {
+	if (seasonOverride != SEASON::kNone) {
+		return GetSeasonImpl(seasonOverride);
+	}
+
 	switch (seasonType) {
 	case SEASON_TYPE::kPermanentWinter:
 		return &winter;
@@ -17,18 +37,7 @@ Season* SeasonManager::GetCurrentSeason()
 			const auto month = calendar ? calendar->GetMonth() : 7;
 
 			if (const auto it = monthToSeasons.find(static_cast<MONTH>(month)); it != monthToSeasons.end()) {
-				switch (it->second) {
-				case SEASON::kWinter:
-					return &winter;
-				case SEASON::kSpring:
-					return &spring;
-				case SEASON::kSummer:
-					return &summer;
-				case SEASON::kAutumn:
-					return &autumn;
-				default:
-					return nullptr;
-				}
+				return GetSeasonImpl(it->second);
 			}
 
 			return nullptr;
@@ -40,12 +49,20 @@ Season* SeasonManager::GetCurrentSeason()
 
 bool SeasonManager::UpdateSeason()
 {
-	lastSeason = currentSeason;
-
 	if (loadedFromSave) {
 		loadedFromSave = false;
 		return true;
 	}
+
+	if (seasonOverride != SEASON::kNone) {
+		const auto tempLastSeason = lastSeason;
+
+		lastSeason = seasonOverride;
+
+		return seasonOverride != tempLastSeason;
+	}
+
+	lastSeason = currentSeason;
 
 	const auto season = GetCurrentSeason();
 	currentSeason = season ? season->GetType() : SEASON::kNone;
@@ -59,22 +76,17 @@ Season* SeasonManager::GetSeason()
 		return nullptr;
 	}
 
-	if (currentSeason == SEASON::kNone) {
-		UpdateSeason();
+	auto season = SEASON::kNone;
+	if (seasonOverride != SEASON::kNone) {
+		season = seasonOverride;
+	} else {
+		if (currentSeason == SEASON::kNone) {
+			UpdateSeason();
+		}
+		season = currentSeason;
 	}
 
-	switch (currentSeason) {
-	case SEASON::kWinter:
-		return &winter;
-	case SEASON::kSpring:
-		return &spring;
-	case SEASON::kSummer:
-		return &summer;
-	case SEASON::kAutumn:
-		return &autumn;
-	default:
-		return nullptr;
-	}
+	return GetSeasonImpl(season);
 }
 
 void SeasonManager::LoadMonthToSeasonMap(CSimpleIniA& a_ini)
@@ -406,6 +418,16 @@ bool SeasonManager::GetExterior()
 void SeasonManager::SetExterior(bool a_isExterior)
 {
 	isExterior = a_isExterior;
+}
+
+SEASON SeasonManager::GetSeasonOverride() const
+{
+	return seasonOverride;
+}
+
+void SeasonManager::SetSeasonOverride(SEASON a_season)
+{
+	seasonOverride = a_season;
 }
 
 SeasonManager::EventResult SeasonManager::ProcessEvent(const RE::TESActivateEvent* a_event, RE::BSTEventSource<RE::TESActivateEvent>*)

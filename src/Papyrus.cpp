@@ -22,11 +22,30 @@ namespace Papyrus
 		return stl::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
 	}
 
-	void Seasons::Bind(VM& a_vm)
+    bool Seasons::GetSeasonOverride(VM*, StackID, RE::StaticFunctionTag*, std::uint32_t a_season)
+	{
+		return stl::to_underlying(SeasonManager::GetSingleton()->GetSeasonOverride());
+	}
+
+    void Seasons::SetSeasonOverride(VM*, StackID, RE::StaticFunctionTag*, std::uint32_t a_season)
+	{
+		SeasonManager::GetSingleton()->SetSeasonOverride(static_cast<SEASON>(a_season));
+	}
+
+    void Seasons::ClearSeasonOverride(VM*, StackID, RE::StaticFunctionTag*, std::uint32_t a_season)
+	{
+		SeasonManager::GetSingleton()->SetSeasonOverride(SEASON::kNone);
+	}
+
+    void Seasons::Bind(VM& a_vm)
 	{
 		constexpr auto script = "SeasonsOfSkyrim"sv;
 
-		a_vm.RegisterFunction("GetCurrentSeason", "SeasonsOfSkyrim", GetCurrentSeason, true);
+		a_vm.RegisterFunction("GetCurrentSeason", script, GetCurrentSeason, true);
+
+		a_vm.RegisterFunction("GetSeasonOverride", script, GetSeasonOverride);
+		a_vm.RegisterFunction("SetSeasonOverride", script, SetSeasonOverride);
+		a_vm.RegisterFunction("ClearSeasonOverride", script, ClearSeasonOverride);
 
 		logger::info("Registered season functions"sv);
 	}

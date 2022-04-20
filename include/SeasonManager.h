@@ -57,12 +57,16 @@ public:
 	[[nodiscard]] bool GetExterior();
 	void SetExterior(bool a_isExterior);
 
+	SEASON GetSeasonOverride() const;
+	void SetSeasonOverride(SEASON a_season);
+
 protected:
 	using MONTH = RE::Calendar::Month;
 	using EventResult = RE::BSEventNotifyControl;
 
 	Season* GetSeason();
 	Season* GetCurrentSeason();
+	Season* GetSeasonImpl(SEASON a_season);
 
 	void LoadMonthToSeasonMap(CSimpleIniA& a_ini);
 
@@ -150,6 +154,8 @@ private:
 
 	SEASON currentSeason{ SEASON::kNone };
 	SEASON lastSeason{ SEASON::kNone };
+
+	SEASON seasonOverride{ SEASON::kNone };
 
 	std::atomic_bool isExterior{ false };
 
