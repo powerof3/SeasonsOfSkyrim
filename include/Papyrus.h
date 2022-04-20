@@ -1,7 +1,5 @@
 #pragma once
 
-#include "SeasonManager.h"
-
 namespace Papyrus
 {
 	using VM = RE::BSScript::Internal::VirtualMachine;

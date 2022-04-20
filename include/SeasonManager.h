@@ -44,6 +44,7 @@ public:
 
 	[[nodiscard]] bool CanSwapLandscape();
 	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType);
+	[[nodiscard]] bool CanSwapGrass(bool a_useAlt);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 	template <class T>
@@ -59,10 +60,9 @@ public:
 protected:
 	using MONTH = RE::Calendar::Month;
 	using EventResult = RE::BSEventNotifyControl;
-	using SeasonPtr = std::optional<std::reference_wrapper<Season>>;
 
-	SeasonPtr GetSeason();
-	SeasonPtr GetCurrentSeason();
+	Season* GetSeason();
+	Season* GetCurrentSeason();
 
 	void LoadMonthToSeasonMap(CSimpleIniA& a_ini);
 
@@ -90,10 +90,10 @@ protected:
 
 		static void Install()
 		{
-			REL::Relocation<std::uintptr_t> load_interior{ REL::ID(13171), 0x2E6 };
+			REL::Relocation<std::uintptr_t> load_interior{ RELOCATION_ID(13171, 13316), OFFSET(0x2E6,0x46D) };
 			stl::write_thunk_call<SetInterior>(load_interior.address());
 
-			REL::Relocation<std::uintptr_t> leave_interior{ REL::ID(13172), 0x2A };
+			REL::Relocation<std::uintptr_t> leave_interior{ RELOCATION_ID(13172, 13317), OFFSET(0x2A,0x1E) };
 			stl::write_thunk_call<SetInterior>(leave_interior.address());
 
 			logger::info("Installed interior-exterior detection"sv);

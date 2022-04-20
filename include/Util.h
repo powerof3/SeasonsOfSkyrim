@@ -1,4 +1,5 @@
 #pragma once
+
 #include "MergeMapper.h"
 
 namespace util
@@ -98,28 +99,21 @@ namespace INI
 	template <class T>
 	void get_value(CSimpleIniA& a_ini, T& a_value, const char* a_section, const char* a_key, const char* a_comment)
 	{
-		a_value = string::lexical_cast<T>(a_ini.GetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str()));
-		a_ini.SetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str(), a_comment);
-	}
+		if constexpr (std::is_same_v<T, bool>) {
+			a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
+			a_ini.SetBoolValue(a_section, a_key, a_value, a_comment);
+		} else if constexpr (std::is_enum_v<T> || std::is_arithmetic_v<T>) {
+			a_value = string::lexical_cast<T>(a_ini.GetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str()));
+			a_ini.SetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str(), a_comment);
+		} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+			const std::string tempValue = a_ini.GetValue(a_section, a_key, string::join(a_value, R"(|)").c_str());
+			a_value = string::split(tempValue, R"(|)");
 
-	inline void get_value(CSimpleIniA& a_ini, bool& a_value, const char* a_section, const char* a_key, const char* a_comment)
-	{
-		a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
-		a_ini.SetBoolValue(a_section, a_key, a_value, a_comment);
-	}
-
-	inline void get_value(CSimpleIniA& a_ini, std::string& a_value, const char* a_section, const char* a_key, const char* a_comment)
-	{
-		a_value = a_ini.GetValue(a_section, a_key, a_value.c_str());
-		a_ini.SetValue(a_section, a_key, a_value.c_str(), a_comment);
-	}
-
-	inline void get_value(CSimpleIniA& a_ini, std::vector<std::string>& a_value, const char* a_section, const char* a_key, const char* a_comment, const char* a_deliminator = R"(|)")
-	{
-		const std::string tempValue = a_ini.GetValue(a_section, a_key, string::join(a_value, a_deliminator).c_str());
-		a_value = string::split(tempValue, a_deliminator);
-
-		a_ini.SetValue(a_section, a_key, string::join(a_value, a_deliminator).c_str(), a_comment);
+			a_ini.SetValue(a_section, a_key, string::join(a_value, R"(|)").c_str(), a_comment);
+		} else {
+			a_value = a_ini.GetValue(a_section, a_key, a_value.c_str());
+			a_ini.SetValue(a_section, a_key, a_value.c_str(), a_comment);
+		}
 	}
 
 	inline void set_value(CSimpleIniA& a_ini, const std::vector<std::string>& a_value, const char* a_section, const char* a_key, const char* a_comment, const char* a_deliminator = R"(|)")
@@ -131,10 +125,8 @@ namespace INI
 	{
 		if (a_str.find('~') != std::string::npos) {
 			const auto formPair = string::split(a_str, "~");
-
-			const auto processedFormPair = MergeMapper::GetNewFormID(formPair[1], formPair[0]);
-
-			return RE::TESDataHandler::GetSingleton()->LookupFormID(processedFormPair.second, processedFormPair.first);
+			const auto [modName, formID] = MergeMapper::GetNewFormID(formPair[1], formPair[0]);
+			return RE::TESDataHandler::GetSingleton()->LookupFormID(formID, modName);
 		}
 		if (const auto form = RE::TESForm::LookupByEditorID(a_str); form) {
 			return form->GetFormID();

@@ -25,7 +25,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x39;
-			static inline std::uint64_t id = 31140;
+			static inline auto id = RELOCATION_ID(31140, 31948);
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.{}.BTR)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.BTR)" };
@@ -42,7 +42,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x39;
-			static inline std::uint64_t id = 31141;
+			static inline auto id = RELOCATION_ID(31141, 31949);
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.DDS)" };
@@ -59,7 +59,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x39;
-			static inline std::uint64_t id = 31142;
+			static inline auto id = RELOCATION_ID(31142,31950);
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}_n.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i_n.DDS)" };
@@ -86,7 +86,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x39;
-			static inline std::uint64_t id = 31147;
+			static inline auto id = RELOCATION_ID(31147,31957);
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.{}.BTO)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.BTO)" };
@@ -103,7 +103,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x1F;
-			static inline std::uint64_t id = 31148;
+			static inline auto id = RELOCATION_ID(31148,31958);
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.DDS)" };
@@ -120,7 +120,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x1F;
-			static inline std::uint64_t id = 31149;
+			static inline auto id = RELOCATION_ID(31149,31959);
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}_n.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects_n.DDS)" };
@@ -147,7 +147,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x39;
-			static inline std::uint64_t id = 31150;
+			static inline auto id = RELOCATION_ID(31150,31960);
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.{}.BTT)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.BTT)" };
@@ -164,7 +164,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x1F;
-			static inline std::uint64_t id = 31151;
+			static inline auto id = RELOCATION_ID(31151,31961);
 
 			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.{}.DDS)" };
 			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.DDS)" };
@@ -181,7 +181,7 @@ namespace LODSwap
 			}
 
 			static inline size_t size = 0x1F;
-			static inline std::uint64_t id = 31152;
+			static inline auto id = RELOCATION_ID(31152, 31962);
 
 			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.{}.LST)" };
 			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.LST)" };

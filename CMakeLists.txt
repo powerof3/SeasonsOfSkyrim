@@ -1,12 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
 set(NAME "po3_SeasonsOfSkyrim")
-set(VERSION 1.6.2)
+set(VERSION 1.7.0)
 set(VR_VERSION 1)
+set(AE_VERSION 1)
 
 # ---- Options ----
 
 option(COPY_BUILD "Copy the build output to the Skyrim directory." TRUE)
 option(BUILD_SKYRIMVR "Build for Skyrim VR" OFF)
+option(BUILD_SKYRIMAE "Build for Skyrim AE" OFF)
 
 # ---- Cache build vars ----
 
@@ -32,14 +34,22 @@ macro(find_commonlib_path)
 	endif()
 endmacro()
 
-if(BUILD_SKYRIMVR)
+set_from_environment(VCPKG_ROOT)
+if(BUILD_SKYRIMAE)
+	add_compile_definitions(SKYRIM_AE)
+	set(CommonLibName "CommonLibSSE")
+	set_from_environment(SkyrimAEPath)
+	set(SkyrimPath ${SkyrimAEPath})
+	set(SkyrimVersion "Skyrim AE")
+	set(VERSION ${VERSION}.${AE_VERSION})
+elseif(BUILD_SKYRIMVR)
 	add_compile_definitions(SKYRIMVR)
 	add_compile_definitions(_CRT_SECURE_NO_WARNINGS)
 	set(CommonLibName "CommonLibVR")
 	set_from_environment(SkyrimVRPath)
 	set(SkyrimPath ${SkyrimVRPath})
 	set(SkyrimVersion "Skyrim VR")
-	set(VERSION "${VERSION}.${VR_VERSION}")
+	set(VERSION ${VERSION}.${VR_VERSION})
 else()
 	set(CommonLibName "CommonLibSSE")
 	set_from_environment(Skyrim64Path)
@@ -49,7 +59,7 @@ endif()
 find_commonlib_path()
 message(
 	STATUS
-	"Building ${NAME} ${VERSION} for ${SkyrimVersion} at ${SkyrimPath} with ${CommonLibName} at ${CommonLibPath}."
+	"Building for ${SkyrimVersion} at ${SkyrimPath} with ${CommonLibName} at ${CommonLibPath}."
 )
 
 if (DEFINED VCPKG_ROOT)
@@ -96,6 +106,12 @@ endif()
 
 # ---- Globals ----
 
+if (BUILD_SKYRIMAE)
+	add_compile_definitions(
+		SKYRIM_SUPPORT_AE
+	)
+endif()
+
 if (MSVC)
 	if (NOT ${CMAKE_GENERATOR} STREQUAL "Ninja")
 		add_compile_options(
@@ -120,6 +136,8 @@ else ()
 	)
 endif()
 
+find_package(frozen CONFIG REQUIRED)
+find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # ---- Add source files ----
 
@@ -140,9 +158,6 @@ source_group(
 	FILES
 		${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
 )
-
-find_package(frozen CONFIG REQUIRED)
-find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # ---- Create DLL ----
 

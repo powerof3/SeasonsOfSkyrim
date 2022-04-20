@@ -6,7 +6,7 @@ namespace LandscapeSwap
 {
 	namespace Texture
 	{
-		static inline REL::Relocation<std::uintptr_t> create_land_geometry{ REL::ID(18368) };
+		static inline REL::Relocation<std::uintptr_t> create_land_geometry{ RELOCATION_ID(18368, 18791) };
 
 		struct IsConsideredSnow
 		{
@@ -14,15 +14,19 @@ namespace LandscapeSwap
 			{
 				const auto manager = SeasonManager::GetSingleton();
 
-				const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_LT) : nullptr;
+				const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_LT) : a_LT;
 				return swapLT ? swapLT->shaderTextureIndex != 0 : a_LT->shaderTextureIndex != 0;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
 			static void Install()
 			{
-				constexpr std::array<std::uint64_t, 2> offsets{ 0x155, 0x1C9 };
-				for (const auto& offset : offsets) {
+				constexpr std::array<std::uint64_t, 2> offsets{
+				    OFFSET(0x155,0x157),
+				    0x1C9
+				};
+
+			    for (const auto& offset : offsets) {
 					stl::write_thunk_call<IsConsideredSnow>(create_land_geometry.address() + offset);
 				}
 			}
@@ -41,7 +45,10 @@ namespace LandscapeSwap
 
 			static void Install()
 			{
-				constexpr std::array<std::uint64_t, 2> offsets{ 0x160, 0x1D4 };
+				constexpr std::array<std::uint64_t, 2> offsets{
+				    OFFSET(0x160,0x162),
+				    0x1D4
+				};
 				for (const auto& offset : offsets) {
 					stl::write_thunk_call<GetSpecularComponent>(create_land_geometry.address() + offset);
 				}
@@ -61,7 +68,11 @@ namespace LandscapeSwap
 
 			static void Install()
 			{
-				constexpr std::array<std::uint64_t, 3> offsets{ 0x172, 0x18B, 0x1E6 };
+				constexpr std::array<std::uint64_t, 3> offsets{
+				    OFFSET(0x172,0x174),
+					OFFSET(0x18B, 0x18D),
+				    0x1E6
+				};
 				for (const auto& offset : offsets) {
 					stl::write_thunk_call<GetAsShaderTextureSet>(create_land_geometry.address() + offset);
 				}
@@ -84,7 +95,7 @@ namespace LandscapeSwap
 			{
 				static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
 				{
-					if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapForm(RE::FormType::Grass)) {
+					if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapGrass(false)) {
 						const auto swapLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
 
 						return swapLandTexture ? swapLandTexture->textureGrassList : a_landTexture->textureGrassList;
@@ -93,7 +104,7 @@ namespace LandscapeSwap
 				}
 
 				static inline size_t size = 0x5;
-				static inline std::uint64_t id = 18414;
+				static inline auto id = RELOCATION_ID(18414, 18845);
 			};
 
 			inline void Install()
@@ -110,7 +121,7 @@ namespace LandscapeSwap
 				{
 					const auto seasonManager = SeasonManager::GetSingleton();
 
-					const auto grass = seasonManager->CanSwapForm(RE::FormType::Grass) ? RE::TESForm::LookupByID(a_param->grassFormID) : nullptr;
+					const auto grass = seasonManager->CanSwapGrass(true) ? RE::TESForm::LookupByID(a_param->grassFormID) : nullptr;
 					const auto swapGrass = grass ? seasonManager->GetSwapForm<RE::TESGrass>(grass) : nullptr;
 
 					if (swapGrass) {
@@ -133,13 +144,14 @@ namespace LandscapeSwap
 			inline void Install()
 			{
 				constexpr std::array targets{
-					std::make_pair(15204, 0x2F5),  // add_cell_grass
-					std::make_pair(15205, 0x62B),  // add_cell_grass_from_buffer
-					std::make_pair(15206, 0x25C),  // add_cell_grass_from_file
+
+					std::make_pair(RELOCATION_ID(15204, 15372), 0x2F5),                 // add_cell_grass
+					std::make_pair(RELOCATION_ID(15205, 15373), OFFSET(0x62B, 0x597)),  // add_cell_grass_from_buffer
+					std::make_pair(RELOCATION_ID(15206, 15374), 0x25C),                 // add_cell_grass_from_file
 				};
 
 				for (const auto& [id, offset] : targets) {
-					REL::Relocation<std::uintptr_t> target{ REL::ID(id), offset };
+					REL::Relocation<std::uintptr_t> target{ id, offset };
 					stl::write_thunk_call<LoadGrassType>(target.address());
 				}
 			}
@@ -147,13 +159,8 @@ namespace LandscapeSwap
 
 		inline void Install()
 		{
-			if (SeasonManager::GetSingleton()->GetUseAltGrass()) {
-				logger::info("Using alternate grass generation");
-				Alt::Install();
-			} else {
-				logger::info("Using standard grass generation");
-				Standard::Install();
-			}
+			Alt::Install();
+			Standard::Install();
 		}
 	}
 
@@ -173,7 +180,7 @@ namespace LandscapeSwap
 			}
 
 			static inline size_t size = 0xE;
-			static inline std::uint64_t id = 18418;
+			static inline auto id = RELOCATION_ID(18418, 18849);
 		};
 
 		inline void Install()

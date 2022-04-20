@@ -29,7 +29,7 @@ namespace stl
 	template <class T>
 	void asm_replace()
 	{
-		REL::Relocation<std::uintptr_t> from{ REL::ID(T::id) };
+		REL::Relocation<std::uintptr_t> from{ T::id };
 		asm_replace(from.address(), T::size, reinterpret_cast<std::uintptr_t>(T::func));
 	}
 
@@ -64,6 +64,18 @@ using MapPair = robin_hood::unordered_flat_map<T, T>;
 
 template <class T>
 using Set = robin_hood::unordered_flat_set<T>;
+
+#ifdef SKYRIM_AE
+#	define OFFSET(se, ae) ae
+#	define OFFSET_3(se, ae, vr) ae
+#elif SKYRIMVR
+#	define ID(se, ae) se
+#	define OFFSET(se, ae) se
+#	define OFFSET_3(se, ae, vr) vr
+#else
+#	define OFFSET(se, ae) se
+#	define OFFSET_3(se, ae, vr) se
+#endif
 
 #include "Cache.h"
 #include "Util.h"

@@ -1,4 +1,5 @@
 #include "Papyrus.h"
+#include "SeasonManager.h"
 
 namespace Papyrus
 {

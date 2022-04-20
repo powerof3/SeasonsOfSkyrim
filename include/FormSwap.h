@@ -48,8 +48,8 @@ namespace FormSwap
 
 	inline void Install()
 	{
-		REL::Relocation<std::uintptr_t> target{ REL::ID(12910) };  //ModelLoader::QueueReference
-		stl::write_thunk_call<GetHandle>(target.address() + 0x3E);
+		REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(12910, 13057), 0x3E };  //ModelLoader::QueueReference
+		stl::write_thunk_call<GetHandle>(target.address());
 
 		logger::info("Installed form swapper"sv);
 	}

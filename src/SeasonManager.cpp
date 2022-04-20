@@ -1,16 +1,16 @@
 #include "SeasonManager.h"
 
-SeasonManager::SeasonPtr SeasonManager::GetCurrentSeason()
+SeasonManager::Season* SeasonManager::GetCurrentSeason()
 {
 	switch (seasonType) {
 	case SEASON_TYPE::kPermanentWinter:
-		return winter;
+		return &winter;
 	case SEASON_TYPE::kPermanentSpring:
-		return spring;
+		return &spring;
 	case SEASON_TYPE::kPermanentSummer:
-		return summer;
+		return &summer;
 	case SEASON_TYPE::kPermanentAutumn:
-		return autumn;
+		return &autumn;
 	case SEASON_TYPE::kSeasonal:
 		{
 			const auto calendar = RE::Calendar::GetSingleton();
@@ -19,22 +19,22 @@ SeasonManager::SeasonPtr SeasonManager::GetCurrentSeason()
 			if (const auto it = monthToSeasons.find(static_cast<MONTH>(month)); it != monthToSeasons.end()) {
 				switch (it->second) {
 				case SEASON::kWinter:
-					return winter;
+					return &winter;
 				case SEASON::kSpring:
-					return spring;
+					return &spring;
 				case SEASON::kSummer:
-					return summer;
+					return &summer;
 				case SEASON::kAutumn:
-					return autumn;
+					return &autumn;
 				default:
-					return std::nullopt;
+					return nullptr;
 				}
 			}
 
-			return std::nullopt;
+			return nullptr;
 		}
 	default:
-		return std::nullopt;
+		return nullptr;
 	}
 }
 
@@ -48,15 +48,15 @@ bool SeasonManager::UpdateSeason()
 	}
 
 	const auto season = GetCurrentSeason();
-	currentSeason = season ? season->get().GetType() : SEASON::kNone;
+	currentSeason = season ? season->GetType() : SEASON::kNone;
 
 	return currentSeason != lastSeason;
 }
 
-SeasonManager::SeasonPtr SeasonManager::GetSeason()
+SeasonManager::Season* SeasonManager::GetSeason()
 {
 	if (!GetExterior()) {
-		return std::nullopt;
+		return nullptr;
 	}
 
 	if (currentSeason == SEASON::kNone) {
@@ -65,15 +65,15 @@ SeasonManager::SeasonPtr SeasonManager::GetSeason()
 
 	switch (currentSeason) {
 	case SEASON::kWinter:
-		return winter;
+		return &winter;
 	case SEASON::kSpring:
-		return spring;
+		return &spring;
 	case SEASON::kSummer:
-		return summer;
+		return &summer;
 	case SEASON::kAutumn:
-		return autumn;
+		return &autumn;
 	default:
-		return std::nullopt;
+		return nullptr;
 	}
 }
 
@@ -169,7 +169,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 	CSimpleIniA ini;
 	ini.SetUnicode();
 	ini.SetMultiKey();
-	ini.SetAllowEmptyValues();
+	ini.SetAllowKeyOnly();
 
 	ini.LoadFile(path);
 
@@ -207,7 +207,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 		CSimpleIniA ini;
 		ini.SetUnicode();
 		ini.SetMultiKey();
-		ini.SetAllowEmptyValues();
+		ini.SetAllowKeyOnly();
 
 		if (const auto rc = ini.LoadFile(path.c_str()); rc < 0) {
 			logger::error("	couldn't read INI");
@@ -248,7 +248,7 @@ void SeasonManager::SaveSeason(std::string_view a_savePath)
 	ini.LoadFile(serializedSeasonList);
 
 	const auto season = GetCurrentSeason();
-	currentSeason = season ? season->get().GetType() : SEASON::kNone;
+	currentSeason = season ? season->GetType() : SEASON::kNone;
 
 	ini.SetValue("Saves", a_savePath.data(), std::to_string(stl::to_underlying(currentSeason)).c_str(), nullptr);
 
@@ -335,61 +335,67 @@ void SeasonManager::CleanupSerializedSeasonList() const
 SEASON SeasonManager::GetCurrentSeasonType()
 {
 	const auto season = GetCurrentSeason();
-	return season ? season->get().GetType() : SEASON::kNone;
+	return season ? season->GetType() : SEASON::kNone;
 }
 
 SEASON SeasonManager::GetSeasonType()
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetType() : SEASON::kNone;
+	return season ? season->GetType() : SEASON::kNone;
 }
 
 bool SeasonManager::CanApplySnowShader()
 {
 	const auto season = GetSeason();
-	return season ? season->get().CanApplySnowShader() : false;
+	return season ? season->CanApplySnowShader() : false;
 }
 
 std::pair<bool, std::string> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
 {
 	const auto season = GetSeason();
-	return season ? std::make_pair(season->get().CanSwapLOD(a_type), season->get().GetID().suffix) : std::make_pair(false, "");
+	return season ? std::make_pair(season->CanSwapLOD(a_type), season->GetID().suffix) : std::make_pair(false, "");
 }
 
 bool SeasonManager::CanSwapLandscape()
 {
 	const auto season = GetSeason();
-	return season ? season->get().CanSwapLandscape() : false;
+	return season ? season->CanSwapLandscape() : false;
 }
 
 bool SeasonManager::CanSwapForm(RE::FormType a_formType)
 {
 	const auto season = GetSeason();
-	return season ? season->get().CanSwapForm(a_formType) : false;
+	return season ? season->CanSwapForm(a_formType) : false;
+}
+
+bool SeasonManager::CanSwapGrass(bool a_useAlt)
+{
+	const auto season = GetSeason();
+	return season ? season->CanSwapForm(RE::FormType::Grass) && (!a_useAlt || season->GetUseAltGrass()) : false;
 }
 
 RE::TESBoundObject* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetFormSwapMap().GetSwapForm(a_form) : nullptr;
+	return season ? season->GetFormSwapMap().GetSwapForm(a_form) : nullptr;
 }
 
 RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::TESLandTexture* a_landTxst)
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetFormSwapMap().GetSwapLandTexture(a_landTxst) : nullptr;
+	return season ? season->GetFormSwapMap().GetSwapLandTexture(a_landTxst) : nullptr;
 }
 
 RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::BGSTextureSet* a_txst)
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetFormSwapMap().GetSwapLandTexture(a_txst) : nullptr;
+	return season ? season->GetFormSwapMap().GetSwapLandTexture(a_txst) : nullptr;
 }
 
 bool SeasonManager::GetUseAltGrass()
 {
 	const auto season = GetSeason();
-	return season ? season->get().GetUseAltGrass() : false;
+	return season ? season->GetUseAltGrass() : false;
 }
 
 bool SeasonManager::GetExterior()
