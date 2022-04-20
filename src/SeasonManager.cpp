@@ -1,6 +1,6 @@
 #include "SeasonManager.h"
 
-SeasonManager::Season* SeasonManager::GetCurrentSeason()
+Season* SeasonManager::GetCurrentSeason()
 {
 	switch (seasonType) {
 	case SEASON_TYPE::kPermanentWinter:
@@ -53,7 +53,7 @@ bool SeasonManager::UpdateSeason()
 	return currentSeason != lastSeason;
 }
 
-SeasonManager::Season* SeasonManager::GetSeason()
+Season* SeasonManager::GetSeason()
 {
 	if (!GetExterior()) {
 		return nullptr;

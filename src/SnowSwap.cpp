@@ -28,7 +28,7 @@ namespace SnowSwap
 			CSimpleIniA ini;
 			ini.SetUnicode();
 			ini.SetMultiKey();
-			ini.SetAllowEmptyValues();
+			ini.SetAllowKeyOnly();
 
 			if (const auto rc = ini.LoadFile(path.c_str()); rc < 0) {
 				logger::error("	couldn't read INI");
