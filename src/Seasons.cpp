@@ -105,10 +105,6 @@ void Season::LoadData(const CSimpleIniA& a_ini)
 {
 	formMap.LoadFormSwaps(a_ini);
 
-	if (const auto values = a_ini.GetSection("Grass"); values && !values->empty()) {
-		useAltGrass = true;
-	}
-
 	if (const auto values = a_ini.GetSection("Worldspaces"); values && !values->empty()) {
 		std::ranges::transform(*values, std::back_inserter(validWorldspaces), [&](const auto& val) { return val.first.pItem; });
 	}
@@ -120,9 +116,4 @@ void Season::SaveData(CSimpleIniA& a_ini)
 	validWorldspaces.erase(std::ranges::unique(validWorldspaces).begin(), validWorldspaces.end());
 
 	INI::set_value(a_ini, validWorldspaces, ID.type.c_str(), "Worldspaces", ";Valid worldspaces");
-}
-
-bool Season::GetUseAltGrass() const
-{
-	return useAltGrass;
 }

@@ -57,8 +57,6 @@ public:
 	void LoadData(const CSimpleIniA& a_ini);
 	void SaveData(CSimpleIniA& a_ini);
 
-	[[nodiscard]] bool GetUseAltGrass() const;
-
 private:
 	SEASON season{};
 	SEASON_ID ID{};
@@ -86,7 +84,6 @@ private:
 	bool swapTreeLOD{ true };
 
 	bool swapGrass{ true };
-	bool useAltGrass{ false };
 
 	FormSwapMap formMap{};
 

@@ -380,10 +380,10 @@ bool SeasonManager::CanSwapForm(RE::FormType a_formType)
 	return season ? season->CanSwapForm(a_formType) : false;
 }
 
-bool SeasonManager::CanSwapGrass(bool a_useAlt)
+bool SeasonManager::CanSwapGrass()
 {
 	const auto season = GetSeason();
-	return season ? season->CanSwapForm(RE::FormType::Grass) && (!a_useAlt || season->GetUseAltGrass()) : false;
+	return season ? season->CanSwapForm(RE::FormType::Grass) : false;
 }
 
 RE::TESBoundObject* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
@@ -402,12 +402,6 @@ RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::BGSTextureSet* a
 {
 	const auto season = GetSeason();
 	return season ? season->GetFormSwapMap().GetSwapLandTexture(a_txst) : nullptr;
-}
-
-bool SeasonManager::GetUseAltGrass()
-{
-	const auto season = GetSeason();
-	return season ? season->GetUseAltGrass() : false;
 }
 
 bool SeasonManager::GetExterior()

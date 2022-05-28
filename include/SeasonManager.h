@@ -44,7 +44,7 @@ public:
 
 	[[nodiscard]] bool CanSwapLandscape();
 	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType);
-	[[nodiscard]] bool CanSwapGrass(bool a_useAlt);
+	[[nodiscard]] bool CanSwapGrass();
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 	template <class T>
@@ -52,7 +52,6 @@ public:
 
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
 	RE::TESLandTexture* GetSwapLandTexture(const RE::BGSTextureSet* a_txst);
-	[[nodiscard]] bool GetUseAltGrass();
 
 	[[nodiscard]] bool GetExterior();
 	void SetExterior(bool a_isExterior);
