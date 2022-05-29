@@ -1,4 +1,5 @@
 #include "SeasonManager.h"
+#include "Papyrus.h"
 
 Season* SeasonManager::GetSeasonImpl(SEASON a_season)
 {
@@ -59,7 +60,11 @@ bool SeasonManager::UpdateSeason()
 
 		lastSeason = seasonOverride;
 
-		return seasonOverride != tempLastSeason;
+        const auto shouldUpdate = seasonOverride != tempLastSeason;
+		if (shouldUpdate) {
+			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(tempLastSeason), stl::to_underlying(seasonOverride), true);
+		}
+		return shouldUpdate;
 	}
 
 	lastSeason = currentSeason;
@@ -67,7 +72,11 @@ bool SeasonManager::UpdateSeason()
 	const auto season = GetCurrentSeason();
 	currentSeason = season ? season->GetType() : SEASON::kNone;
 
-	return currentSeason != lastSeason;
+    const auto shouldUpdate = currentSeason != lastSeason;
+	if (shouldUpdate) {
+		Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(lastSeason), stl::to_underlying(currentSeason), false);
+	}
+	return shouldUpdate;
 }
 
 Season* SeasonManager::GetSeason()
