@@ -17,9 +17,9 @@ Season* SeasonManager::GetSeasonImpl(SEASON a_season)
 	}
 }
 
-Season* SeasonManager::GetCurrentSeason()
+Season* SeasonManager::GetCurrentSeason(bool a_ignoreOverride)
 {
-	if (seasonOverride != SEASON::kNone) {
+	if (!a_ignoreOverride && seasonOverride != SEASON::kNone) {
 		return GetSeasonImpl(seasonOverride);
 	}
 
@@ -50,9 +50,11 @@ Season* SeasonManager::GetCurrentSeason()
 
 bool SeasonManager::UpdateSeason()
 {
-	if (loadedFromSave) {
+	bool shouldUpdate = false;
+
+    if (loadedFromSave) {
 		loadedFromSave = false;
-		return true;
+		shouldUpdate = true;
 	}
 
 	if (seasonOverride != SEASON::kNone) {
@@ -60,22 +62,26 @@ bool SeasonManager::UpdateSeason()
 
 		lastSeason = seasonOverride;
 
-        const auto shouldUpdate = seasonOverride != tempLastSeason;
+		if (!shouldUpdate) {
+			shouldUpdate = seasonOverride != tempLastSeason;
+		}
 		if (shouldUpdate) {
 			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(tempLastSeason), stl::to_underlying(seasonOverride), true);
 		}
-		return shouldUpdate;
+	} else {
+		lastSeason = currentSeason;
+
+		const auto season = GetCurrentSeason();
+		currentSeason = season ? season->GetType() : SEASON::kNone;
+
+	    if (!shouldUpdate) {
+			shouldUpdate = currentSeason != lastSeason;
+		}
+		if (shouldUpdate) {
+			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(lastSeason), stl::to_underlying(currentSeason), false);
+		}
 	}
 
-	lastSeason = currentSeason;
-
-	const auto season = GetCurrentSeason();
-	currentSeason = season ? season->GetType() : SEASON::kNone;
-
-    const auto shouldUpdate = currentSeason != lastSeason;
-	if (shouldUpdate) {
-		Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(lastSeason), stl::to_underlying(currentSeason), false);
-	}
 	return shouldUpdate;
 }
 
@@ -268,10 +274,11 @@ void SeasonManager::SaveSeason(std::string_view a_savePath)
 
 	ini.LoadFile(serializedSeasonList);
 
-	const auto season = GetCurrentSeason();
+	const auto season = GetCurrentSeason(true);
 	currentSeason = season ? season->GetType() : SEASON::kNone;
 
-	ini.SetValue("Saves", a_savePath.data(), std::to_string(stl::to_underlying(currentSeason)).c_str(), nullptr);
+    const auto seasonData = fmt::format("{}|{}", stl::to_underlying(currentSeason), stl::to_underlying(seasonOverride));
+	ini.SetValue("Saves", a_savePath.data(), seasonData.c_str(), nullptr);
 
 	(void)ini.SaveFile(serializedSeasonList);
 }
@@ -283,7 +290,14 @@ void SeasonManager::LoadSeason(const std::string& a_savePath)
 
 	ini.LoadFile(serializedSeasonList);
 
-	currentSeason = string::lexical_cast<SEASON>(ini.GetValue("Saves", a_savePath.c_str(), "3"));
+    const auto seasonData = string::split(ini.GetValue("Saves", a_savePath.c_str(), "3"), "|");
+	if (seasonData.size() == 2) {
+		currentSeason = string::lexical_cast<SEASON>(seasonData[0]);
+		seasonOverride = string::lexical_cast<SEASON>(seasonData[1]);
+	} else {
+		currentSeason = string::lexical_cast<SEASON>(seasonData[0]);
+	}
+
 	loadedFromSave = true;
 
 	(void)ini.SaveFile(serializedSeasonList);

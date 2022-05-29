@@ -64,7 +64,7 @@ protected:
 	using EventResult = RE::BSEventNotifyControl;
 
 	Season* GetSeason();
-	Season* GetCurrentSeason();
+	Season* GetCurrentSeason(bool a_ignoreOverride = false);
 	Season* GetSeasonImpl(SEASON a_season);
 
 	void LoadMonthToSeasonMap(CSimpleIniA& a_ini);
