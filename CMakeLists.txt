@@ -136,7 +136,6 @@ else ()
 	)
 endif()
 
-find_package(frozen CONFIG REQUIRED)
 find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
 
 # ---- Add source files ----
@@ -195,7 +194,6 @@ target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 		${CommonLibName}::${CommonLibName}
-		frozen::frozen
 )
 
 target_precompile_headers(

@@ -131,7 +131,7 @@ private:
 		{ MONTH::kEveningStar, SEASON::kWinter }
 	};
 
-	frozen::map<MONTH, std::pair<std::string_view, std::string_view>, 12> monthNames{
+	std::map<MONTH, std::pair<std::string_view, std::string_view>> monthNames{
 		{ MONTH::kMorningStar, std::make_pair("Morning Star"sv, ";January"sv) },
 		{ MONTH::kSunsDawn, std::make_pair("Sun's Dawn"sv, ";February"sv) },
 		{ MONTH::kFirstSeed, std::make_pair("First Seed"sv, ";March"sv) },
@@ -159,6 +159,8 @@ private:
 	std::atomic_bool isExterior{ false };
 
 	bool loadedFromSave{ false };
+
+	bool ignoreMainWINFormSwap{ false };
 
 	const wchar_t* settings{ L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini" };
 	const wchar_t* serializedSeasonList{ L"Data/Seasons/Serialization.ini" };

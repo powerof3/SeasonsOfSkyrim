@@ -23,14 +23,12 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 	INI::get_value(a_ini, swapGrass, seasonType.c_str(), "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)." : ";");
 
 	//make sure LOD has been generated! No need to check form swaps
-	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderName) {
+	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderPath) {
 		if (a_swaplod) {
-			const auto folderPath = fmt::format(a_folderName, "Tamriel");
-
 			bool exists = false;
 			try {
-				if (std::filesystem::exists(folderPath)) {
-					for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
+				if (std::filesystem::exists(a_folderPath)) {
+					for (const auto& entry : std::filesystem::directory_iterator(a_folderPath)) {
 						if (entry.exists() && entry.is_regular_file() && entry.path().string().contains(suffix)) {
 							exists = true;
 							break;
@@ -48,9 +46,9 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 		}
 	};
 
-	check_if_lod_exists(swapTerrainLOD, "Terrain", R"(Data\Meshes\Terrain\{})");
-	check_if_lod_exists(swapObjectLOD, "Object", R"(Data\Meshes\Terrain\{}\Objects)");
-	check_if_lod_exists(swapTreeLOD, "Tree", R"(Data\Meshes\Terrain\{}\Trees)");
+	check_if_lod_exists(swapTerrainLOD, "Terrain", R"(Data\Meshes\Terrain\Tamriel)");
+	check_if_lod_exists(swapObjectLOD, "Object", R"(Data\Meshes\Terrain\Tamriel\Objects)");
+	check_if_lod_exists(swapTreeLOD, "Tree", R"(Data\Meshes\Terrain\Tamriel\Trees)");
 }
 
 bool Season::CanApplySnowShader() const
