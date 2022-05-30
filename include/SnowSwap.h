@@ -91,7 +91,7 @@ namespace SnowSwap
 		RE::BGSMaterialObject* _multiPassSnowShader{ nullptr };
 		RE::BGSMaterialObject* _singlePassSnowShader{ nullptr };
 
-		Set<std::string> _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD", "Marker" };
+		Set<std::string> _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD", "Marker", "Brazier" };
 	};
 
 	namespace Statics
