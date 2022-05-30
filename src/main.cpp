@@ -11,7 +11,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kPostLoad:
 		{
-		    try {
+			try {
 				SeasonManager::GetSingleton()->LoadSettings();
 			} catch (...) {
 				logger::error("Exception caught when loading settings! Check whether your setting values are valid. Default values will be used instead");

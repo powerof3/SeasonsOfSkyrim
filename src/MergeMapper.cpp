@@ -28,7 +28,7 @@ namespace MergeMapper
 				} catch (std::exception& e) {
 					logger::warn("	Unable to open {}:{}", stl::utf16_to_utf8(file).value_or("<unicode conversion error>"s), e.what());
 				}
-				auto converted_merged = stl::utf16_to_utf8(merged).value_or(""s); //json requires wstring conversion to utf encoding https://json.nlohmann.me/home/faq/#parse-errors-reading-non-ascii-characters
+				auto converted_merged = stl::utf16_to_utf8(merged).value_or(""s);  //json requires wstring conversion to utf encoding https://json.nlohmann.me/home/faq/#parse-errors-reading-non-ascii-characters
 				if (converted_merged != "" && !json_data.empty()) {
 					for (auto& [esp, idmap] : json_data.items()) {
 						auto espkey = esp;

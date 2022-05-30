@@ -12,16 +12,16 @@ namespace Papyrus
 
 		logger::info("{:*^30}", "FUNCTIONS"sv);
 
-        Functions::Bind(*a_vm);
+		Functions::Bind(*a_vm);
 
 		return true;
 	}
 
-    namespace Functions
+	namespace Functions
 	{
 		void RegisterForSeasonChange_Alias(VM*, StackID, RE::StaticFunctionTag*, RE::BGSRefAlias* a_alias)
 		{
-            RegisterForSeasonChangeImpl(a_alias);
+			RegisterForSeasonChangeImpl(a_alias);
 		}
 		void RegisterForSeasonChange_AME(VM*, StackID, RE::StaticFunctionTag*, RE::ActiveEffect* a_activeEffect)
 		{
@@ -45,12 +45,12 @@ namespace Papyrus
 			UnregisterForSeasonChangeImpl(a_form);
 		}
 
-	    std::uint32_t GetCurrentSeason(VM*, StackID, RE::StaticFunctionTag*)
+		std::uint32_t GetCurrentSeason(VM*, StackID, RE::StaticFunctionTag*)
 		{
 			return stl::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
 		}
 
-	    std::uint32_t GetSeasonOverride(VM*, StackID, RE::StaticFunctionTag*)
+		std::uint32_t GetSeasonOverride(VM*, StackID, RE::StaticFunctionTag*)
 		{
 			return stl::to_underlying(SeasonManager::GetSingleton()->GetSeasonOverride());
 		}
