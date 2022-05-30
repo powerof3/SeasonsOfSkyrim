@@ -26,17 +26,14 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderPath) {
 		if (a_swaplod) {
 			bool exists = false;
-			try {
-				if (std::filesystem::exists(a_folderPath)) {
-					for (const auto& entry : std::filesystem::directory_iterator(a_folderPath)) {
-						if (entry.exists() && entry.is_regular_file() && entry.path().string().contains(suffix)) {
-							exists = true;
-							break;
-						}
+			if (std::filesystem::exists(a_folderPath)) {
+				for (const auto& entry : std::filesystem::directory_iterator(a_folderPath)) {
+					if (entry.exists() && entry.is_regular_file() && entry.path().string().contains(suffix)) {
+						exists = true;
+						break;
 					}
 				}
-			} catch (...) {}
-
+			}
 			if (!exists) {
 				a_swaplod = false;
 				logger::warn(" {} LOD files not found! Default LOD will be used instead", a_lodType);
