@@ -128,9 +128,9 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 					get_snow_variants(a_ini, type, treeMap);
 				}
 				break;
-			default: 
+			default:
 				break;
-            }
+			}
 		}
 	}
 

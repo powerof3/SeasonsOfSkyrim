@@ -14,7 +14,7 @@ public:
 	void LoadFormSwaps(const CSimpleIniA& a_ini);
 	void LoadFormSwaps(const std::string& a_type, const std::vector<std::string>& a_values);
 
-    bool GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate);
+	bool GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 
@@ -52,14 +52,14 @@ public:
 private:
 	friend class SeasonManager;
 
-    using RecordType = std::string;
+	using RecordType = std::string;
 
 	template <class T>
 	using TempFormSwapMap = std::map<T*, T*>;
 
 	static inline std::array<RecordType, 6>
 		standardTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
-    static inline std::array<RecordType, 8>
+	static inline std::array<RecordType, 8>
 		recordTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees", "Flora", "VisualEffects" };
 
 	static RE::TESLandTexture* GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture);

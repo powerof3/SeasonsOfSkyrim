@@ -170,7 +170,7 @@ private:
 		bool skipMovStat{ false };
 		bool skipStat{ false };
 		bool skipTree{ false };
-	    
+
 	} mainWINSwap;
 
 	const wchar_t* settings{ L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini" };
