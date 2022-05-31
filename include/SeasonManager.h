@@ -160,7 +160,18 @@ private:
 
 	bool loadedFromSave{ false };
 
-	bool ignoreMainWINFormSwap{ false };
+	struct
+	{
+		bool skip{ false };
+
+		bool skipLT{ false };
+		bool skipActi{ false };
+		bool skipFurn{ false };
+		bool skipMovStat{ false };
+		bool skipStat{ false };
+		bool skipTree{ false };
+	    
+	} mainWINSwap;
 
 	const wchar_t* settings{ L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini" };
 	const wchar_t* serializedSeasonList{ L"Data/Seasons/Serialization.ini" };

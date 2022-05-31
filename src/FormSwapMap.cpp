@@ -49,7 +49,7 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 	return RE::TESForm::LookupByID<RE::TESLandTexture>(formID);
 }
 
-void FormSwapMap::LoadFormSwaps_Impl(const std::string& a_type, const std::vector<std::string>& a_values)
+void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std::string>& a_values)
 {
 	auto& map = get_map(a_type);
 	for (const auto& key : a_values) {
@@ -68,12 +68,12 @@ void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 {
 	for (auto& type : recordTypes) {
 		if (const auto values = a_ini.GetSection(type.c_str()); values && !values->empty()) {
-			logger::info("		[{}] read {} variants", type, values ? values->size() : -1);
+			logger::info("	[{}] read {} variants", type, values ? values->size() : -1);
 
 			std::vector<std::string> vec;
 			std::ranges::transform(*values, std::back_inserter(vec), [&](const auto& val) { return val.first.pItem; });
 
-			LoadFormSwaps_Impl(type, vec);
+			LoadFormSwaps(type, vec);
 		}
 	}
 }
@@ -83,7 +83,7 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 {
 	bool save = false;
 
-	for (auto& type : recordTypes) {
+	for (auto& type : standardTypes) {
 		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty() || a_forceRegenerate) {
 			save = true;
 
@@ -91,32 +91,46 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 				a_ini.Delete(type.c_str(), nullptr, true);
 			}
 
-			if (type == "LandTextures") {
-				TempFormSwapMap<RE::TESLandTexture> landTxstMap;
-				get_snow_variants(a_ini, type, landTxstMap);
-			} else if (type == "Activators") {
-				TempFormSwapMap<RE::TESObjectACTI> activatorMap;
-				get_snow_variants(a_ini, type, activatorMap);
-			} else if (type == "Furniture") {
-				TempFormSwapMap<RE::TESFurniture> activatorMap;
-				get_snow_variants(a_ini, type, activatorMap);
-			} else if (type == "MovableStatics") {
-				TempFormSwapMap<RE::BGSMovableStatic> movStaticMap;
-				get_snow_variants(a_ini, type, movStaticMap);
-			} else if (type == "Statics") {
-				TempFormSwapMap<RE::TESObjectSTAT> staticMap;
-				get_snow_variants(a_ini, type, staticMap);
-			} else if (type == "Trees") {
-				TempFormSwapMap<RE::TESObjectTREE> treeMap;
-				get_snow_variants(a_ini, type, treeMap);
-			}
-		} else {
-			logger::info("	[{}] read {} variants", type, values ? values->size() : -1);
-
-			std::vector<std::string> vec;
-			std::ranges::transform(*values, std::back_inserter(vec), [&](const auto& val) { return val.first.pItem; });
-
-			LoadFormSwaps_Impl(type, vec);
+			switch (string::const_hash(type)) {
+			case string::const_hash("LandTextures"sv):
+				{
+					TempFormSwapMap<RE::TESLandTexture> landTxstMap;
+					get_snow_variants(a_ini, type, landTxstMap);
+				}
+				break;
+			case string::const_hash("Activators"sv):
+				{
+					TempFormSwapMap<RE::TESObjectACTI> activatorMap;
+					get_snow_variants(a_ini, type, activatorMap);
+				}
+				break;
+			case string::const_hash("Furniture"sv):
+				{
+					TempFormSwapMap<RE::TESFurniture> furnitureMap;
+					get_snow_variants(a_ini, type, furnitureMap);
+				}
+				break;
+			case string::const_hash("MovableStatics"sv):
+				{
+					TempFormSwapMap<RE::BGSMovableStatic> movStaticMap;
+					get_snow_variants(a_ini, type, movStaticMap);
+				}
+				break;
+			case string::const_hash("Statics"sv):
+				{
+					TempFormSwapMap<RE::TESObjectSTAT> staticMap;
+					get_snow_variants(a_ini, type, staticMap);
+				}
+				break;
+			case string::const_hash("Trees"sv):
+				{
+					TempFormSwapMap<RE::TESObjectTREE> treeMap;
+					get_snow_variants(a_ini, type, treeMap);
+				}
+				break;
+			default: 
+				break;
+            }
 		}
 	}
 
