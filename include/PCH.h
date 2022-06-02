@@ -68,7 +68,6 @@ using Set = robin_hood::unordered_flat_set<T>;
 #	define OFFSET(se, ae) ae
 #	define OFFSET_3(se, ae, vr) ae
 #elif SKYRIMVR
-#	define ID(se, ae) se
 #	define OFFSET(se, ae) se
 #	define OFFSET_3(se, ae, vr) vr
 #else
