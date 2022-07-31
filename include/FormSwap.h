@@ -10,8 +10,6 @@ namespace FormSwap
 		{
 			if (SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter) {
 				return a_ref->IsInWater() && a_base->Is(RE::FormType::Static, RE::FormType::MovableStatic) /*|| raycast::is_under_shelter(a_ref)*/;
-				RE::Actor* actor;
-				if (actor->IsPointDeepUnderWater())
 			}
 			return false;
 		}
