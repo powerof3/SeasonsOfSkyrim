@@ -53,31 +53,30 @@ bool SeasonManager::UpdateSeason()
 	bool shouldUpdate = false;
 
 	if (loadedFromSave) {
-		loadedFromSave = false;
 		shouldUpdate = true;
 	}
 
 	if (seasonOverride != SEASON::kNone) {
 		const auto tempLastSeason = lastSeason;
-
 		lastSeason = seasonOverride;
 
 		if (!shouldUpdate) {
 			shouldUpdate = seasonOverride != tempLastSeason;
 		}
-		if (shouldUpdate) {
+		if (!loadedFromSave && shouldUpdate) {
 			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(tempLastSeason), stl::to_underlying(seasonOverride), true);
 		}
-	} else {
-		lastSeason = currentSeason;
 
-		const auto season = GetCurrentSeason();
-		currentSeason = season ? season->GetType() : SEASON::kNone;
+	} else {
+	    lastSeason = currentSeason;
 
 		if (!shouldUpdate) {
+			const auto season = GetCurrentSeason();
+			currentSeason = season ? season->GetType() : SEASON::kNone;
+
 			shouldUpdate = currentSeason != lastSeason;
 		}
-		if (shouldUpdate) {
+		if (!loadedFromSave && shouldUpdate) {
 			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(lastSeason), stl::to_underlying(currentSeason), false);
 		}
 	}
@@ -92,6 +91,7 @@ Season* SeasonManager::GetSeason()
 	}
 
 	auto season = SEASON::kNone;
+
 	if (seasonOverride != SEASON::kNone) {
 		season = seasonOverride;
 	} else {

@@ -54,7 +54,7 @@ namespace SnowSwap
 		}
 	}
 
-	bool Manager::GetBlacklisted(const RE::TESForm* a_form) const
+    bool Manager::GetBlacklisted(const RE::TESForm* a_form) const
 	{
 		return _snowShaderBlacklist.contains(a_form->GetFormID());
 	}
@@ -88,7 +88,7 @@ namespace SnowSwap
 			return SWAP_RESULT::kSeasonFail;
 		}
 
-		if (!a_ref || a_ref->IsDeleted() || a_ref->IsInWater() || !a_ref->IsDynamicForm() && GetBlacklisted(a_ref)) {
+		if (!a_ref || a_ref->IsDisabled() || a_ref->IsDeleted() || a_ref->IsInWater() || !a_ref->IsDynamicForm() && GetBlacklisted(a_ref)) {
 			return SWAP_RESULT::kRefFail;
 		}
 
@@ -97,6 +97,10 @@ namespace SnowSwap
 		if (base != a_ref->GetBaseObject() || base->IsNot(RE::FormType::MovableStatic, RE::FormType::Container) || base->IsMarker() || base->IsHeadingMarker() || GetBlacklisted(base)) {
 			return SWAP_RESULT::kBaseFail;
 		}
+
+		/*if (raycast::is_under_shelter(a_ref)) {
+			return SWAP_RESULT::kRefFail;
+		}*/ 
 
 		return SWAP_RESULT::kSuccess;
 	}
@@ -107,7 +111,7 @@ namespace SnowSwap
 			return SWAP_RESULT::kSeasonFail;
 		}
 
-		if (!a_ref || a_ref->IsDeleted() || a_ref->IsInWater() || !a_ref->IsDynamicForm() && GetBlacklisted(a_ref)) {
+		if (!a_ref || a_ref->IsDisabled() || a_ref->IsDeleted() || a_ref->IsInWater() || !a_ref->IsDynamicForm() && GetBlacklisted(a_ref)) {
 			return SWAP_RESULT::kRefFail;
 		}
 
@@ -123,6 +127,10 @@ namespace SnowSwap
 
 		if (a_static->IsSnowObject() || a_static->IsSkyObject() || a_static->HasTreeLOD()) {
 			return SWAP_RESULT::kBaseFail;
+		}
+
+		if (raycast::is_under_shelter(a_ref)) {
+			return SWAP_RESULT::kRefFail;
 		}
 
 		return SWAP_RESULT::kSuccess;
@@ -225,8 +233,8 @@ namespace SnowSwap
 		}
 	}
 
-	void Manager::RemoveSinglePassSnow(RE::NiAVObject* a_node)
-	{
+	void Manager::RemoveSinglePassSnow(RE::NiAVObject* a_node) const
+    {
 		if (!a_node) {
 			return;
 		}

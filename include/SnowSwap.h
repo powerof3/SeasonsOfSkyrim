@@ -53,7 +53,7 @@ namespace SnowSwap
 		[[nodiscard]] SNOW_TYPE GetSnowType(const RE::TESObjectSTAT* a_static, RE::NiAVObject* a_node) const;
 
 		void ApplySinglePassSnow(RE::NiAVObject* a_node, float a_angle = 90.0f);
-		void RemoveSinglePassSnow(RE::NiAVObject* a_node);
+		void RemoveSinglePassSnow(RE::NiAVObject* a_node) const;
 
 		[[nodiscard]] std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
 		void SetSnowInfo(const RE::TESObjectSTAT* a_static, RE::BGSMaterialObject* a_originalMat, SNOW_TYPE a_snowType);

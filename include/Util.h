@@ -94,6 +94,39 @@ namespace model
 	}
 }
 
+namespace raycast
+{
+	inline bool is_under_shelter(const RE::TESObjectREFR* a_ref)
+	{
+		const auto cell = a_ref->GetParentCell();
+		const auto bhkWorld = cell ? cell->GetbhkWorld() : nullptr;
+
+		if (!bhkWorld) {
+			return false;
+		}
+
+		RE::NiPoint3 rayStart = a_ref->GetPosition();
+		RE::NiPoint3 rayEnd = rayStart;
+
+		rayEnd.z = 9999.0f;
+
+		RE::bhkPickData pickData;
+
+		const auto havokWorldScale = RE::bhkWorld::GetWorldScale();
+		pickData.rayInput.from = rayStart * havokWorldScale;
+		pickData.rayInput.to = rayEnd * havokWorldScale;
+		pickData.rayInput.enableShapeCollectionFilter = false;
+		pickData.rayInput.filterInfo = RE::bhkCollisionFilter::GetSingleton()->GetNewSystemGroup() << 16 | stl::to_underlying(RE::COL_LAYER::kLOS);
+
+		if (bhkWorld->PickObject(pickData); pickData.rayOutput.HasHit()) {
+			if (const auto hitRef = RE::TESHavokUtilities::FindCollidableRef(*pickData.rayOutput.rootCollidable); hitRef && hitRef != a_ref) {
+				return true;
+			}
+		}
+		return false;
+	}
+}
+
 namespace INI
 {
 	template <class T>
