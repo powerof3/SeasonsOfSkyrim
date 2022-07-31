@@ -6,7 +6,7 @@ namespace FormSwap
 {
 	struct detail
 	{
-	    static bool should_reject_winter_swap(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
+		static bool should_reject_winter_swap(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
 		{
 			if (SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter) {
 				return a_ref->IsInWater() && a_base->Is(RE::FormType::Static, RE::FormType::MovableStatic) /*|| raycast::is_under_shelter(a_ref)*/;

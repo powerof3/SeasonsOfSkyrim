@@ -68,7 +68,7 @@ bool SeasonManager::UpdateSeason()
 		}
 
 	} else {
-	    lastSeason = currentSeason;
+		lastSeason = currentSeason;
 
 		if (!shouldUpdate) {
 			const auto season = GetCurrentSeason();

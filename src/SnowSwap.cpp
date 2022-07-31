@@ -54,7 +54,7 @@ namespace SnowSwap
 		}
 	}
 
-    bool Manager::GetBlacklisted(const RE::TESForm* a_form) const
+	bool Manager::GetBlacklisted(const RE::TESForm* a_form) const
 	{
 		return _snowShaderBlacklist.contains(a_form->GetFormID());
 	}
@@ -100,7 +100,7 @@ namespace SnowSwap
 
 		/*if (raycast::is_under_shelter(a_ref)) {
 			return SWAP_RESULT::kRefFail;
-		}*/ 
+		}*/
 
 		return SWAP_RESULT::kSuccess;
 	}
@@ -234,7 +234,7 @@ namespace SnowSwap
 	}
 
 	void Manager::RemoveSinglePassSnow(RE::NiAVObject* a_node) const
-    {
+	{
 		if (!a_node) {
 			return;
 		}
