@@ -135,7 +135,7 @@ namespace INI
 		if constexpr (std::is_same_v<T, bool>) {
 			a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
 			a_ini.SetBoolValue(a_section, a_key, a_value, a_comment);
-		} else if constexpr (std::is_enum_v<T> || std::is_arithmetic_v<T>) {
+		} else if constexpr (std::is_enum_v<T>) {
 			a_value = string::lexical_cast<T>(a_ini.GetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str()));
 			a_ini.SetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str(), a_comment);
 		} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
