@@ -81,6 +81,10 @@ bool SeasonManager::UpdateSeason()
 		}
 	}
 
+	if (loadedFromSave) {
+		loadedFromSave = false;
+	}
+
 	return shouldUpdate;
 }
 
