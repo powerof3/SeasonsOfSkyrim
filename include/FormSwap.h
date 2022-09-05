@@ -6,23 +6,15 @@ namespace FormSwap
 {
 	struct detail
 	{
-		static bool should_reject_winter_swap(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
-		{
-			if (SeasonManager::GetSingleton()->GetSeasonType() == SEASON::kWinter) {
-				return a_ref->IsInWater() && a_base->Is(RE::FormType::Static, RE::FormType::MovableStatic) /*|| raycast::is_under_shelter(a_ref)*/;
-			}
-			return false;
-		}
-
-		static std::pair<RE::TESBoundObject*, bool> get_form_swap(RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
+		static RE::TESBoundObject* get_form_swap(RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
 		{
 			const auto seasonManager = SeasonManager::GetSingleton();
 
 			if (const auto origBase = seasonManager->CanSwapForm(a_base->GetFormType()) ? util::get_original_base(a_ref) : nullptr; origBase) {
-				return { seasonManager->GetSwapForm(origBase), should_reject_winter_swap(a_ref, origBase) };
+				return seasonManager->GetSwapForm(origBase);
 			}
 
-			return { nullptr, true };
+			return nullptr;
 		}
 	};
 
@@ -30,15 +22,12 @@ namespace FormSwap
 	{
 		static RE::RefHandle& thunk(RE::TESObjectREFR* a_ref, RE::RefHandle& a_handle)
 		{
-			const auto base = a_ref && !a_ref->IsDynamicForm() && !a_ref->IsDeleted() ? a_ref->GetBaseObject() : nullptr;
+			const auto base = a_ref && !a_ref->IsDynamicForm() && !a_ref->IsDeleted() && !a_ref->IsDisabled() ? a_ref->GetBaseObject() :
+                                                                                                                nullptr;
 			if (a_ref && base) {
-				const auto& [replaceBase, rejected] = detail::get_form_swap(a_ref, base);
-
-				if (replaceBase) {
+				if (const auto replaceBase = detail::get_form_swap(a_ref, base); replaceBase) {
 					util::set_original_base(a_ref, base);
-					if (!rejected) {
-						a_ref->SetObjectReference(replaceBase);
-					}
+					a_ref->SetObjectReference(replaceBase);
 				} else if (const auto origBase = util::get_original_base(a_ref); origBase && origBase != base) {
 					a_ref->SetObjectReference(origBase);
 				}

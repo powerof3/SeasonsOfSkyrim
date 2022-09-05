@@ -34,7 +34,7 @@ namespace Cache
 
 	private:
 		using EditorID = std::string;
-		using Lock = std::mutex;
+		using Lock = std::shared_mutex;
 		using Locker = std::scoped_lock<Lock>;
 
 		Map<RE::FormID, EditorID> _formIDToEditorIDMap;

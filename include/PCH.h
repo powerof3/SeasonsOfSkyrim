@@ -4,11 +4,11 @@
 #include "SKSE/SKSE.h"
 
 #include <ShlObj.h>
-#include <ranges>
-
 #include <SimpleIni.h>
 #include <fmt/format.h>
+#include <ranges>
 #include <robin_hood.h>
+#include <shared_mutex>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <xbyak/xbyak.h>
 
