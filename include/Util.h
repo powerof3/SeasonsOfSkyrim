@@ -1,6 +1,6 @@
 #pragma once
 
-#include "MergeMapper.h"
+#include "MergeMapperPluginAPI.h"
 
 namespace util
 {
@@ -158,8 +158,12 @@ namespace INI
 	{
 		if (a_str.find('~') != std::string::npos) {
 			const auto formPair = string::split(a_str, "~");
-			const auto [modName, formID] = MergeMapper::GetNewFormID(formPair[1], formPair[0]);
-			return RE::TESDataHandler::GetSingleton()->LookupFormID(formID, modName);
+			if (g_mergeMapperInterface) {
+				const auto [modName, formID] = g_mergeMapperInterface->GetNewFormID(formPair[1].c_str(), std::stoi(formPair[0], 0, 16));
+				return RE::TESDataHandler::GetSingleton()->LookupFormID(formID, (const char*)modName);
+			} else {
+				return RE::TESDataHandler::GetSingleton()->LookupFormID(std::stoi(formPair[0], 0, 16), formPair[1]);
+			}
 		}
 		if (const auto form = RE::TESForm::LookupByEditorID(a_str); form) {
 			return form->GetFormID();
