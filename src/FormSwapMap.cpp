@@ -62,7 +62,7 @@ void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std
 
 		if (swapFormID != 0 && formID != 0) {
 			map.insert_or_assign(formID, swapFormID);
-		}else {
+		} else {
 			logger::error("	failed to process {} [{:x}|{:x}|{}] (formID not found)", key, formID, swapFormID, data);
 		}
 	}
