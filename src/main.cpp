@@ -1,7 +1,7 @@
 #include "FormSwap.h"
 #include "LODSwap.h"
 #include "LandscapeSwap.h"
-#include "MergeMapper.h"
+#include "MergeMapperPluginAPI.h"
 #include "Papyrus.h"
 #include "SeasonManager.h"
 #include "SnowSwap.h"
@@ -25,6 +25,17 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			LandscapeSwap::Install();
 			LODSwap::Install();
 			SnowSwap::Install();
+		}
+		break;
+	case SKSE::MessagingInterface::kPostPostLoad:
+		{
+			logger::info("{:*^30}", "MERGES");
+			MergeMapperPluginAPI::GetMergeMapperInterface001();  // Request interface
+			if (g_mergeMapperInterface) {                        // Use Interface
+				const auto version = g_mergeMapperInterface->GetBuildNumber();
+				logger::info("Got MergeMapper interface buildnumber {}", version);
+			} else
+				logger::info("MergeMapper not detected");
 		}
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
@@ -140,7 +151,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	logger::info("loaded");
 
 	SKSE::Init(a_skse);
-	MergeMapper::GetMerges();
 
 	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);

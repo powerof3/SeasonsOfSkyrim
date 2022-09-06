@@ -4,7 +4,6 @@ set(headers ${headers}
 	include/FormSwapMap.h
 	include/LODSwap.h
 	include/LandscapeSwap.h
-	include/MergeMapper.h
 	include/PCH.h
 	include/Papyrus.h
 	include/SeasonManager.h
