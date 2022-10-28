@@ -4,28 +4,6 @@ namespace Cache
 {
 	void DataHolder::GetData()
 	{
-		const auto& [map, lock] = RE::TESForm::GetAllFormsByEditorID();
-		const RE::BSReadLockGuard locker{ lock };
-		if (map) {
-			for (auto& [id, form] : *map) {
-				switch (form->GetFormType()) {
-				case RE::FormType::Activator:
-				case RE::FormType::Furniture:
-				case RE::FormType::MaterialObject:
-				case RE::FormType::MovableStatic:
-				case RE::FormType::LandTexture:
-				case RE::FormType::Static:
-				case RE::FormType::Tree:
-				case RE::FormType::Grass:
-					{
-						_formIDToEditorIDMap.emplace(form->GetFormID(), id.c_str());
-					}
-					break;
-				default:
-					break;
-				}
-			}
-		}
 		if (const auto dataHandler = RE::TESDataHandler::GetSingleton()) {
 			for (const auto& landTexture : dataHandler->GetFormArray<RE::TESLandTexture>()) {
 				if (landTexture->textureSet) {
@@ -48,8 +26,12 @@ namespace Cache
 
 	std::string DataHolder::GetEditorID(RE::FormID a_formID)
 	{
-		const auto it = _formIDToEditorIDMap.find(a_formID);
-		return it != _formIDToEditorIDMap.end() ? it->second : std::string();
+		static auto tweaks = GetModuleHandle(L"po3_Tweaks");
+		static auto func = reinterpret_cast<_GetFormEditorID>(GetProcAddress(tweaks, "GetFormEditorID"));
+		if (func) {
+			return func(a_formID);
+		}
+		return {};
 	}
 
 	RE::TESLandTexture* DataHolder::GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)

@@ -6,7 +6,7 @@ namespace util
 {
 	inline std::string get_editorID(const RE::TESForm* a_form)
 	{
-		return Cache::DataHolder::GetSingleton()->GetEditorID(a_form->GetFormID());
+		return Cache::DataHolder::GetEditorID(a_form->GetFormID());
 	}
 
 	inline RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref)
@@ -49,7 +49,7 @@ namespace model
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				const auto txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : "";
+				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
 				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
 			});
 		}
@@ -157,12 +157,15 @@ namespace INI
 	inline RE::FormID parse_form(const std::string& a_str)
 	{
 		if (a_str.find('~') != std::string::npos) {
-			const auto formPair = string::split(a_str, "~");
-			if (g_mergeMapperInterface) {
-				const auto [modName, formID] = g_mergeMapperInterface->GetNewFormID(formPair[1].c_str(), std::stoi(formPair[0], 0, 16));
-				return RE::TESDataHandler::GetSingleton()->LookupFormID(formID, (const char*)modName);
-			} else {
-				return RE::TESDataHandler::GetSingleton()->LookupFormID(std::stoi(formPair[0], 0, 16), formPair[1]);
+			if (const auto splitID = string::split(a_str, "~"); splitID.size() == 2) {
+				const auto formID = string::lexical_cast<RE::FormID>(splitID[0], true);
+				const auto& modName = splitID[1];
+				if (g_mergeMapperInterface) {
+					const auto [mergedModName, mergedFormID] = g_mergeMapperInterface->GetNewFormID(modName.c_str(), formID);
+					return RE::TESDataHandler::GetSingleton()->LookupFormID(mergedFormID, mergedModName);
+				} else {
+					return RE::TESDataHandler::GetSingleton()->LookupFormID(formID, modName);
+				}
 			}
 		}
 		if (const auto form = RE::TESForm::LookupByEditorID(a_str); form) {

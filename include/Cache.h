@@ -13,7 +13,7 @@ namespace Cache
 
 		void GetData();
 
-		std::string GetEditorID(RE::FormID a_formID);
+		static std::string GetEditorID(RE::FormID a_formID);
 
 		RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
 
@@ -33,14 +33,11 @@ namespace Cache
 		DataHolder& operator=(DataHolder&&) = delete;
 
 	private:
-		using EditorID = std::string;
 		using Lock = std::shared_mutex;
 		using Locker = std::scoped_lock<Lock>;
-
-		Map<RE::FormID, EditorID> _formIDToEditorIDMap;
+		using _GetFormEditorID = const char* (*)(std::uint32_t);
 
 		MapPair<RE::FormID> _textureToLandMap;
-
 		Set<RE::FormID> _snowShaders;
 
 		mutable Lock _originalsLock;

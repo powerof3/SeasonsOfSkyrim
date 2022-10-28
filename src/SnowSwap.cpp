@@ -16,7 +16,7 @@ namespace SnowSwap
 		}
 
 		if (configs.empty()) {
-			logger::info("No .ini files with _SNOW suffix were found in the Data/Seasons folder. Snow Shader settings will not be loaded");
+			logger::info("No .ini files with _SNOW suffix were found in Data/Seasons folder. Snow Shader settings will not be loaded");
 			return;
 		}
 
@@ -35,15 +35,24 @@ namespace SnowSwap
 				continue;
 			}
 
-			if (const auto values = ini.GetSection("Blacklist"); values && !values->empty()) {
-				for (const auto& key : *values | std::views::keys) {
+			CSimpleIniA::TNamesDepend values;
+			ini.GetAllKeys("Blacklist", values);
+			values.sort(CSimpleIniA::Entry::LoadOrder());
+
+			if (!values.empty()) {
+				for (const auto& key : values) {
 					if (auto formID = INI::parse_form(key.pItem); formID != 0) {
 						_snowShaderBlacklist.insert(formID);
 					}
 				}
 			}
-			if (const auto values = ini.GetSection("Multipass Snow Whitelist"); values && !values->empty()) {
-				for (const auto& key : *values | std::views::keys) {
+
+			values.clear();
+			ini.GetAllKeys("Multipass Snow Whitelist", values);
+			values.sort(CSimpleIniA::Entry::LoadOrder());
+
+			if (!values.empty()) {
+				for (const auto& key : values) {
 					if (std::string value = key.pItem; value.contains(R"(/)") || value.contains(R"(\)") || value.contains(".nif")) {
 						_multipassSnowWhitelist.emplace(value);
 					} else if (auto formID = INI::parse_form(value); formID != 0) {

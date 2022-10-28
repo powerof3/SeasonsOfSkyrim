@@ -94,18 +94,14 @@ Season* SeasonManager::GetSeason()
 		return nullptr;
 	}
 
-	auto season = SEASON::kNone;
-
 	if (seasonOverride != SEASON::kNone) {
-		season = seasonOverride;
+		return GetSeasonImpl(seasonOverride);
 	} else {
 		if (currentSeason == SEASON::kNone) {
 			UpdateSeason();
 		}
-		season = currentSeason;
+		return GetSeasonImpl(currentSeason);
 	}
-
-	return GetSeasonImpl(season);
 }
 
 void SeasonManager::LoadMonthToSeasonMap(CSimpleIniA& a_ini)
@@ -276,11 +272,15 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 				break;
 			}
 
-			if (const auto values = ini.GetSection(type.c_str()); values && !values->empty()) {
-				logger::info("	[{}] read {} variants", type, values ? values->size() : -1);
+			CSimpleIniA::TNamesDepend values;
+			ini.GetAllKeys(type.c_str(), values);
+			values.sort(CSimpleIniA::Entry::LoadOrder());
+
+			if (!values.empty()) {
+				logger::info("	[{}] read {} variants", type, values.size());
 
 				std::vector<std::string> vec;
-				std::ranges::transform(*values, std::back_inserter(vec), [&](const auto& val) { return val.first.pItem; });
+				std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
 
 				winFormSwapMap.LoadFormSwaps(type, vec);
 			}
@@ -402,28 +402,20 @@ void SeasonManager::ClearSeason(std::string_view a_savePath) const
 void SeasonManager::CleanupSerializedSeasonList() const
 {
 	constexpr auto get_save_directory = []() -> std::optional<std::filesystem::path> {
-		wchar_t* buffer{ nullptr };
-		const auto result = SHGetKnownFolderPath(FOLDERID_Documents, KF_FLAG_DEFAULT, nullptr, std::addressof(buffer));
-		std::unique_ptr<wchar_t[], decltype(&::CoTaskMemFree)> knownPath(buffer, ::CoTaskMemFree);
-		if (!knownPath || result != S_OK) {
-			logger::error("failed to get known folder path"sv);
-			return std::nullopt;
+		if (auto path = logger::log_directory()) {
+			path->remove_filename(); //remove "/SKSE"
+		    path->append(RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString());
+			return path;
 		}
-
-		std::filesystem::path path = knownPath.get();
-#ifndef SKYRIMVR
-		path /= "My Games/Skyrim Special Edition/"sv;
-#else
-		path /= "My Games/Skyrim VR/"sv;
-#endif
-		path /= RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString();
-		return path;
+		return std::nullopt;
 	};
 
 	const auto directory = get_save_directory();
 	if (!directory) {
 		return;
 	}
+
+	logger::info("{:*^30}", "SAVES");
 
 	logger::info("Save directory is {}", directory->string());
 
@@ -434,12 +426,15 @@ void SeasonManager::CleanupSerializedSeasonList() const
 		return;
 	}
 
-	if (const auto values = ini.GetSection("Saves"); values && !values->empty()) {
+	CSimpleIniA::TNamesDepend values;
+	ini.GetAllKeys("Saves", values);
+	values.sort(CSimpleIniA::Entry::LoadOrder());
+
+	if (!values.empty()) {
 		std::vector<std::string> badSaves;
-		badSaves.reserve(values->size());
-		for (const auto& key : *values | std::views::keys) {
-			auto save = fmt::format("{}{}.ess", directory->string(), key.pItem);
-			if (!std::filesystem::exists(save)) {
+		badSaves.reserve(values.size());
+		for (const auto& key : values) {
+            if (auto save = fmt::format("{}{}.ess", directory->string(), key.pItem); !std::filesystem::exists(save)) {
 				badSaves.emplace_back(key.pItem);
 			}
 		}

@@ -71,7 +71,7 @@ namespace SnowSwap
 		Manager& operator=(Manager&&) = delete;
 
 	private:
-		using Lock = std::mutex;
+		using Lock = std::shared_mutex;
 		using Locker = std::scoped_lock<Lock>;
 		using SnowInfoMap = Map<RE::FormID, SnowInfo>;
 

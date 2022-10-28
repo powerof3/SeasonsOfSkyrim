@@ -1,6 +1,6 @@
 {
   "name": "seasons-of-skyrim",
-  "version-string": "1.7.3",
+  "version-string": "1.7.5",
   "description": "Seasons Of Skyrim",
   "homepage": "",
   "license": "MIT",
@@ -13,7 +13,7 @@
     "spdlog",
     "xbyak"
   ],
-  "builtin-baseline": "ecd55433fd37129109f663548f3b11204e35e630",
+  "builtin-baseline": "05fda317ed6b1aa5b3041b466170f0ff9357bbe6",
   "overrides": [
     {
       "name": "fmt",

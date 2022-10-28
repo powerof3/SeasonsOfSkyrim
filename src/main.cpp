@@ -8,9 +8,16 @@
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
+	static HMODULE tweaks{ nullptr };
+
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kPostLoad:
 		{
+			logger::info("{:*^30}", "DEPENDENCIES");
+
+			tweaks = GetModuleHandle(L"po3_Tweaks");
+			logger::info("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
+
 			try {
 				SeasonManager::GetSingleton()->LoadSettings();
 			} catch (...) {
@@ -30,16 +37,31 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	case SKSE::MessagingInterface::kPostPostLoad:
 		{
 			logger::info("{:*^30}", "MERGES");
-			MergeMapperPluginAPI::GetMergeMapperInterface001();  // Request interface
-			if (g_mergeMapperInterface) {                        // Use Interface
+			MergeMapperPluginAPI::GetMergeMapperInterface001();
+			if (g_mergeMapperInterface) {
 				const auto version = g_mergeMapperInterface->GetBuildNumber();
 				logger::info("Got MergeMapper interface buildnumber {}", version);
-			} else
+			} else {
 				logger::info("MergeMapper not detected");
+			}
 		}
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
+			std::string tweaksError{};
+			if (tweaks == nullptr) {
+				tweaksError = "powerofthree's Tweaks is not installed!\n";
+			}
+			std::string sosESPError{};
+			if (const auto file = RE::TESDataHandler::GetSingleton()->LookupLoadedLightModByName("SnowOverSkyrim.esp"); !file) {
+				sosESPError = "SnowOverSkyrim.esp is not enabled!\n";
+			}
+			if (!tweaksError.empty() || !sosESPError.empty()) {
+				std::string error{ "[Seasons of Skyrim]\nMissing dependencies!\n\n" };
+				error.append(tweaksError).append(sosESPError);
+				RE::DebugMessageBox(error.c_str());
+			}
+
 			Cache::DataHolder::GetSingleton()->GetData();
 
 			logger::info("{:*^30}", "CONFIG");
@@ -61,13 +83,13 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		break;
 	case SKSE::MessagingInterface::kSaveGame:
 		{
-			std::string_view savePath = { static_cast<char*>(a_message->data), a_message->dataLen };
+			std::string_view savePath{ static_cast<char*>(a_message->data), a_message->dataLen };
 			SeasonManager::GetSingleton()->SaveSeason(savePath);
 		}
 		break;
 	case SKSE::MessagingInterface::kPreLoadGame:
 		{
-			std::string savePath({ static_cast<char*>(a_message->data), a_message->dataLen });
+			std::string savePath{ static_cast<char*>(a_message->data), a_message->dataLen };
 			string::replace_last_instance(savePath, ".ess", "");
 
 			SeasonManager::GetSingleton()->LoadSeason(savePath);
@@ -75,7 +97,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		break;
 	case SKSE::MessagingInterface::kDeleteGame:
 		{
-			std::string_view savePath = { static_cast<char*>(a_message->data), a_message->dataLen };
+			std::string_view savePath{ static_cast<char*>(a_message->data), a_message->dataLen };
 			SeasonManager::GetSingleton()->ClearSeason(savePath);
 		}
 		break;
@@ -140,7 +162,7 @@ void InitializeLog()
 	log->flush_on(spdlog::level::info);
 
 	spdlog::set_default_logger(std::move(log));
-	spdlog::set_pattern("[%l] %v"s);
+	spdlog::set_pattern("[%H:%M:%S:%e] %v"s);
 
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
 }

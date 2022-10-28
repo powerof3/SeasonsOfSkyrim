@@ -55,15 +55,19 @@ void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std
 	for (const auto& key : a_values) {
 		const auto formPair = string::split(key, "|");
 
+		const auto formID = INI::parse_form(formPair[kBase]);
+		const auto swapFormID = INI::parse_form(formPair[kSwap]);
+
 		const auto data = formPair.size() > 2 ? formPair[2] : std::string{};
 
-		auto formID = INI::parse_form(formPair[kBase]);
-		auto swapFormID = INI::parse_form(formPair[kSwap]);
-
-		if (swapFormID != 0 && formID != 0) {
-			map.insert_or_assign(formID, swapFormID);
+		if (formID != 0) {
+			if (swapFormID != 0) {
+				map.insert_or_assign(formID, swapFormID);
+			} else {
+				logger::error("	failed to process {} [{:x}|{:x}|{}] (SWAP formID not found)", key, formID, swapFormID, data);
+			}
 		} else {
-			logger::error("	failed to process {} [{:x}|{:x}|{}] (formID not found)", key, formID, swapFormID, data);
+			logger::error("	failed to process {} [{:x}|{:x}|{}] (BASE formID not found)", key, formID, swapFormID, data);
 		}
 	}
 }
@@ -71,11 +75,15 @@ void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std
 void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 {
 	for (auto& type : recordTypes) {
-		if (const auto values = a_ini.GetSection(type.c_str()); values && !values->empty()) {
-			logger::info("	[{}] read {} variants", type, values ? values->size() : -1);
+		CSimpleIniA::TNamesDepend values;
+		a_ini.GetAllKeys(type.c_str(), values);
+		values.sort(CSimpleIniA::Entry::LoadOrder());
+
+		if (!values.empty()) {
+			logger::info("	[{}] read {} variants", type, values.size());
 
 			std::vector<std::string> vec;
-			std::ranges::transform(*values, std::back_inserter(vec), [&](const auto& val) { return val.first.pItem; });
+			std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
 
 			LoadFormSwaps(type, vec);
 		}
@@ -88,7 +96,11 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 	bool save = false;
 
 	for (auto& type : standardTypes) {
-		if (const auto values = a_ini.GetSection(type.c_str()); !values || values->empty() || a_forceRegenerate) {
+		CSimpleIniA::TNamesDepend values;
+		a_ini.GetAllKeys(type.c_str(), values);
+		values.sort(CSimpleIniA::Entry::LoadOrder());
+
+		if (values.empty() || a_forceRegenerate) {
 			save = true;
 
 			if (a_forceRegenerate) {

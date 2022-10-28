@@ -100,8 +100,12 @@ void Season::LoadData(const CSimpleIniA& a_ini)
 {
 	formMap.LoadFormSwaps(a_ini);
 
-	if (const auto values = a_ini.GetSection("Worldspaces"); values && !values->empty()) {
-		std::ranges::transform(*values, std::back_inserter(validWorldspaces), [&](const auto& val) { return val.first.pItem; });
+	CSimpleIniA::TNamesDepend values;
+	a_ini.GetAllKeys("Worldspaces", values);
+	values.sort(CSimpleIniA::Entry::LoadOrder());
+
+	if (!values.empty()) {
+		std::ranges::transform(values, std::back_inserter(validWorldspaces), [&](const auto& val) { return val.pItem; });
 	}
 }
 
