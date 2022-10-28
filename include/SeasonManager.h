@@ -20,7 +20,7 @@ public:
 	{
 		logger::info("{:*^30}", "EVENTS");
 
-	    if (const auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
+		if (const auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
 			scripts->AddEventSink<RE::TESActivateEvent>(GetSingleton());
 			logger::info("Registered {}"sv, typeid(RE::TESActivateEvent).name());
 		}

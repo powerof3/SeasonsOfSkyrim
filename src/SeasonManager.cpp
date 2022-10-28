@@ -403,8 +403,8 @@ void SeasonManager::CleanupSerializedSeasonList() const
 {
 	constexpr auto get_save_directory = []() -> std::optional<std::filesystem::path> {
 		if (auto path = logger::log_directory()) {
-			path->remove_filename(); //remove "/SKSE"
-		    path->append(RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString());
+			path->remove_filename();  //remove "/SKSE"
+			path->append(RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString());
 			return path;
 		}
 		return std::nullopt;
@@ -434,7 +434,7 @@ void SeasonManager::CleanupSerializedSeasonList() const
 		std::vector<std::string> badSaves;
 		badSaves.reserve(values.size());
 		for (const auto& key : values) {
-            if (auto save = fmt::format("{}{}.ess", directory->string(), key.pItem); !std::filesystem::exists(save)) {
+			if (auto save = fmt::format("{}{}.ess", directory->string(), key.pItem); !std::filesystem::exists(save)) {
 				badSaves.emplace_back(key.pItem);
 			}
 		}
