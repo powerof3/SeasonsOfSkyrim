@@ -157,15 +157,19 @@ namespace INI
 	inline RE::FormID parse_form(const std::string& a_str)
 	{
 		if (a_str.find('~') != std::string::npos) {
-			if (const auto splitID = string::split(a_str, "~"); splitID.size() == 2) {
+			RE::TESForm* form = nullptr;
+		    if (const auto splitID = string::split(a_str, "~"); splitID.size() == 2) {
 				const auto formID = string::lexical_cast<RE::FormID>(splitID[0], true);
 				const auto& modName = splitID[1];
 				if (g_mergeMapperInterface) {
 					const auto [mergedModName, mergedFormID] = g_mergeMapperInterface->GetNewFormID(modName.c_str(), formID);
-					return RE::TESDataHandler::GetSingleton()->LookupFormID(mergedFormID, mergedModName);
+					form =  RE::TESDataHandler::GetSingleton()->LookupForm(mergedFormID, mergedModName);
 				} else {
-					return RE::TESDataHandler::GetSingleton()->LookupFormID(formID, modName);
+					form = RE::TESDataHandler::GetSingleton()->LookupForm(formID, modName);
 				}
+			}
+			if (form) {
+				return form->GetFormID(); 
 			}
 		}
 		if (const auto form = RE::TESForm::LookupByEditorID(a_str); form) {

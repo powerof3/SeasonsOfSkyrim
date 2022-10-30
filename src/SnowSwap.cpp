@@ -40,9 +40,12 @@ namespace SnowSwap
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				for (const auto& key : values) {
+				logger::info("	Reading [Blacklist]");
+			    for (const auto& key : values) {
 					if (auto formID = INI::parse_form(key.pItem); formID != 0) {
 						_snowShaderBlacklist.insert(formID);
+					} else {
+						logger::error("		failed to process {} [{:X}] (formID not found)", key.pItem, formID);
 					}
 				}
 			}
@@ -52,11 +55,14 @@ namespace SnowSwap
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				for (const auto& key : values) {
+				logger::info("	Reading [Multipass Snow Whitelist]");
+			    for (const auto& key : values) {
 					if (std::string value = key.pItem; value.contains(R"(/)") || value.contains(R"(\)") || value.contains(".nif")) {
 						_multipassSnowWhitelist.emplace(value);
 					} else if (auto formID = INI::parse_form(value); formID != 0) {
 						_multipassSnowWhitelist.emplace(formID);
+					} else {
+						logger::error("		failed to process {} [{:X}] (formID not found)", key.pItem, formID);
 					}
 				}
 			}

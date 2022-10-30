@@ -58,16 +58,14 @@ void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std
 		const auto formID = INI::parse_form(formPair[kBase]);
 		const auto swapFormID = INI::parse_form(formPair[kSwap]);
 
-		const auto data = formPair.size() > 2 ? formPair[2] : std::string{};
-
 		if (formID != 0) {
 			if (swapFormID != 0) {
 				map.insert_or_assign(formID, swapFormID);
 			} else {
-				logger::error("	failed to process {} [{:x}|{:x}|{}] (SWAP formID not found)", key, formID, swapFormID, data);
+				logger::error("		failed to process {} [{:X}|{:X}] (SWAP formID not found)", key, formID, swapFormID);
 			}
 		} else {
-			logger::error("	failed to process {} [{:x}|{:x}|{}] (BASE formID not found)", key, formID, swapFormID, data);
+			logger::error("		failed to process {} [{:X}|{:X}] (BASE formID not found)", key, formID, swapFormID);
 		}
 	}
 }
