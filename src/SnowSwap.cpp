@@ -41,7 +41,7 @@ namespace SnowSwap
 
 			if (!values.empty()) {
 				logger::info("	Reading [Blacklist]");
-			    for (const auto& key : values) {
+				for (const auto& key : values) {
 					if (auto formID = INI::parse_form(key.pItem); formID != 0) {
 						_snowShaderBlacklist.insert(formID);
 					} else {
@@ -56,7 +56,7 @@ namespace SnowSwap
 
 			if (!values.empty()) {
 				logger::info("	Reading [Multipass Snow Whitelist]");
-			    for (const auto& key : values) {
+				for (const auto& key : values) {
 					if (std::string value = key.pItem; value.contains(R"(/)") || value.contains(R"(\)") || value.contains(".nif")) {
 						_multipassSnowWhitelist.emplace(value);
 					} else if (auto formID = INI::parse_form(value); formID != 0) {
