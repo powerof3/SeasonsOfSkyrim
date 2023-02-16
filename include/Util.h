@@ -32,7 +32,7 @@ namespace model
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			for (const auto& textures : altTextures) {
-				const auto txst = textures.textureSet;
+				const auto        txst = textures.textureSet;
 				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
 				if (string::icontains(path, a_txstPath)) {
 					return true;
@@ -48,7 +48,7 @@ namespace model
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
+				const auto        txst = textures.textureSet;
 				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
 				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
 			});
@@ -62,7 +62,7 @@ namespace model
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
+				const auto        txst = textures.textureSet;
 				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
 				return string::icontains(path, a_txstPath);
 			});
@@ -76,7 +76,7 @@ namespace model
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
 			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto txst = textures.textureSet;
+				const auto        txst = textures.textureSet;
 				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
 				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
 			});
@@ -157,7 +157,7 @@ namespace INI
 	inline RE::FormID parse_form(const std::string& a_str)
 	{
 		if (const auto splitID = string::split(a_str, "~"); splitID.size() == 2) {
-			const auto formID = string::lexical_cast<RE::FormID>(splitID[0], true);
+			const auto  formID = string::lexical_cast<RE::FormID>(splitID[0], true);
 			const auto& modName = splitID[1];
 			if (g_mergeMapperInterface) {
 				const auto [mergedModName, mergedFormID] = g_mergeMapperInterface->GetNewFormID(modName.c_str(), formID);

@@ -29,14 +29,14 @@ namespace SnowSwap
 		struct SnowInfo
 		{
 			RE::FormID origShader;
-			SNOW_TYPE snowType;
+			SNOW_TYPE  snowType;
 		};
 
 		struct ProjectedUV
 		{
-			bool init{ false };
+			bool         init{ false };
 			RE::NiColorA projectedParams{};
-			RE::NiColor projectedColor{};
+			RE::NiColor  projectedColor{};
 		};
 
 		static Manager* GetSingleton()
@@ -56,7 +56,7 @@ namespace SnowSwap
 		void RemoveSinglePassSnow(RE::NiAVObject* a_node) const;
 
 		[[nodiscard]] std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
-		void SetSnowInfo(const RE::TESObjectSTAT* a_static, RE::BGSMaterialObject* a_originalMat, SNOW_TYPE a_snowType);
+		void                                  SetSnowInfo(const RE::TESObjectSTAT* a_static, RE::BGSMaterialObject* a_originalMat, SNOW_TYPE a_snowType);
 
 		[[nodiscard]] RE::BGSMaterialObject* GetMultiPassSnowShader();
 		[[nodiscard]] RE::BGSMaterialObject* GetSinglePassSnowShader();
@@ -80,11 +80,11 @@ namespace SnowSwap
 
 		bool GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const;
 
-		Set<RE::FormID> _snowShaderBlacklist{};
+		Set<RE::FormID>                            _snowShaderBlacklist{};
 		Set<std::variant<RE::FormID, std::string>> _multipassSnowWhitelist{};
 
 		mutable Lock _snowInfoLock;
-		SnowInfoMap _snowInfoMap{};
+		SnowInfoMap  _snowInfoMap{};
 
 		ProjectedUV _defaultObj{};
 
@@ -102,7 +102,7 @@ namespace SnowSwap
 			{
 				const auto manager = Manager::GetSingleton();
 
-				auto snowInfo = manager->GetSnowInfo(a_static);
+				auto       snowInfo = manager->GetSnowInfo(a_static);
 				const auto result = manager->CanApplySnowShader(a_static, a_ref);
 
 				auto singlePassSnowState = SWAP_TYPE::kSkip;

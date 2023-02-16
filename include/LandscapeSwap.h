@@ -102,7 +102,7 @@ namespace LandscapeSwap
 			}
 
 			static inline size_t size = 0x5;
-			static inline auto id = RELOCATION_ID(18414, 18845);
+			static inline auto   id = RELOCATION_ID(18414, 18845);
 		};
 
 		inline void Install()
@@ -127,7 +127,7 @@ namespace LandscapeSwap
 			}
 
 			static inline size_t size = 0xE;
-			static inline auto id = RELOCATION_ID(18418, 18849);
+			static inline auto   id = RELOCATION_ID(18418, 18849);
 		};
 
 		inline void Install()

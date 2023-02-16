@@ -40,7 +40,7 @@ public:
 
 	[[nodiscard]] SEASON GetCurrentSeasonType();
 	[[nodiscard]] SEASON GetSeasonType();
-	[[nodiscard]] bool CanApplySnowShader();
+	[[nodiscard]] bool   CanApplySnowShader();
 
 	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD(LOD_TYPE a_type);
 
@@ -56,10 +56,10 @@ public:
 	RE::TESLandTexture* GetSwapLandTexture(const RE::BGSTextureSet* a_txst);
 
 	[[nodiscard]] bool GetExterior();
-	void SetExterior(bool a_isExterior);
+	void               SetExterior(bool a_isExterior);
 
 	SEASON GetSeasonOverride() const;
-	void SetSeasonOverride(SEASON a_season);
+	void   SetSeasonOverride(SEASON a_season);
 
 protected:
 	using MONTH = RE::Calendar::Month;

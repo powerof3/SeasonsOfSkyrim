@@ -38,9 +38,9 @@ namespace Cache
 		using _GetFormEditorID = const char* (*)(std::uint32_t);
 
 		MapPair<RE::FormID> _textureToLandMap;
-		Set<RE::FormID> _snowShaders;
+		Set<RE::FormID>     _snowShaders;
 
-		mutable Lock _originalsLock;
+		mutable Lock        _originalsLock;
 		MapPair<RE::FormID> _originals;
 	};
 }

@@ -123,7 +123,7 @@ void SeasonManager::LoadSettings()
 	logger::info("{:*^30}", "SETTINGS");
 
 	//delete and recreate settings if new settings are not found.
-	const auto month = ini.GetLongValue("Settings", "Morning Star", -1);
+	const auto        month = ini.GetLongValue("Settings", "Morning Star", -1);
 	const std::string flora = ini.GetValue("Winter", "Flora", "-1");
 
 	if (month == -1 || flora == "-1") {
@@ -166,10 +166,10 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 	ini.LoadFile(serializedSeasonList);
 
 #ifndef SKYRIMVR
-	const auto& mods = RE::TESDataHandler::GetSingleton()->compiledFileCollection;
+	const auto&  mods = RE::TESDataHandler::GetSingleton()->compiledFileCollection;
 	const size_t actualModCount = mods.files.size() + mods.smallFiles.size();
 #else
-	auto& mods = RE::TESDataHandler::GetSingleton()->files;
+	auto&  mods = RE::TESDataHandler::GetSingleton()->files;
 	size_t actualModCount = 0;
 	for (const auto mod : mods)
 		if (mod)

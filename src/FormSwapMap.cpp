@@ -15,7 +15,7 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 		return nullptr;
 	}
 
-	const auto mat = a_landTexture->materialType;
+	const auto            mat = a_landTexture->materialType;
 	const RE::MATERIAL_ID matID = mat ? mat->materialID : RE::MATERIAL_ID::kNone;
 
 	RE::FormID formID;

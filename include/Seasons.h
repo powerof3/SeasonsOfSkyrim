@@ -51,14 +51,14 @@ public:
 	[[nodiscard]] bool CanSwapLandscape() const;
 
 	[[nodiscard]] const SEASON_ID& GetID() const;
-	[[nodiscard]] SEASON GetType() const;
+	[[nodiscard]] SEASON           GetType() const;
 
 	[[nodiscard]] FormSwapMap& GetFormSwapMap();
-	void LoadData(const CSimpleIniA& a_ini);
-	void SaveData(CSimpleIniA& a_ini);
+	void                       LoadData(const CSimpleIniA& a_ini);
+	void                       SaveData(CSimpleIniA& a_ini);
 
 private:
-	SEASON season{};
+	SEASON    season{};
 	SEASON_ID ID{};
 
 	std::vector<std::string> validWorldspaces{
