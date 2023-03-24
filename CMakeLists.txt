@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 set(NAME "po3_SeasonsOfSkyrim" CACHE STRING "")
-set(VERSION 1.7.5 CACHE STRING "")
+set(VERSION 1.7.6 CACHE STRING "")
 set(VR_VERSION 1)
 set(AE_VERSION 1)
 
@@ -135,8 +135,10 @@ else ()
 	)
 endif()
 
-find_path(SIMPLEINI_INCLUDE_DIRS "ConvertUTF.c")
+find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/detail/SimpleIni.h")
 find_path(MERGEMAPPER_INCLUDE_DIRS "MergeMapperPluginAPI.h")
+
+find_package(unordered_dense CONFIG REQUIRED)
 
 # ---- Add source files ----
 
@@ -189,7 +191,7 @@ target_include_directories(
 	PRIVATE
 		${CMAKE_CURRENT_BINARY_DIR}/include
 		${CMAKE_CURRENT_SOURCE_DIR}/include
-		${SIMPLEINI_INCLUDE_DIRS}
+		${CLIB_UTIL_INCLUDE_DIRS}
 		${MERGEMAPPER_INCLUDE_DIRS}
 )
 
@@ -197,6 +199,7 @@ target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 		${CommonLibName}::${CommonLibName}
+		unordered_dense::unordered_dense
 )
 
 target_precompile_headers(

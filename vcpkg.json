@@ -1,16 +1,16 @@
 {
   "name": "seasons-of-skyrim",
-  "version-string": "1.7.5",
+  "version-string": "1.7.6",
   "description": "Seasons Of Skyrim",
   "homepage": "",
   "license": "MIT",
   "dependencies": [
     "boost-stl-interfaces",
+    "clib-util",
     "mergemapper",
-    "robin-hood-hashing",
     "rsm-binary-io",
-    "simpleini",
     "spdlog",
+    "unordered-dense",
     "xbyak"
   ],
   "builtin-baseline": "01b29f6d8212bc845da64773b18665d682f5ab66",

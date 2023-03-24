@@ -129,26 +129,6 @@ namespace raycast
 
 namespace INI
 {
-	template <class T>
-	void get_value(CSimpleIniA& a_ini, T& a_value, const char* a_section, const char* a_key, const char* a_comment)
-	{
-		if constexpr (std::is_same_v<T, bool>) {
-			a_value = a_ini.GetBoolValue(a_section, a_key, a_value);
-			a_ini.SetBoolValue(a_section, a_key, a_value, a_comment);
-		} else if constexpr (std::is_enum_v<T>) {
-			a_value = string::lexical_cast<T>(a_ini.GetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str()));
-			a_ini.SetValue(a_section, a_key, std::to_string(stl::to_underlying(a_value)).c_str(), a_comment);
-		} else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
-			const std::string tempValue = a_ini.GetValue(a_section, a_key, string::join(a_value, R"(|)").c_str());
-			a_value = string::split(tempValue, R"(|)");
-
-			a_ini.SetValue(a_section, a_key, string::join(a_value, R"(|)").c_str(), a_comment);
-		} else {
-			a_value = a_ini.GetValue(a_section, a_key, a_value.c_str());
-			a_ini.SetValue(a_section, a_key, a_value.c_str(), a_comment);
-		}
-	}
-
 	inline void set_value(CSimpleIniA& a_ini, const std::vector<std::string>& a_value, const char* a_section, const char* a_key, const char* a_comment, const char* a_deliminator = R"(|)")
 	{
 		a_ini.SetValue(a_section, a_key, string::join(a_value, a_deliminator).c_str(), a_comment);
@@ -157,7 +137,7 @@ namespace INI
 	inline RE::FormID parse_form(const std::string& a_str)
 	{
 		if (const auto splitID = string::split(a_str, "~"); splitID.size() == 2) {
-			const auto  formID = string::lexical_cast<RE::FormID>(splitID[0], true);
+			const auto formID = string::to_num<RE::FormID>(splitID[0], true);
 			const auto& modName = splitID[1];
 			if (g_mergeMapperInterface) {
 				const auto [mergedModName, mergedFormID] = g_mergeMapperInterface->GetNewFormID(modName.c_str(), formID);

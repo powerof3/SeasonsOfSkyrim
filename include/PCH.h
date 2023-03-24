@@ -2,14 +2,15 @@
 
 #define WIN32_LEAN_AND_MEAN
 
+#include <ranges>
+
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
+#include <ClibUtil/simpleINI.hpp>
 #include <ShlObj.h>
-#include <SimpleIni.h>
+#include <ankerl/unordered_dense.h>
 #include <fmt/format.h>
-#include <ranges>
-#include <robin_hood.h>
 #include <shared_mutex>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <xbyak/xbyak.h>
@@ -17,7 +18,8 @@
 #define DLLEXPORT __declspec(dllexport)
 
 namespace logger = SKSE::log;
-namespace string = SKSE::stl::string;
+namespace string = clib_util::string;
+namespace ini = clib_util::ini;
 
 using namespace std::literals;
 
@@ -58,13 +60,13 @@ namespace stl
 }
 
 template <class T1, class T2>
-using Map = robin_hood::unordered_flat_map<T1, T2>;
+using Map = ankerl::unordered_dense::map<T1, T2>;
 
 template <class T>
-using MapPair = robin_hood::unordered_flat_map<T, T>;
+using MapPair = ankerl::unordered_dense::map<T, T>;
 
 template <class T>
-using Set = robin_hood::unordered_flat_set<T>;
+using Set = ankerl::unordered_dense::set<T>;
 
 #ifdef SKYRIM_AE
 #	define OFFSET(se, ae) ae
