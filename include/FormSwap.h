@@ -8,40 +8,41 @@ namespace FormSwap
 	{
 		static RE::TESBoundObject* get_form_swap(RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_base)
 		{
-			const auto seasonManager = SeasonManager::GetSingleton();
+			const auto seasonMngr = SeasonManager::GetSingleton();
+			const auto origBase = seasonMngr->CanSwapForm(a_base->GetFormType()) ? util::get_original_base(a_ref) : nullptr;
 
-			if (const auto origBase = seasonManager->CanSwapForm(a_base->GetFormType()) ? util::get_original_base(a_ref) : nullptr; origBase) {
-				return seasonManager->GetSwapForm(origBase);
-			}
-
-			return nullptr;
+			return origBase ? seasonMngr->GetSwapForm(origBase) : nullptr;
 		}
 	};
 
-	struct GetHandle
+	struct ShouldBackgroundClone
 	{
-		static RE::RefHandle& thunk(RE::TESObjectREFR* a_ref, RE::RefHandle& a_handle)
+		static bool thunk(RE::TESObjectREFR* a_this)
 		{
-			const auto base = a_ref && !a_ref->IsDynamicForm() && !a_ref->IsDeleted() && !a_ref->IsDisabled() ? a_ref->GetBaseObject() :
-                                                                                                                nullptr;
-			if (a_ref && base) {
-				if (const auto replaceBase = detail::get_form_swap(a_ref, base); replaceBase) {
-					util::set_original_base(a_ref, base);
-					a_ref->SetObjectReference(replaceBase);
-				} else if (const auto origBase = util::get_original_base(a_ref); origBase && origBase != base) {
-					a_ref->SetObjectReference(origBase);
+			if (a_this->IsDynamicForm() || a_this->IsDeleted() || a_this->IsDisabled()) {
+				return func(a_this);
+			}
+
+			if (const auto base = a_this->GetBaseObject()) {
+				if (const auto replaceBase = detail::get_form_swap(a_this, base)) {
+					util::set_original_base(a_this, base);
+					a_this->SetObjectReference(replaceBase);
+				} else if (const auto origBase = util::get_original_base(a_this); origBase && origBase != base) {
+					a_this->SetObjectReference(origBase);
 				}
 			}
 
-			return func(a_ref, a_handle);
+			return func(a_this);
 		}
 		static inline REL::Relocation<decltype(thunk)> func;
+
+		static inline constexpr std::size_t index{ 0 };
+		static inline constexpr std::size_t size{ 0x6D };
 	};
 
 	inline void Install()
 	{
-		REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(12910, 13057), 0x3E };  //ModelLoader::QueueReference
-		stl::write_thunk_call<GetHandle>(target.address());
+		stl::write_vfunc<RE::TESObjectREFR, ShouldBackgroundClone>();
 
 		logger::info("Installed form swapper"sv);
 	}

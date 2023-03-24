@@ -58,6 +58,35 @@ public:
 	void                       SaveData(CSimpleIniA& a_ini);
 
 private:
+	[[nodiscard]] bool is_valid_swap_type(const RE::FormType a_formType) const
+	{
+		switch (a_formType) {
+		case RE::FormType::Activator:
+			return swapActivators;
+		case RE::FormType::Furniture:
+			return swapFurniture;
+		case RE::FormType::MovableStatic:
+			return swapMovableStatics;
+		case RE::FormType::Static:
+			return swapStatics;
+		case RE::FormType::Tree:
+			return swapTrees;
+		case RE::FormType::Grass:
+			return swapGrass;
+		case RE::FormType::Flora:
+			return swapFlora;
+		case RE::FormType::ReferenceEffect:
+			return swapVFX;
+		default:
+			return false;
+		}
+	}
+	[[nodiscard]] bool is_in_valid_worldspace() const
+	{
+		const auto worldSpace = RE::TES::GetSingleton()->worldSpace;
+		return worldSpace && std::ranges::find(validWorldspaces, worldSpace->GetFormEditorID()) != validWorldspaces.end();
+	}
+
 	SEASON    season{};
 	SEASON_ID ID{};
 
@@ -86,34 +115,4 @@ private:
 	bool swapGrass{ true };
 
 	FormSwapMap formMap{};
-
-	[[nodiscard]] bool is_valid_swap_type(const RE::FormType a_formType) const
-	{
-		switch (a_formType) {
-		case RE::FormType::Activator:
-			return swapActivators;
-		case RE::FormType::Furniture:
-			return swapFurniture;
-		case RE::FormType::MovableStatic:
-			return swapMovableStatics;
-		case RE::FormType::Static:
-			return swapStatics;
-		case RE::FormType::Tree:
-			return swapTrees;
-		case RE::FormType::Grass:
-			return swapGrass;
-		case RE::FormType::Flora:
-			return swapFlora;
-		case RE::FormType::ReferenceEffect:
-			return swapVFX;
-		default:
-			return false;
-		}
-	}
-
-	[[nodiscard]] bool is_in_valid_worldspace() const
-	{
-		const auto worldSpace = RE::TES::GetSingleton()->worldSpace;
-		return worldSpace && std::ranges::find(validWorldspaces, worldSpace->GetFormEditorID()) != validWorldspaces.end();
-	}
 };
