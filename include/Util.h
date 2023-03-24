@@ -137,7 +137,7 @@ namespace INI
 	inline RE::FormID parse_form(const std::string& a_str)
 	{
 		if (const auto splitID = string::split(a_str, "~"); splitID.size() == 2) {
-			const auto formID = string::to_num<RE::FormID>(splitID[0], true);
+			const auto  formID = string::to_num<RE::FormID>(splitID[0], true);
 			const auto& modName = splitID[1];
 			if (g_mergeMapperInterface) {
 				const auto [mergedModName, mergedFormID] = g_mergeMapperInterface->GetNewFormID(modName.c_str(), formID);
