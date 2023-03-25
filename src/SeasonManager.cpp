@@ -146,7 +146,7 @@ void SeasonManager::LoadSettings()
 	ini::get_value(ini, mainWINSwap.skipStat, "Winter", "Skip Statics", nullptr);
 	ini::get_value(ini, mainWINSwap.skipTree, "Winter", "Skip Tree", nullptr);
 
-	logger::info("season type is {}", stl::to_underlying(seasonType));
+	logger::info("Season type is {}", stl::to_underlying(seasonType));
 
 	LoadMonthToSeasonMap(ini);
 
@@ -223,7 +223,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			case string::const_hash("LandTextures"sv):
 				{
 					if (mainWINSwap.skipLT) {
-						logger::info("	[{}] skipping...", type);
+						logger::info("\t[{}] skipping...", type);
 						continue;
 					}
 				}
@@ -231,7 +231,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			case string::const_hash("Activators"sv):
 				{
 					if (mainWINSwap.skipActi) {
-						logger::info("	[{}] skipping...", type);
+						logger::info("\t[{}] skipping...", type);
 						continue;
 					}
 				}
@@ -239,7 +239,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			case string::const_hash("Furniture"sv):
 				{
 					if (mainWINSwap.skipFurn) {
-						logger::info("	[{}] skipping...", type);
+						logger::info("\t[{}] skipping...", type);
 						continue;
 					}
 				}
@@ -247,7 +247,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			case string::const_hash("MovableStatics"sv):
 				{
 					if (mainWINSwap.skipMovStat) {
-						logger::info("	[{}] skipping...", type);
+						logger::info("\t[{}] skipping...", type);
 						continue;
 					}
 				}
@@ -255,7 +255,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			case string::const_hash("Statics"sv):
 				{
 					if (mainWINSwap.skipStat) {
-						logger::info("	[{}] skipping...", type);
+						logger::info("\t[{}] skipping...", type);
 						continue;
 					}
 				}
@@ -263,7 +263,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			case string::const_hash("Trees"sv):
 				{
 					if (mainWINSwap.skipTree) {
-						logger::info("	[{}] skipping...", type);
+						logger::info("\t[{}] skipping...", type);
 						continue;
 					}
 				}
@@ -277,7 +277,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				logger::info("	[{}] read {} variants", type, values.size());
+				logger::info("\t[{}] read {} variants", type, values.size());
 
 				std::vector<std::string> vec;
 				std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
@@ -312,7 +312,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 	std::ranges::sort(configs);
 
 	for (auto& path : configs) {
-		logger::info("	INI : {}", path);
+		logger::info("\tINI : {}", path);
 
 		CSimpleIniA ini;
 		ini.SetUnicode();
@@ -320,7 +320,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 		ini.SetAllowKeyOnly();
 
 		if (const auto rc = ini.LoadFile(path.c_str()); rc < 0) {
-			logger::error("	couldn't read INI");
+			logger::error("\tcouldn't read INI");
 			continue;
 		}
 

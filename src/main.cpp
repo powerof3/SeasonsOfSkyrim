@@ -180,3 +180,23 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	return true;
 }
+
+extern "C" DLLEXPORT std::uint32_t GetCurrentSeason()
+{
+	return stl::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
+}
+
+extern "C" DLLEXPORT std::uint32_t GetSeasonOverride()
+{
+	return stl::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
+}
+
+extern "C" DLLEXPORT void SetSeasonOverride(std::uint32_t a_season)
+{
+	SeasonManager::GetSingleton()->SetSeasonOverride(static_cast<SEASON>(a_season));
+}
+
+extern "C" DLLEXPORT void ClearSeasonOverride()
+{
+	SeasonManager::GetSingleton()->SetSeasonOverride(SEASON::kNone);
+}

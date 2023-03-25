@@ -36,9 +36,9 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 			}
 			if (!exists) {
 				a_swaplod = false;
-				logger::warn(" {} LOD files not found! Default LOD will be used instead", a_lodType);
+				logger::warn("\t{} LOD files not found! Default LOD will be used instead", a_lodType);
 			} else {
-				logger::info(" {} LOD files found", a_lodType);
+				logger::info("\t{} LOD files found", a_lodType);
 			}
 		}
 	};
