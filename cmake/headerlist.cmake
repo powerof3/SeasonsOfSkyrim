@@ -1,5 +1,6 @@
 set(headers ${headers}
 	include/Cache.h
+	include/Debug.h
 	include/FormSwap.h
 	include/FormSwapMap.h
 	include/LODSwap.h

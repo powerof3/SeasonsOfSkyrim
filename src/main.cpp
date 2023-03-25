@@ -1,3 +1,4 @@
+#include "Debug.h"
 #include "FormSwap.h"
 #include "LODSwap.h"
 #include "LandscapeSwap.h"
@@ -28,6 +29,8 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			FormSwap::Install();
 			LandscapeSwap::Install();
 			SnowSwap::Install();
+
+			Debug::Install();
 		}
 		break;
 	case SKSE::MessagingInterface::kPostPostLoad:
@@ -62,7 +65,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 			logger::info("{:*^30}", "CONFIG");
 
-			std::filesystem::path seasonsPath{ "Data/Seasons"sv };
+			const std::filesystem::path seasonsPath{ "Data/Seasons"sv };
 			if (std::filesystem::directory_entry seasonsFolder{ seasonsPath }; !seasonsFolder.exists()) {
 				logger::info("Existing Seasons folder not found, creating it");
 				std::filesystem::create_directory(seasonsPath);
