@@ -12,12 +12,12 @@ public:
 		Hooks::Install();
 	}
 
-	static void RegisterEvents()
+	void RegisterEvents()
 	{
 		logger::info("{:*^30}", "EVENTS");
 
 		if (const auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
-			scripts->AddEventSink<RE::TESActivateEvent>(GetSingleton());
+			scripts->AddEventSink<RE::TESActivateEvent>(this);
 			logger::info("Registered {}"sv, typeid(RE::TESActivateEvent).name());
 		}
 	}
@@ -25,6 +25,7 @@ public:
 	void LoadSettings();
 	void LoadOrGenerateWinterFormSwap();
 	void LoadSeasonData();
+	void CheckLODExists();
 
 	//Calendar is not initialized using savegame values when it is loaded from start
 	void SaveSeason(std::string_view a_savePath);

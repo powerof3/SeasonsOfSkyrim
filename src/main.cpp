@@ -27,7 +27,6 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 			FormSwap::Install();
 			LandscapeSwap::Install();
-			LODSwap::Install();
 			SnowSwap::Install();
 		}
 		break;
@@ -74,6 +73,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			const auto manager = SeasonManager::GetSingleton();
 			manager->LoadOrGenerateWinterFormSwap();
 			manager->LoadSeasonData();
+
+			manager->CheckLODExists();
+			LODSwap::Install();
+
 			manager->RegisterEvents();
 			manager->CleanupSerializedSeasonList();
 		}

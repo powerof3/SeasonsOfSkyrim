@@ -44,6 +44,7 @@ public:
 	{}
 
 	void LoadSettings(CSimpleIniA& a_ini, bool a_writeComment = false);
+	void CheckLODExists();
 
 	[[nodiscard]] bool CanApplySnowShader() const;
 	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType) const;

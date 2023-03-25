@@ -294,6 +294,8 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 
 	const auto& [type, suffix] = a_season.GetID();
 
+	logger::info("{}", type);
+
 	for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 		if (entry.exists() && !entry.path().empty() && entry.path().extension() == ".ini"sv) {
 			if (const auto path = entry.path().string(); path.contains(suffix) && !path.contains("MainFormSwap"sv)) {
@@ -303,11 +305,11 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 	}
 
 	if (configs.empty()) {
-		logger::warn("No .ini files with _{} suffix were found in Data/Seasons folder, skipping {} formswaps for {}...", suffix, suffix == "WIN" ? "secondary" : "all", type);
+		logger::warn("\tNo .ini files with _{} suffix were found in Data/Seasons folder, skipping {} formswaps", suffix, suffix == "WIN" ? "secondary" : "all");
 		return;
 	}
 
-	logger::info("{} matching inis found", configs.size());
+	logger::info("\t{} matching inis found", configs.size());
 
 	std::ranges::sort(configs);
 
@@ -320,7 +322,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 		ini.SetAllowKeyOnly();
 
 		if (const auto rc = ini.LoadFile(path.c_str()); rc < 0) {
-			logger::error("\tcouldn't read INI");
+			logger::error("\t\tcouldn't read INI");
 			continue;
 		}
 
@@ -344,6 +346,16 @@ void SeasonManager::LoadSeasonData()
 	LoadSeasonData(autumn, settingsINI);
 
 	(void)settingsINI.SaveFile(settings);
+}
+
+void SeasonManager::CheckLODExists()
+{
+	logger::info("{:*^30}", "LOD");
+
+    winter.CheckLODExists();
+	spring.CheckLODExists();
+	summer.CheckLODExists();
+	autumn.CheckLODExists();
 }
 
 void SeasonManager::SaveSeason(std::string_view a_savePath)
@@ -403,7 +415,7 @@ void SeasonManager::CleanupSerializedSeasonList() const
 {
 	constexpr auto get_save_directory = []() -> std::optional<std::filesystem::path> {
 		if (auto path = logger::log_directory()) {
-			path->remove_filename();  //remove "/SKSE"
+			path->remove_filename();	// remove "/SKSE"
 			path->append(RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString());
 			return path;
 		}

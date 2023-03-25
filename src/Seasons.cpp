@@ -4,8 +4,6 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 {
 	const auto& [seasonType, suffix] = ID;
 
-	logger::info("{}", seasonType);
-
 	ini::get_value(a_ini, validWorldspaces, seasonType.c_str(), "Worldspaces", a_writeComment ? ";Valid worldspaces." : ";");
 
 	ini::get_value(a_ini, swapActivators, seasonType.c_str(), "Activators", a_writeComment ? ";Swap objects of these types for seasonal variants." : ";");
@@ -21,11 +19,19 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 	ini::get_value(a_ini, swapTreeLOD, seasonType.c_str(), "Tree LOD", nullptr);
 
 	ini::get_value(a_ini, swapGrass, seasonType.c_str(), "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)." : ";");
+}
 
-	//make sure LOD has been generated! No need to check form swaps
-	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderPath) {
+void Season::CheckLODExists()
+{
+	const auto& [seasonType, suffix] = ID;
+
+	logger::info("{}", seasonType);
+
+    //make sure LOD has been generated! No need to check form swaps
+	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderPath, std::string_view a_fileType) {
 		if (a_swaplod) {
 			bool exists = false;
+			bool existsInBSA = false;
 			if (std::filesystem::exists(a_folderPath)) {
 				for (const auto& entry : std::filesystem::directory_iterator(a_folderPath)) {
 					if (entry.exists() && entry.is_regular_file() && entry.path().string().contains(suffix)) {
@@ -35,17 +41,25 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 				}
 			}
 			if (!exists) {
+				std::string filePath = fmt::format(R"({}\Tamriel.4.0.0.{}.{})", a_folderPath, suffix, a_fileType);
+				filePath.erase(0, 5);  // remove "Data/"
+			    const RE::BSResourceNiBinaryStream fileStream(filePath);
+				if (fileStream.good()) {
+					existsInBSA = true;
+				}
+			}
+			if (!exists && !existsInBSA) {
 				a_swaplod = false;
-				logger::warn("\t{} LOD files not found! Default LOD will be used instead", a_lodType);
+				logger::warn("\t{} LOD files not found! Fallback to default LOD", a_lodType);
 			} else {
-				logger::info("\t{} LOD files found", a_lodType);
+				logger::info("\t{} LOD files found ({})", a_lodType, existsInBSA ? "BSA" : "Loose");
 			}
 		}
 	};
 
-	check_if_lod_exists(swapTerrainLOD, "Terrain", R"(Data\Meshes\Terrain\Tamriel)");
-	check_if_lod_exists(swapObjectLOD, "Object", R"(Data\Meshes\Terrain\Tamriel\Objects)");
-	check_if_lod_exists(swapTreeLOD, "Tree", R"(Data\Meshes\Terrain\Tamriel\Trees)");
+	check_if_lod_exists(swapTerrainLOD, "Terrain", R"(Data\Meshes\Terrain\Tamriel)", "btr");
+	check_if_lod_exists(swapObjectLOD, "Object", R"(Data\Meshes\Terrain\Tamriel\Objects)", "bto");
+	check_if_lod_exists(swapTreeLOD, "Tree", R"(Data\Meshes\Terrain\Tamriel\Trees)", "btt");
 }
 
 bool Season::CanApplySnowShader() const
