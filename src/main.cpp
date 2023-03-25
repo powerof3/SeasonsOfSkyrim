@@ -1,15 +1,12 @@
 #include "FormSwap.h"
 #include "LODSwap.h"
 #include "LandscapeSwap.h"
-#include "MergeMapperPluginAPI.h"
 #include "Papyrus.h"
 #include "SeasonManager.h"
 #include "SnowSwap.h"
 
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
-	static HMODULE tweaks{ nullptr };
-
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kPostLoad:
 		{

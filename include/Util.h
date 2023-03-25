@@ -1,7 +1,5 @@
 #pragma once
 
-#include "MergeMapperPluginAPI.h"
-
 namespace util
 {
 	inline std::string get_editorID(const RE::TESForm* a_form)
@@ -30,27 +28,28 @@ namespace model
 	inline bool contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
 	{
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
-			for (const auto& textures : altTextures) {
-				const auto        txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				if (string::icontains(path, a_txstPath)) {
-					return true;
-				}
-			}
+			const std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
+
+			return std::ranges::any_of(altTextures, [&](const auto& textures) {
+				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
+				                             false;
+			});
 		}
 
 		return false;
 	}
 
-	inline bool only_contains_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
+	inline bool only_contains_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPaths)
 	{
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
+			const std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
+
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto        txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
+				if (const auto txst = textures.textureSet) {
+					return string::icontains(txst->textures[0].textureName, a_txstPaths.first) ||
+					       string::icontains(txst->textures[0].textureName, a_txstPaths.second);
+				}
+				return false;
 			});
 		}
 
@@ -60,25 +59,28 @@ namespace model
 	inline bool only_contains_textureset(RE::TESModel* a_model, std::string_view a_txstPath)
 	{
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
+			const std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
+
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto        txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return string::icontains(path, a_txstPath);
+				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
+				                             false;
 			});
 		}
 
 		return false;
 	}
 
-	inline bool must_only_contain_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPath)
+	inline bool must_only_contain_textureset(RE::TESModel* a_model, const std::pair<std::string_view, std::string_view>& a_txstPaths)
 	{
 		if (const auto model = a_model->GetAsModelTextureSwap(); model && model->alternateTextures && model->numAlternateTextures > 0) {
-			std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
+			const std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
+
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				const auto        txst = textures.textureSet;
-				const std::string path = txst ? txst->textures[0].textureName.c_str() : std::string();
-				return string::icontains(path, a_txstPath.first) || string::icontains(path, a_txstPath.second);
+				if (const auto txst = textures.textureSet) {
+					return string::icontains(txst->textures[0].textureName, a_txstPaths.first) ||
+					       string::icontains(txst->textures[0].textureName, a_txstPaths.second);
+				}
+				return false;
 			});
 		}
 

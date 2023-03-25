@@ -7,8 +7,9 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
+#include "MergeMapperPluginAPI.h"
 #include <ClibUtil/simpleINI.hpp>
-#include <ShlObj.h>
+#include <ClibUtil/singleton.hpp>
 #include <ankerl/unordered_dense.h>
 #include <fmt/format.h>
 #include <shared_mutex>
@@ -22,6 +23,7 @@ namespace string = clib_util::string;
 namespace ini = clib_util::ini;
 
 using namespace std::literals;
+using namespace clib_util::singleton;
 
 namespace stl
 {

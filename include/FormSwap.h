@@ -15,7 +15,9 @@ namespace FormSwap
 		}
 	};
 
-	struct ShouldBackgroundClone
+	// no actors/projectiles
+	// doesn't fire twice for same ref
+    struct ShouldBackgroundClone
 	{
 		static bool thunk(RE::TESObjectREFR* a_this)
 		{

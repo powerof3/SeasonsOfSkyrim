@@ -42,7 +42,6 @@ public:
 			return _nullMap;
 		}
 	}
-
 	MapPair<RE::FormID>& get_map(const std::string& a_section)
 	{
 		const auto it = _formMap.find(a_section);
@@ -52,10 +51,9 @@ public:
 private:
 	friend class SeasonManager;
 
-	using RecordType = std::string;
-
 	template <class T>
 	using TempFormSwapMap = std::map<T*, T*>;
+	using RecordType = std::string;
 
 	static inline std::array<RecordType, 6>
 		standardTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
@@ -70,8 +68,7 @@ private:
 	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap);
 
 	Map<RecordType, MapPair<RE::FormID>> _formMap;
-
-	MapPair<RE::FormID> _nullMap{};
+	MapPair<RE::FormID>                  _nullMap{};
 };
 
 template <class T>

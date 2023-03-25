@@ -23,7 +23,7 @@ namespace SnowSwap
 		kRemove
 	};
 
-	class Manager
+	class Manager : public ISingleton<Manager>
 	{
 	public:
 		struct SnowInfo
@@ -38,12 +38,6 @@ namespace SnowSwap
 			RE::NiColorA projectedParams{};
 			RE::NiColor  projectedColor{};
 		};
-
-		static Manager* GetSingleton()
-		{
-			static Manager singleton;
-			return std::addressof(singleton);
-		}
 
 		void LoadSnowShaderSettings();
 
@@ -60,15 +54,6 @@ namespace SnowSwap
 
 		[[nodiscard]] RE::BGSMaterialObject* GetMultiPassSnowShader();
 		[[nodiscard]] RE::BGSMaterialObject* GetSinglePassSnowShader();
-
-	protected:
-		Manager() = default;
-		Manager(const Manager&) = delete;
-		Manager(Manager&&) = delete;
-		~Manager() = default;
-
-		Manager& operator=(const Manager&) = delete;
-		Manager& operator=(Manager&&) = delete;
 
 	private:
 		using Lock = std::shared_mutex;

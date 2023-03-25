@@ -10,7 +10,7 @@ namespace LODSwap
 		static std::string get_lod_filename()
 		{
 			const auto [canSwap, season] = SeasonManager::GetSingleton()->CanSwapLOD(T::type);
-			return canSwap ? fmt::format(T::seasonalPath, season) : T::defaultPath;
+			return canSwap ? fmt::format(T::seasonalPath, season) : std::string(T::defaultPath);
 		}
 	};
 
@@ -24,11 +24,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace, a_scale, a_x, a_y);
 			}
 
-			static inline size_t size = 0x39;
-			static inline auto   id = RELOCATION_ID(31140, 31948);
+			static inline std::size_t size = 0x39;
+			static inline auto        id = RELOCATION_ID(31140, 31948);
 
-			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.{}.BTR)" };
-			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.BTR)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.{}.BTR)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Meshes\Terrain\%s\%s.%i.%i.%i.BTR)" };
 
 			static inline auto type = LOD_TYPE::kTerrain;
 		};
@@ -41,11 +41,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace, a_scale, a_x, a_y);
 			}
 
-			static inline size_t size = 0x39;
-			static inline auto   id = RELOCATION_ID(31141, 31949);
+			static inline std::size_t size = 0x39;
+			static inline auto        id = RELOCATION_ID(31141, 31949);
 
-			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}.DDS)" };
-			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.DDS)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}.DDS)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.DDS)" };
 
 			static inline auto type = LOD_TYPE::kTerrain;
 		};
@@ -58,11 +58,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace, a_scale, a_x, a_y);
 			}
 
-			static inline size_t size = 0x39;
-			static inline auto   id = RELOCATION_ID(31142, 31950);
+			static inline std::size_t size = 0x39;
+			static inline auto        id = RELOCATION_ID(31142, 31950);
 
-			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}_n.DDS)" };
-			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i_n.DDS)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i.{}_n.DDS)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Textures\Terrain\%s\%s.%i.%i.%i_n.DDS)" };
 
 			static inline auto type = LOD_TYPE::kTerrain;
 		};
@@ -85,11 +85,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace, a_scale, a_x, a_y);
 			}
 
-			static inline size_t size = 0x39;
-			static inline auto   id = RELOCATION_ID(31147, 31957);
+			static inline std::size_t size = 0x39;
+			static inline auto        id = RELOCATION_ID(31147, 31957);
 
-			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.{}.BTO)" };
-			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.BTO)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.{}.BTO)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Meshes\Terrain\%s\Objects\%s.%i.%i.%i.BTO)" };
 
 			static inline auto type = LOD_TYPE::kObject;
 		};
@@ -102,11 +102,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace);
 			}
 
-			static inline size_t size = 0x1F;
-			static inline auto   id = RELOCATION_ID(31148, 31958);
+			static inline std::size_t size = 0x1F;
+			static inline auto        id = RELOCATION_ID(31148, 31958);
 
-			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}.DDS)" };
-			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.DDS)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}.DDS)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.DDS)" };
 
 			static inline auto type = LOD_TYPE::kObject;
 		};
@@ -119,11 +119,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace);
 			}
 
-			static inline size_t size = 0x1F;
-			static inline auto   id = RELOCATION_ID(31149, 31959);
+			static inline std::size_t size = 0x1F;
+			static inline auto        id = RELOCATION_ID(31149, 31959);
 
-			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}_n.DDS)" };
-			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects_n.DDS)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects.{}_n.DDS)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Textures\Terrain\%s\Objects\%s.Objects_n.DDS)" };
 
 			static inline auto type = LOD_TYPE::kObject;
 		};
@@ -146,11 +146,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace, a_scale, a_x, a_y);
 			}
 
-			static inline size_t size = 0x39;
-			static inline auto   id = RELOCATION_ID(31150, 31960);
+			static inline std::size_t size = 0x39;
+			static inline auto        id = RELOCATION_ID(31150, 31960);
 
-			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.{}.BTT)" };
-			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.BTT)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.{}.BTT)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.%i.%i.%i.BTT)" };
 
 			static inline auto type = LOD_TYPE::kTree;
 		};
@@ -163,11 +163,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace);
 			}
 
-			static inline size_t size = 0x1F;
-			static inline auto   id = RELOCATION_ID(31151, 31961);
+			static inline std::size_t size = 0x1F;
+			static inline auto        id = RELOCATION_ID(31151, 31961);
 
-			static inline const char* seasonalPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.{}.DDS)" };
-			static inline const char* defaultPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.DDS)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.{}.DDS)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Textures\Terrain\%s\Trees\%sTreeLOD.DDS)" };
 
 			static inline auto type = LOD_TYPE::kTree;
 		};
@@ -180,11 +180,11 @@ namespace LODSwap
 				sprintf_s(a_buffer, a_sizeOfBuffer, path.c_str(), a_worldSpace, a_worldSpace);
 			}
 
-			static inline size_t size = 0x1F;
-			static inline auto   id = RELOCATION_ID(31152, 31962);
+			static inline std::size_t size = 0x1F;
+			static inline auto        id = RELOCATION_ID(31152, 31962);
 
-			static inline const char* seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.{}.LST)" };
-			static inline const char* defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.LST)" };
+			static inline constexpr std::string_view seasonalPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.{}.LST)" };
+			static inline constexpr std::string_view defaultPath{ R"(Data\Meshes\Terrain\%s\Trees\%s.LST)" };
 
 			static inline auto type = LOD_TYPE::kTree;
 		};

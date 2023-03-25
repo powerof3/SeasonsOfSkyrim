@@ -12,12 +12,5 @@
     "spdlog",
     "unordered-dense",
     "xbyak"
-  ],
-  "builtin-baseline": "01b29f6d8212bc845da64773b18665d682f5ab66",
-  "overrides": [
-    {
-      "name": "fmt",
-      "version": "8.0.1"
-    }
   ]
 }

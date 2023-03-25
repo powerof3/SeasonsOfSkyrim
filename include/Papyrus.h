@@ -9,34 +9,20 @@ namespace Papyrus
 
 	namespace Events
 	{
-		class Manager
+		class Manager : public ISingleton<Manager>
 		{
 		public:
-			[[nodiscard]] static Manager* GetSingleton()
-			{
-				static Manager singleton;
-				return &singleton;
-			}
-
 			enum : std::uint32_t
 			{
 				kSeasonChange = 'SOSC'
 			};
 
-			SKSE::RegistrationSet<std::uint32_t, std::uint32_t, bool> seasonChange{ "OnSeasonChange"sv };
-
 			void Save(SKSE::SerializationInterface* a_intfc, std::uint32_t a_version);
 			void Load(SKSE::SerializationInterface* a_intfc, std::uint32_t a_type);
 			void Revert(SKSE::SerializationInterface* a_intfc);
 
-		private:
-			Manager() = default;
-			Manager(const Manager&) = delete;
-			Manager(Manager&&) = delete;
-			~Manager() = default;
-
-			Manager& operator=(const Manager&) = delete;
-			Manager& operator=(Manager&&) = delete;
+			// members
+			SKSE::RegistrationSet<std::uint32_t, std::uint32_t, bool> seasonChange{ "OnSeasonChange"sv };
 		};
 	}
 

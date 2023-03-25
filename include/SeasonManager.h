@@ -2,15 +2,11 @@
 
 #include "Seasons.h"
 
-class SeasonManager final : public RE::BSTEventSink<RE::TESActivateEvent>
+class SeasonManager final :
+	public ISingleton<SeasonManager>,
+	public RE::BSTEventSink<RE::TESActivateEvent>
 {
 public:
-	[[nodiscard]] static SeasonManager* GetSingleton()
-	{
-		static SeasonManager singleton;
-		return std::addressof(singleton);
-	}
-
 	static void InstallHooks()
 	{
 		Hooks::Install();
@@ -108,14 +104,6 @@ protected:
 	EventResult ProcessEvent(const RE::TESActivateEvent* a_event, RE::BSTEventSource<RE::TESActivateEvent>*) override;
 
 private:
-	SeasonManager() = default;
-	SeasonManager(const SeasonManager&) = delete;
-	SeasonManager(SeasonManager&&) = delete;
-	~SeasonManager() override = default;
-
-	SeasonManager& operator=(const SeasonManager&) = delete;
-	SeasonManager& operator=(SeasonManager&&) = delete;
-
 	SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
 
 	std::map<MONTH, SEASON> monthToSeasons{

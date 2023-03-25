@@ -16,28 +16,28 @@ namespace Cache
 				}
 			}
 		}
-		if (const auto sosShaderSP = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SOS_WIN_SnowMaterialObjectSP")) {
-			const auto& spColor = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P")->directionalData.singlePassColor;
-			if (spColor.red != 0.0f && spColor.green != 0.0f && spColor.blue != 0.0f) {
-				sosShaderSP->directionalData.singlePassColor = spColor;
-			}
+
+		const auto sosShaderSP = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SOS_WIN_SnowMaterialObjectSP");
+
+		const auto  snowShaderSP = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P");
+		const auto& spColor = snowShaderSP ? snowShaderSP->directionalData.singlePassColor : RE::NiColor();
+
+		if (spColor.red != 0.0f && spColor.green != 0.0f && spColor.blue != 0.0f) {
+			sosShaderSP->directionalData.singlePassColor = spColor;
 		}
 	}
 
 	std::string DataHolder::GetEditorID(RE::FormID a_formID)
 	{
-		static auto tweaks = GetModuleHandle(L"po3_Tweaks");
 		static auto func = reinterpret_cast<_GetFormEditorID>(GetProcAddress(tweaks, "GetFormEditorID"));
-		if (func) {
-			return func(a_formID);
-		}
-		return {};
+		return func ? func(a_formID) : std::string{};
 	}
 
 	RE::TESLandTexture* DataHolder::GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
 	{
 		const auto it = _textureToLandMap.find(a_txst->GetFormID());
-		return RE::TESForm::LookupByID<RE::TESLandTexture>(it != _textureToLandMap.end() ? it->second : 0x00000C16);
+		return RE::TESForm::LookupByID<RE::TESLandTexture>(it != _textureToLandMap.end() ? it->second :
+																						   0x00000C16);  // LDirt
 	}
 
 	bool DataHolder::IsSnowShader(const RE::TESForm* a_form) const
@@ -50,7 +50,8 @@ namespace Cache
 		Locker locker(_originalsLock);
 
 		const auto it = _originals.find(a_ref->GetFormID());
-		return it != _originals.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) : a_ref->GetBaseObject();
+		return it != _originals.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) :
+		                                a_ref->GetBaseObject();
 	}
 
 	void DataHolder::SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase)

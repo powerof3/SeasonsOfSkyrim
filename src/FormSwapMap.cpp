@@ -15,8 +15,8 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 		return nullptr;
 	}
 
-	const auto            mat = a_landTexture->materialType;
-	const RE::MATERIAL_ID matID = mat ? mat->materialID : RE::MATERIAL_ID::kNone;
+	const auto mat = a_landTexture->materialType;
+	const auto matID = mat ? mat->materialID : RE::MATERIAL_ID::kNone;
 
 	RE::FormID formID;
 
@@ -62,10 +62,10 @@ void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std
 			if (swapFormID != 0) {
 				map.insert_or_assign(formID, swapFormID);
 			} else {
-				logger::error("		failed to process {} [{:X}|{:X}] (SWAP formID not found)", key, formID, swapFormID);
+				logger::error("\t\tfailed to process {} [{:X}|{:X}] (SWAP formID not found)", key, formID, swapFormID);
 			}
 		} else {
-			logger::error("		failed to process {} [{:X}|{:X}] (BASE formID not found)", key, formID, swapFormID);
+			logger::error("\t\tfailed to process {} [{:X}|{:X}] (BASE formID not found)", key, formID, swapFormID);
 		}
 	}
 }
@@ -78,7 +78,7 @@ void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 		values.sort(CSimpleIniA::Entry::LoadOrder());
 
 		if (!values.empty()) {
-			logger::info("	[{}] read {} variants", type, values.size());
+			logger::info("\t[{}] read {} variants", type, values.size());
 
 			std::vector<std::string> vec;
 			std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
