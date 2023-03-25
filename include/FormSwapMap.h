@@ -76,7 +76,7 @@ void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, T
 {
 	auto& forms = a_dataHandler->GetFormArray(T::FORMTYPE);
 
-	std::array blackList = { "Blacksmith"sv, "Frozen"sv, "Marker"sv };
+	static constexpr std::array blackList = { "Blacksmith"sv, "Frozen"sv, "Marker"sv };
 
 	std::map<std::string, T*> processedSnowForms;
 	for (auto& baseForm : forms) {
@@ -117,8 +117,8 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 			}
 		}
 	} else if constexpr (std::is_same_v<T, RE::TESObjectSTAT>) {
-		std::array snowBlackList = { "Ice"sv, "Icicle"sv, "Frozen"sv };
-		std::array blackList = { "Ice"sv, "Icicle"sv, "Frozen"sv, "LoadScreen"sv, "INTERIOR"sv, "INV"sv, "DynDOLOD"sv };
+		static constexpr std::array snowBlackList = { "Ice"sv, "Icicle"sv, "Frozen"sv };
+		static constexpr std::array blackList = { "Ice"sv, "Icicle"sv, "Frozen"sv, "LoadScreen"sv, "INTERIOR"sv, "INV"sv, "DynDOLOD"sv };
 
 		std::map<std::string, RE::TESObjectSTAT*> processedSnowStats;
 

@@ -23,7 +23,7 @@ namespace SnowSwap
 		logger::info("{} matching inis found", configs.size());
 
 		for (auto& path : configs) {
-			logger::info("	INI : {}", path);
+			logger::info("\tINI : {}", path);
 
 			CSimpleIniA ini;
 			ini.SetUnicode();
@@ -31,7 +31,7 @@ namespace SnowSwap
 			ini.SetAllowKeyOnly();
 
 			if (const auto rc = ini.LoadFile(path.c_str()); rc < 0) {
-				logger::error("	couldn't read INI");
+				logger::error("\tcouldn't read INI");
 				continue;
 			}
 
@@ -40,12 +40,12 @@ namespace SnowSwap
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				logger::info("	Reading [Blacklist]");
+				logger::info("\tReading [Blacklist]");
 				for (const auto& key : values) {
 					if (auto formID = INI::parse_form(key.pItem); formID != 0) {
 						_snowShaderBlacklist.insert(formID);
 					} else {
-						logger::error("		failed to process {} [{:X}] (formID not found)", key.pItem, formID);
+						logger::error("\t\tfailed to process {} [{:X}] (formID not found)", key.pItem, formID);
 					}
 				}
 			}
@@ -62,7 +62,7 @@ namespace SnowSwap
 					} else if (auto formID = INI::parse_form(value); formID != 0) {
 						_multipassSnowWhitelist.emplace(formID);
 					} else {
-						logger::error("		failed to process {} [{:X}] (formID not found)", key.pItem, formID);
+						logger::error("\t\tfailed to process {} [{:X}] (formID not found)", key.pItem, formID);
 					}
 				}
 			}
@@ -144,9 +144,9 @@ namespace SnowSwap
 			return SWAP_RESULT::kBaseFail;
 		}
 
-		if (raycast::is_under_shelter(a_ref)) {
+		/*if (raycast::is_under_shelter(a_ref)) {
 			return SWAP_RESULT::kRefFail;
-		}
+		}*/
 
 		return SWAP_RESULT::kSuccess;
 	}
@@ -159,11 +159,11 @@ namespace SnowSwap
 			return SNOW_TYPE::kMultiPass;
 		}
 
-		bool hasShape = false;         //no trishapes (crash)
-		bool hasInvalidShape = false;  //zero vertices/no fade node (crash)
+		bool hasShape = false;					// no trishapes (crash)
+		bool hasInvalidShape = false;			// zero vertices/no fade node (crash)
 
-		bool hasLightingShaderProp = true;  //no lighting prop/not skinned (crash)
-		bool hasAlphaProp = false;          //no alpha prop (broken)
+		bool hasLightingShaderProp = true;		// no lighting prop/not skinned (crash)
+		bool hasAlphaProp = false;				// no alpha prop (broken)
 
 		RE::BSVisit::TraverseScenegraphGeometries(a_node, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 			hasShape = true;
@@ -258,8 +258,8 @@ namespace SnowSwap
 
 		RE::BSVisit::TraverseScenegraphGeometries(a_node, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 			const auto effect = a_geometry->properties[RE::BSGeometry::States::kEffect];
-			const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get());
-			if (lightingShader) {
+
+		    if (const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get())) {
 				lightingShader->SetFlags(Flag8::kProjectedUV, false);
 				lightingShader->SetFlags(Flag8::kSnow, false);
 			}

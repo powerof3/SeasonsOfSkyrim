@@ -9,11 +9,15 @@ FormSwapMap::FormSwapMap()
 
 RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture)
 {
-	static std::array blackList = { "Snow"sv, "Ice"sv, "Winter"sv, "Frozen"sv, "Coast"sv, "River"sv };
+	static constexpr std::array blackList = { "Snow"sv, "Ice"sv, "Winter"sv, "Frozen"sv, "Coast"sv, "River"sv };
 
-	if (const auto editorID = util::get_editorID(a_landTexture); !editorID.empty() && std::ranges::any_of(blackList, [&](const auto str) { return editorID.find(str) != std::string::npos; })) {
+	const auto editorID = util::get_editorID(a_landTexture);
+	if (!editorID.empty() && std::ranges::any_of(blackList, [&](const auto str) { return string::icontains(editorID, str); })) {
 		return nullptr;
 	}
+
+	static constexpr RE::FormID LSnow01 = 0x0000089B;
+	static constexpr RE::FormID LSnow02 = 0x0006A1B1;
 
 	const auto mat = a_landTexture->materialType;
 	const auto matID = mat ? mat->materialID : RE::MATERIAL_ID::kNone;
@@ -22,27 +26,71 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 
 	switch (matID) {
 	case RE::MATERIAL_ID::kGrass:
-		formID = !a_landTexture->textureGrassList.empty() ? 0x00000894 : 0x0008B01E;  //LGrassSnow01 : LGrassSnow01NoGrass
+		{
+			static constexpr RE::FormID LGrassSnow01NoGrass = 0x0008B01E;
+			static constexpr RE::FormID LGrassSnow01 = 0x00000894;
+
+			switch (a_landTexture->GetFormID()) {
+			case 0x0001342A:  // LFieldGrass02
+			case 0x00024E46:  // LFieldGrass01NoGrass
+			case 0x00024E30:  // LTundra01
+			case 0x000A2741:  // LTundra01NoGrass
+				formID = LSnow01;
+				break;
+			case 0x000134B7:  // LFieldDirtGrass01
+			case 0x000300E4:  // LTundra02
+				formID = LSnow02;
+				break;
+			default:
+				formID = !a_landTexture->textureGrassList.empty() ? LGrassSnow01 : LGrassSnow01NoGrass;
+				break;
+			}
+		}
 		break;
 	case RE::MATERIAL_ID::kDirt:
 		{
-			if (a_landTexture->GetFormID() == 0xB424C) {  //LDirtPath01
-				formID = 0x0001B082;                      //LDirtSnowPath01
-			} else {
-				formID = 0x0000089B;  //LSnow01
+			static constexpr RE::FormID LDirtSnowPath01 = 0x0001B082;
+
+			switch (a_landTexture->GetFormID()) {
+			case 0x00000C16:  // LDirt02
+				formID = LSnow02;
+				break;
+			case 0xB424C:  // LDirtPath01
+				formID = LDirtSnowPath01;
+				break;
+			default:
+				formID = LSnow01;
+				break;
 			}
 		}
 		break;
 	case RE::MATERIAL_ID::kStone:
 	case RE::MATERIAL_ID::kStoneBroken:
 	case RE::MATERIAL_ID::kGravel:
-		formID = !a_landTexture->textureGrassList.empty() ? 0x000F871F : 0x0006A1AF;  //LSnowRockswGrass : LSnowRocks01
+		{
+			static constexpr RE::FormID LSnowRocks01 = 0x0006A1AF;
+			static constexpr RE::FormID LSnowRockswGrass = 0x000F871F;
+
+			switch (a_landTexture->GetFormID()) {
+			case 0x0002C6C6:  // LTundraRocks01
+				formID = LSnowRocks01;
+				break;
+			case 0x0006DE8B:  // LTundraRocks01NoRocks
+				formID = LSnow01;
+				break;
+			default:
+				formID = !a_landTexture->textureGrassList.empty() ? LSnowRockswGrass : LSnowRocks01;
+				break;
+			}
+		}
 		break;
 	case RE::MATERIAL_ID::kSnow:
 	case RE::MATERIAL_ID::kIce:
+	case RE::MATERIAL_ID::kSand:
+	case RE::MATERIAL_ID::kMud:
 		return nullptr;
 	default:
-		formID = 0x0006A1B1;  //LSnow2
+		formID = LSnow02;
 		break;
 	}
 
