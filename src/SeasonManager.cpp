@@ -352,7 +352,7 @@ void SeasonManager::CheckLODExists()
 {
 	logger::info("{:*^30}", "LOD");
 
-    winter.CheckLODExists();
+	winter.CheckLODExists();
 	spring.CheckLODExists();
 	summer.CheckLODExists();
 	autumn.CheckLODExists();
@@ -415,7 +415,7 @@ void SeasonManager::CleanupSerializedSeasonList() const
 {
 	constexpr auto get_save_directory = []() -> std::optional<std::filesystem::path> {
 		if (auto path = logger::log_directory()) {
-			path->remove_filename();	// remove "/SKSE"
+			path->remove_filename();  // remove "/SKSE"
 			path->append(RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString());
 			return path;
 		}

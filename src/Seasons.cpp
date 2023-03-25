@@ -27,7 +27,7 @@ void Season::CheckLODExists()
 
 	logger::info("{}", seasonType);
 
-    //make sure LOD has been generated! No need to check form swaps
+	//make sure LOD has been generated! No need to check form swaps
 	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderPath, std::string_view a_fileType) {
 		if (a_swaplod) {
 			bool exists = false;
@@ -43,7 +43,7 @@ void Season::CheckLODExists()
 			if (!exists) {
 				std::string filePath = fmt::format(R"({}\Tamriel.4.0.0.{}.{})", a_folderPath, suffix, a_fileType);
 				filePath.erase(0, 5);  // remove "Data/"
-			    const RE::BSResourceNiBinaryStream fileStream(filePath);
+				const RE::BSResourceNiBinaryStream fileStream(filePath);
 				if (fileStream.good()) {
 					existsInBSA = true;
 				}
