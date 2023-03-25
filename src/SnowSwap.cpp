@@ -159,11 +159,11 @@ namespace SnowSwap
 			return SNOW_TYPE::kMultiPass;
 		}
 
-		bool hasShape = false;					// no trishapes (crash)
-		bool hasInvalidShape = false;			// zero vertices/no fade node (crash)
+		bool hasShape = false;         // no trishapes (crash)
+		bool hasInvalidShape = false;  // zero vertices/no fade node (crash)
 
-		bool hasLightingShaderProp = true;		// no lighting prop/not skinned (crash)
-		bool hasAlphaProp = false;				// no alpha prop (broken)
+		bool hasLightingShaderProp = true;  // no lighting prop/not skinned (crash)
+		bool hasAlphaProp = false;          // no alpha prop (broken)
 
 		RE::BSVisit::TraverseScenegraphGeometries(a_node, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 			hasShape = true;
@@ -259,7 +259,7 @@ namespace SnowSwap
 		RE::BSVisit::TraverseScenegraphGeometries(a_node, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 			const auto effect = a_geometry->properties[RE::BSGeometry::States::kEffect];
 
-		    if (const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get())) {
+			if (const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get())) {
 				lightingShader->SetFlags(Flag8::kProjectedUV, false);
 				lightingShader->SetFlags(Flag8::kSnow, false);
 			}
