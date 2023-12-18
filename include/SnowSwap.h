@@ -121,8 +121,8 @@ namespace SnowSwap
 					auto& [origShaderID, snowType] = *snowInfo;
 					if (snowType == SNOW_TYPE::kMultiPass) {
 						a_static->data.materialObj = origShaderID != 0 ?
-                                                         RE::TESForm::LookupByID<RE::BGSMaterialObject>(origShaderID) :
-                                                         nullptr;
+						                                 RE::TESForm::LookupByID<RE::BGSMaterialObject>(origShaderID) :
+						                                 nullptr;
 					} else {
 						singlePassSnowState = SWAP_TYPE::kRemove;
 					}
