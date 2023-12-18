@@ -169,11 +169,13 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 	const auto&  mods = RE::TESDataHandler::GetSingleton()->compiledFileCollection;
 	const size_t actualModCount = mods.files.size() + mods.smallFiles.size();
 #else
-	auto&  mods = RE::TESDataHandler::GetSingleton()->files;
+	auto&  mods = RE::TESDataHandler::GetSingleton()->VRcompiledFileCollection;
 	size_t actualModCount = 0;
-	for (const auto mod : mods)
-		if (mod)
-			actualModCount++;
+	if (mods) {
+		actualModCount = mods->files.size() + mods->smallFiles.size();
+	} else {
+		actualModCount = RE::TESDataHandler::GetSingleton()->loadedModCount;
+	}
 #endif
 	//1.6.0 - delete old serialized value to force regeneration
 	ini.DeleteValue("Game", "Mod Count", nullptr);
