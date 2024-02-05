@@ -11,7 +11,7 @@ namespace Cache
 				}
 			}
 			for (const auto& mat : dataHandler->GetFormArray<RE::BGSMaterialObject>()) {
-				if (auto eid = util::get_editorID(mat); string::icontains(eid, "Snow")) {
+				if (auto eid = edid::get_editorID(mat); string::icontains(eid, "Snow")) {
 					_snowShaders.emplace(mat->GetFormID());
 				}
 			}
@@ -25,12 +25,6 @@ namespace Cache
 		if (spColor.red != 0.0f && spColor.green != 0.0f && spColor.blue != 0.0f) {
 			sosShaderSP->directionalData.singlePassColor = spColor;
 		}
-	}
-
-	std::string DataHolder::GetEditorID(RE::FormID a_formID)
-	{
-		static auto func = reinterpret_cast<_GetFormEditorID>(GetProcAddress(tweaks, "GetFormEditorID"));
-		return func ? func(a_formID) : std::string{};
 	}
 
 	RE::TESLandTexture* DataHolder::GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
@@ -57,7 +51,6 @@ namespace Cache
 	void DataHolder::SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase)
 	{
 		Locker locker(_originalsLock);
-
 		_originals.emplace(a_ref->GetFormID(), a_originalBase->GetFormID());
 	}
 }

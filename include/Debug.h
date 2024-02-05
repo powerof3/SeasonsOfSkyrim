@@ -30,9 +30,9 @@ namespace Debug
 			if (const auto LT = RE::TES::GetSingleton()->GetLandTexture(RE::PlayerCharacter::GetSingleton()->GetPosition())) {
 				const auto swappedLT = SeasonManager::GetSingleton()->GetSwapLandTexture(LT);
 				if (swappedLT) {
-					print(fmt::format("{} -> {}", util::get_editorID(LT), util::get_editorID(swappedLT)).c_str());
+					print(std::format("{} -> {}", edid::get_editorID(LT), edid::get_editorID(swappedLT)).c_str());
 				} else {
-					print(util::get_editorID(LT).c_str());
+					print(edid::get_editorID(LT).c_str());
 				}
 			} else {
 				print("no land texture at player pos");

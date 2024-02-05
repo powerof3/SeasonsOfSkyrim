@@ -2,11 +2,6 @@
 
 namespace util
 {
-	inline std::string get_editorID(const RE::TESForm* a_form)
-	{
-		return Cache::DataHolder::GetEditorID(a_form->GetFormID());
-	}
-
 	inline RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref)
 	{
 		return Cache::DataHolder::GetSingleton()->GetOriginalBase(a_ref);

@@ -10,7 +10,7 @@ namespace LODSwap
 		static std::string get_lod_filename()
 		{
 			const auto [canSwap, season] = SeasonManager::GetSingleton()->CanSwapLOD(T::type);
-			return canSwap ? fmt::format(T::seasonalPath, season) : std::string(T::defaultPath);
+			return canSwap ? std::format(T::seasonalPath, season) : std::string(T::defaultPath);
 		}
 	};
 

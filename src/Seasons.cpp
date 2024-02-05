@@ -41,7 +41,7 @@ void Season::CheckLODExists()
 				}
 			}
 			if (!exists) {
-				std::string filePath = fmt::format(R"({}\Tamriel.4.0.0.{}.{})", a_folderPath, suffix, a_fileType);
+				std::string filePath = std::format(R"({}\Tamriel.4.0.0.{}.{})", a_folderPath, suffix, a_fileType);
 				filePath.erase(0, 5);  // remove "Data/"
 				const RE::BSResourceNiBinaryStream fileStream(filePath);
 				if (fileStream.good()) {

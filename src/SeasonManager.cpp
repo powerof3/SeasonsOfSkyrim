@@ -372,7 +372,7 @@ void SeasonManager::SaveSeason(std::string_view a_savePath)
 	const auto season = GetCurrentSeason(true);
 	currentSeason = season ? season->GetType() : SEASON::kNone;
 
-	const auto seasonData = fmt::format("{}|{}", stl::to_underlying(currentSeason), stl::to_underlying(seasonOverride));
+	const auto seasonData = std::format("{}|{}", stl::to_underlying(currentSeason), stl::to_underlying(seasonOverride));
 	ini.SetValue("Saves", a_savePath.data(), seasonData.c_str(), nullptr);
 
 	(void)ini.SaveFile(serializedSeasonList);
@@ -446,7 +446,7 @@ void SeasonManager::CleanupSerializedSeasonList() const
 		std::vector<std::string> badSaves;
 		badSaves.reserve(values.size());
 		for (const auto& key : values) {
-			if (auto save = fmt::format("{}{}.ess", directory->string(), key.pItem); !std::filesystem::exists(save)) {
+			if (auto save = std::format("{}{}.ess", directory->string(), key.pItem); !std::filesystem::exists(save)) {
 				badSaves.emplace_back(key.pItem);
 			}
 		}

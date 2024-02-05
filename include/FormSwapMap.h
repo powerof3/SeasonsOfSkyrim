@@ -138,7 +138,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 
 		constexpr auto is_in_blacklist = []<auto N>(const RE::TESObjectSTAT* a_stat, const std::array<std::string_view, N>& a_blacklist)
 		{
-			const auto editorID = util::get_editorID(a_stat);
+			const auto editorID = edid::get_editorID(a_stat);
 			return std::ranges::any_of(a_blacklist, [&](const auto& str) { return string::icontains(editorID, str); });
 		};
 
@@ -193,11 +193,11 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 		formIDMap.emplace(form->GetFormID(), swapForm->GetFormID());
 
 		//write values
-		auto formEID = util::get_editorID(form);
-		auto swapEID = util::get_editorID(swapForm);
+		auto formEID = edid::get_editorID(form);
+		auto swapEID = edid::get_editorID(swapForm);
 
-		std::string comment = fmt::format(";{}|{}", formEID, swapEID);
-		std::string value = fmt::format("0x{:X}~{}|0x{:X}~{}", form->GetLocalFormID(), form->GetFile(0)->fileName, swapForm->GetLocalFormID(), swapForm->GetFile(0)->fileName);
+		std::string comment = std::format(";{}|{}", formEID, swapEID);
+		std::string value = std::format("0x{:X}~{}|0x{:X}~{}", form->GetLocalFormID(), form->GetFile(0)->fileName, swapForm->GetLocalFormID(), swapForm->GetFile(0)->fileName);
 
 		a_ini.SetValue(a_type.c_str(), "", value.c_str(), comment.c_str());
 	}

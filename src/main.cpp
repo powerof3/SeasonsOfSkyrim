@@ -52,7 +52,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 				tweaksError = "powerofthree's Tweaks is not installed!\n";
 			}
 			std::string sosESPError{};
-			if (const auto file = RE::TESDataHandler::GetSingleton()->LookupLoadedLightModByName("SnowOverSkyrim.esp"); !file) {
+			if (const auto file = RE::TESDataHandler::GetSingleton()->LookupModByName("SnowOverSkyrim.esp"); !file) {
 				sosESPError = "SnowOverSkyrim.esp is not enabled!\n";
 			}
 			if (!tweaksError.empty() || !sosESPError.empty()) {
