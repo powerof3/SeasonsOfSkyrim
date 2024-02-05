@@ -31,7 +31,7 @@ namespace Cache
 	{
 		const auto it = _textureToLandMap.find(a_txst->GetFormID());
 		return RE::TESForm::LookupByID<RE::TESLandTexture>(it != _textureToLandMap.end() ? it->second :
-                                                                                           0x00000C16);  // LDirt
+																						   0x00000C16);  // LDirt
 	}
 
 	bool DataHolder::IsSnowShader(const RE::TESForm* a_form) const
@@ -45,7 +45,7 @@ namespace Cache
 
 		const auto it = _originals.find(a_ref->GetFormID());
 		return it != _originals.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) :
-                                        a_ref->GetBaseObject();
+		                                a_ref->GetBaseObject();
 	}
 
 	void DataHolder::SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase)

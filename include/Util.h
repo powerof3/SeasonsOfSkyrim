@@ -27,7 +27,7 @@ namespace model
 
 			return std::ranges::any_of(altTextures, [&](const auto& textures) {
 				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
-                                             false;
+				                             false;
 			});
 		}
 
@@ -58,7 +58,7 @@ namespace model
 
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
-                                             false;
+				                             false;
 			});
 		}
 

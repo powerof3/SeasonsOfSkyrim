@@ -22,7 +22,7 @@ namespace FormSwap
 			if (!a_ref || a_ref->IsDynamicForm() || a_ref->IsDeleted() || a_ref->IsDisabled()) {
 				return func(a_ref, a_handle);
 			}
-			
+
 			if (const auto base = a_ref->GetBaseObject()) {
 				if (const auto replaceBase = detail::get_form_swap(a_ref, base)) {
 					util::set_original_base(a_ref, base);
