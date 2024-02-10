@@ -8,7 +8,7 @@ namespace SnowSwap
 		std::vector<std::string> configs;
 
 		for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
-			if (entry.exists() && !entry.path().empty() && entry.path().extension() == ".ini"sv) {
+			if (entry.is_regular_file() && entry.path().extension() == ".ini"sv) {
 				if (const auto path = entry.path().string(); path.contains("_SNOW") || path.contains("_NOSNOW")) {
 					configs.push_back(path);
 				}
@@ -136,7 +136,7 @@ namespace SnowSwap
 			return SWAP_RESULT::kBaseFail;
 		}
 
-		if (const auto matObject = a_static->data.materialObj; matObject && (util::is_snow_shader(matObject) || util::get_editorID(matObject).contains("Ice"sv))) {
+		if (const auto matObject = a_static->data.materialObj; matObject && (util::is_snow_shader(matObject) || edid::get_editorID(matObject).contains("Ice"sv))) {
 			return SWAP_RESULT::kBaseFail;
 		}
 

@@ -3,26 +3,32 @@
 #define WIN32_LEAN_AND_MEAN
 
 #include <ranges>
+#include <shared_mutex>
 
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
 #include "MergeMapperPluginAPI.h"
-#include <ClibUtil/simpleINI.hpp>
-#include <ClibUtil/singleton.hpp>
+
 #include <ankerl/unordered_dense.h>
 #include <fmt/format.h>
-#include <shared_mutex>
+
 #include <spdlog/sinks/basic_file_sink.h>
 #include <xbyak/xbyak.h>
+
+#include <ClibUtil/editorID.hpp>
+#include <ClibUtil/simpleINI.hpp>
+#include <ClibUtil/singleton.hpp>
 
 #define DLLEXPORT __declspec(dllexport)
 
 namespace logger = SKSE::log;
 namespace string = clib_util::string;
 namespace ini = clib_util::ini;
+namespace edid = clib_util::editorID;
 
 using namespace std::literals;
+using namespace string::literals;
 using namespace clib_util::singleton;
 
 namespace stl

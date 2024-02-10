@@ -2,11 +2,6 @@
 
 namespace util
 {
-	inline std::string get_editorID(const RE::TESForm* a_form)
-	{
-		return Cache::DataHolder::GetEditorID(a_form->GetFormID());
-	}
-
 	inline RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref)
 	{
 		return Cache::DataHolder::GetSingleton()->GetOriginalBase(a_ref);
@@ -32,7 +27,7 @@ namespace model
 
 			return std::ranges::any_of(altTextures, [&](const auto& textures) {
 				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
-                                             false;
+				                             false;
 			});
 		}
 
@@ -63,7 +58,7 @@ namespace model
 
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
-                                             false;
+				                             false;
 			});
 		}
 

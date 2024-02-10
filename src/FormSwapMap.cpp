@@ -11,7 +11,7 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 {
 	static constexpr std::array blackList = { "Snow"sv, "Ice"sv, "Winter"sv, "Frozen"sv, "Coast"sv, "River"sv };
 
-	const auto editorID = util::get_editorID(a_landTexture);
+	const auto editorID = edid::get_editorID(a_landTexture);
 	if (!editorID.empty() && std::ranges::any_of(blackList, [&](const auto str) { return string::icontains(editorID, str); })) {
 		return nullptr;
 	}

@@ -11,7 +11,7 @@ namespace Cache
 				}
 			}
 			for (const auto& mat : dataHandler->GetFormArray<RE::BGSMaterialObject>()) {
-				if (auto eid = util::get_editorID(mat); string::icontains(eid, "Snow")) {
+				if (auto eid = edid::get_editorID(mat); string::icontains(eid, "Snow")) {
 					_snowShaders.emplace(mat->GetFormID());
 				}
 			}
@@ -27,17 +27,11 @@ namespace Cache
 		}
 	}
 
-	std::string DataHolder::GetEditorID(RE::FormID a_formID)
-	{
-		static auto func = reinterpret_cast<_GetFormEditorID>(GetProcAddress(tweaks, "GetFormEditorID"));
-		return func ? func(a_formID) : std::string{};
-	}
-
 	RE::TESLandTexture* DataHolder::GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst)
 	{
 		const auto it = _textureToLandMap.find(a_txst->GetFormID());
 		return RE::TESForm::LookupByID<RE::TESLandTexture>(it != _textureToLandMap.end() ? it->second :
-                                                                                           0x00000C16);  // LDirt
+																						   0x00000C16);  // LDirt
 	}
 
 	bool DataHolder::IsSnowShader(const RE::TESForm* a_form) const
@@ -51,13 +45,12 @@ namespace Cache
 
 		const auto it = _originals.find(a_ref->GetFormID());
 		return it != _originals.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) :
-                                        a_ref->GetBaseObject();
+		                                a_ref->GetBaseObject();
 	}
 
 	void DataHolder::SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase)
 	{
 		Locker locker(_originalsLock);
-
 		_originals.emplace(a_ref->GetFormID(), a_originalBase->GetFormID());
 	}
 }
