@@ -62,7 +62,14 @@ namespace LandscapeSwap
 				const auto manager = SeasonManager::GetSingleton();
 
 				const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_txst) : nullptr;
-				return swapLT ? swapLT->textureSet : a_txst;
+				const auto finalTXST = swapLT ? swapLT->textureSet : a_txst;
+
+				// Save the swapped texture set in the original value because other plugins might need the swapped TXSTs
+				if (finalTXST != a_txst && a_txst != nullptr && finalTXST != nullptr) {
+					*a_txst = *finalTXST;
+				}
+
+				return finalTXST;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
