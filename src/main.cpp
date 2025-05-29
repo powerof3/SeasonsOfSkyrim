@@ -6,6 +6,8 @@
 #include "SeasonManager.h"
 #include "SnowSwap.h"
 
+REL::Version gameVersion{};
+
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
 	switch (a_message->type) {
@@ -49,7 +51,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		
 			std::string tweaksError{};
 			if (tweaks == nullptr) {
-				tweaksError = "powerofthree's Tweaks is not installed!\n";
+				tweaksError = std::format("powerofthree's Tweaks is not installed! Please check if you have installed the correct version for your game ({}) if you have done so already.\n", gameVersion);
 			}
 			std::string sosESPError{};
 			const auto  dataHandler = RE::TESDataHandler::GetSingleton();
@@ -57,7 +59,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 				sosESPError = "SnowOverSkyrim.esp is not enabled!\n";
 			}
 			if (!tweaksError.empty() || !sosESPError.empty()) {
-				std::string error{ "\nMissing dependencies! This mod will not work without them.\n\n" };
+				std::string error{ "[Seasons of Skyrim] Missing dependencies! This mod will not work without them.\n\n" };
 				error.append(tweaksError).append(sosESPError);
 				stl::report_and_fail(error);
 				return;
@@ -176,7 +178,8 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	InitializeLog();
 
-	logger::info("Game version : {}", a_skse->RuntimeVersion().string());
+	gameVersion = a_skse->RuntimeVersion();
+	logger::info("Game version : {}", gameVersion.string());
 
 	SKSE::Init(a_skse);
 
