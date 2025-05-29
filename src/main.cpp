@@ -48,7 +48,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 			auto tweaks = GetModuleHandle(L"po3_Tweaks");
 			logger::info("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
-		
+
 			std::string tweaksError{};
 			if (tweaks == nullptr) {
 				tweaksError = std::format("powerofthree's Tweaks is not installed! Please check if you have installed the correct version for your game ({}) if you have done so already.\n", gameVersion);
