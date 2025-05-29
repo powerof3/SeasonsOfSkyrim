@@ -1,7 +1,5 @@
 #pragma once
 
-inline HMODULE tweaks{ nullptr };
-
 namespace Cache
 {
 	class DataHolder : public REX::Singleton<DataHolder>

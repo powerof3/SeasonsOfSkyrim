@@ -11,11 +11,6 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kPostLoad:
 		{
-			logger::info("{:*^30}", "DEPENDENCIES");
-
-			tweaks = GetModuleHandle(L"po3_Tweaks");
-			logger::info("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
-
 			try {
 				SeasonManager::GetSingleton()->LoadSettings();
 			} catch (...) {
@@ -47,17 +42,22 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
+			logger::info("{:*^30}", "DEPENDENCIES");
+
+			auto tweaks = GetModuleHandle(L"po3_Tweaks");
+			logger::info("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
+		
 			std::string tweaksError{};
 			if (tweaks == nullptr) {
 				tweaksError = "powerofthree's Tweaks is not installed!\n";
 			}
 			std::string sosESPError{};
 			const auto  dataHandler = RE::TESDataHandler::GetSingleton();
-			if (!dataHandler->LookupLoadedLightModByName("SnowOverSkyrim.esp") && !dataHandler->LookupLoadedModByName("SnowOverSkyrim.esp")) {
-				sosESPError = "SnowOverSkyrim.esp is missing or not enabled!\n";
+			if (!dataHandler->LookupLoadedLightModByName("SnowOverSkyrim.esp") && !dataHandler->LookupLoadedModByName("SnowOverSkyrim.esp") && !RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SOS_WIN_SnowMaterialObjectSP")) {
+				sosESPError = "SnowOverSkyrim.esp is not enabled!\n";
 			}
 			if (!tweaksError.empty() || !sosESPError.empty()) {
-				std::string error{ "[Seasons of Skyrim]\nMissing dependencies! This mod may not work as expected.\n\n" };
+				std::string error{ "\nMissing dependencies! This mod will not work without them.\n\n" };
 				error.append(tweaksError).append(sosESPError);
 				stl::report_and_fail(error);
 				return;
