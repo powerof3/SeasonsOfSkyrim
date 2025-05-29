@@ -59,10 +59,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 				sosESPError = "SnowOverSkyrim.esp is not enabled!\n";
 			}
 			if (!tweaksError.empty() || !sosESPError.empty()) {
-				std::string error{ "[Seasons of Skyrim] Missing dependencies! This mod will not work without them.\n\n" };
+				std::string error{ "[Seasons of Skyrim] Missing dependencies! This mod may not work as expected without them.\n\n" };
 				error.append(tweaksError).append(sosESPError);
-				stl::report_and_fail(error);
-				return;
+				RE::DebugMessageBox(error.c_str());
+				RE::ConsoleLog::GetSingleton()->Print(error.c_str());
 			}
 
 			Cache::DataHolder::GetSingleton()->GetData();

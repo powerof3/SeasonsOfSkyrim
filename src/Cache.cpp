@@ -23,7 +23,9 @@ namespace Cache
 		const auto& spColor = snowShaderSP ? snowShaderSP->directionalData.singlePassColor : RE::NiColor();
 
 		if (spColor.red != 0.0f && spColor.green != 0.0f && spColor.blue != 0.0f) {
-			sosShaderSP->directionalData.singlePassColor = spColor;
+			if (sosShaderSP) {
+				sosShaderSP->directionalData.singlePassColor = spColor;
+			}
 		}
 	}
 

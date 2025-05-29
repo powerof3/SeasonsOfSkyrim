@@ -223,6 +223,9 @@ namespace SnowSwap
 		auto& [init, defProjectedParams, defProjectedColor] = _defaultObj;
 		if (!init) {
 			const auto snowMat = GetSinglePassSnowShader();
+			if (!snowMat) {
+				return;
+			}
 
 			defProjectedColor = snowMat->directionalData.singlePassColor;
 

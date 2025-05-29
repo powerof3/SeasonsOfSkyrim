@@ -139,8 +139,7 @@ namespace SnowSwap
 				return node;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
-
-			static inline constexpr std::size_t size = 0x40;
+			static inline constexpr std::size_t            size = 0x40;
 		};
 
 		inline void Install()
