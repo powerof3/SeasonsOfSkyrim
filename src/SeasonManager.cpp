@@ -148,6 +148,8 @@ void SeasonManager::LoadSettings()
 
 	logger::info("Season type is {}", stl::to_underlying(seasonType));
 
+	ini::get_value(ini, preferMultipass, "Settings", "Prefer Multipass", ";If true, multipass materials will be used where supported.\n;If false, single pass will be used instead.");
+
 	LoadMonthToSeasonMap(ini);
 
 	winter.LoadSettings(ini, true);
@@ -531,6 +533,11 @@ void SeasonManager::SetExterior(bool a_isExterior)
 SEASON SeasonManager::GetSeasonOverride() const
 {
 	return seasonOverride;
+}
+
+bool SeasonManager::PreferMultipass() const
+{
+	return preferMultipass;
 }
 
 void SeasonManager::SetSeasonOverride(SEASON a_season)
