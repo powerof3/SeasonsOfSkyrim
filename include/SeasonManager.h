@@ -3,7 +3,7 @@
 #include "Seasons.h"
 
 class SeasonManager final :
-	public ISingleton<SeasonManager>,
+	public REX::Singleton<SeasonManager>,
 	public RE::BSTEventSink<RE::TESActivateEvent>
 {
 public:

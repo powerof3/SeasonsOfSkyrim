@@ -8,17 +8,17 @@
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
 
+#include "REX/REX/Singleton.h"
+
 #include "MergeMapperPluginAPI.h"
 
 #include <ankerl/unordered_dense.h>
-#include <fmt/format.h>
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <xbyak/xbyak.h>
 
 #include <ClibUtil/editorID.hpp>
 #include <ClibUtil/simpleINI.hpp>
-#include <ClibUtil/singleton.hpp>
 
 #define DLLEXPORT __declspec(dllexport)
 
@@ -29,7 +29,6 @@ namespace edid = clib_util::editorID;
 
 using namespace std::literals;
 using namespace string::literals;
-using namespace clib_util::singleton;
 
 namespace stl
 {
@@ -47,8 +46,6 @@ namespace stl
 	template <class T>
 	void write_thunk_call(std::uintptr_t a_src)
 	{
-		SKSE::AllocTrampoline(14);
-
 		auto& trampoline = SKSE::GetTrampoline();
 		T::func = trampoline.write_call<5>(a_src, T::thunk);
 	}

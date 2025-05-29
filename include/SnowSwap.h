@@ -23,7 +23,7 @@ namespace SnowSwap
 		kRemove
 	};
 
-	class Manager : public ISingleton<Manager>
+	class Manager : public REX::Singleton<Manager>
 	{
 	public:
 		struct SnowInfo
@@ -170,7 +170,6 @@ namespace SnowSwap
 				return node;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
-
 			static inline constexpr std::size_t size = 0x40;
 		};
 
