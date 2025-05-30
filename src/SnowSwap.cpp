@@ -153,6 +153,8 @@ namespace SnowSwap
 
 	SNOW_TYPE Manager::GetSnowType(const RE::TESObjectSTAT* a_static, RE::NiAVObject* a_node) const
 	{
+		const auto seasonManager = SeasonManager::GetSingleton();
+
 		using Flag = RE::BSShaderProperty::EShaderPropertyFlag;
 
 		if (GetWhitelistedForMultiPassSnow(a_static)) {
@@ -207,7 +209,7 @@ namespace SnowSwap
 			return RE::BSVisit::BSVisitControl::kContinue;
 		});
 
-		if (hasShape && !hasInvalidShape && hasLightingShaderProp && !hasAlphaProp) {
+		if (seasonManager->PreferMultipass() && hasShape && !hasInvalidShape && hasLightingShaderProp && !hasAlphaProp) {
 			return SNOW_TYPE::kMultiPass;
 		}
 

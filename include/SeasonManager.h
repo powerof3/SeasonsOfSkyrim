@@ -58,6 +58,8 @@ public:
 	SEASON GetSeasonOverride() const;
 	void   SetSeasonOverride(SEASON a_season);
 
+	bool PreferMultipass() const;
+
 protected:
 	using MONTH = RE::Calendar::Month;
 	using EventResult = RE::BSEventNotifyControl;
@@ -146,6 +148,8 @@ private:
 	SEASON lastSeason{ SEASON::kNone };
 
 	SEASON seasonOverride{ SEASON::kNone };
+
+	bool preferMultipass{ true };
 
 	std::atomic_bool isExterior{ false };
 
