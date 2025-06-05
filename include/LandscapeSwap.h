@@ -62,14 +62,19 @@ namespace LandscapeSwap
 				const auto manager = SeasonManager::GetSingleton();
 
 				const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_txst) : nullptr;
-				const auto finalTXST = swapLT ? swapLT->textureSet : a_txst;
-
-				// Save the swapped texture set in the original value because other plugins might need the swapped TXSTs
-				if (finalTXST != a_txst && a_txst != nullptr && finalTXST != nullptr) {
-					*a_txst = *finalTXST;
+				if (swapLT == nullptr) {
+					// no swap found
+					if (a_txst != nullptr) {
+						a_txst->pad12C = 0;  // Reset pad12C if no swap is found
+					}
+					return a_txst;
 				}
 
-				return finalTXST;
+				const auto swapTXST = swapLT->textureSet;
+				if (a_txst != nullptr && swapTXST != nullptr) {
+					a_txst->pad12C = swapTXST->formID;  // Set pad12C to swapped TXST formid
+				}
+				return swapTXST;
 			}
 			static inline REL::Relocation<decltype(thunk)> func;
 
