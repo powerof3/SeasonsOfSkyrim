@@ -1,10 +1,8 @@
 #pragma once
 
-inline HMODULE tweaks{ nullptr };
-
 namespace Cache
 {
-	class DataHolder : public ISingleton<DataHolder>
+	class DataHolder : public REX::Singleton<DataHolder>
 	{
 	public:
 		void GetData();

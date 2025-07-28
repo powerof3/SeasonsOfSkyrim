@@ -47,12 +47,12 @@ namespace Papyrus
 
 		std::uint32_t GetCurrentSeason(VM*, StackID, RE::StaticFunctionTag*)
 		{
-			return stl::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
+			return std::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
 		}
 
 		std::uint32_t GetSeasonOverride(VM*, StackID, RE::StaticFunctionTag*)
 		{
-			return stl::to_underlying(SeasonManager::GetSingleton()->GetSeasonOverride());
+			return std::to_underlying(SeasonManager::GetSingleton()->GetSeasonOverride());
 		}
 		void SetSeasonOverride(VM*, StackID, RE::StaticFunctionTag*, std::uint32_t a_season)
 		{

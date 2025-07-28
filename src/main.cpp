@@ -6,16 +6,13 @@
 #include "SeasonManager.h"
 #include "SnowSwap.h"
 
+REL::Version gameVersion{};
+
 void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 {
 	switch (a_message->type) {
 	case SKSE::MessagingInterface::kPostLoad:
 		{
-			logger::info("{:*^30}", "DEPENDENCIES");
-
-			tweaks = GetModuleHandle(L"po3_Tweaks");
-			logger::info("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
-
 			try {
 				SeasonManager::GetSingleton()->LoadSettings();
 			} catch (...) {
@@ -47,18 +44,25 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
+			logger::info("{:*^30}", "DEPENDENCIES");
+
+			auto tweaks = GetModuleHandle(L"po3_Tweaks");
+			logger::info("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
+
 			std::string tweaksError{};
 			if (tweaks == nullptr) {
-				tweaksError = "powerofthree's Tweaks is not installed!\n";
+				tweaksError = std::format("powerofthree's Tweaks is not installed! Please check if you have installed the correct version for your game ({}) if you have done so already.\n", gameVersion);
 			}
 			std::string sosESPError{};
-			if (const auto file = RE::TESDataHandler::GetSingleton()->LookupModByName("SnowOverSkyrim.esp"); !file) {
+			const auto  dataHandler = RE::TESDataHandler::GetSingleton();
+			if (!dataHandler->LookupLoadedLightModByName("SnowOverSkyrim.esp") && !dataHandler->LookupLoadedModByName("SnowOverSkyrim.esp") && !RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SOS_WIN_SnowMaterialObjectSP")) {
 				sosESPError = "SnowOverSkyrim.esp is not enabled!\n";
 			}
 			if (!tweaksError.empty() || !sosESPError.empty()) {
-				std::string error{ "[Seasons of Skyrim]\nMissing dependencies!\n\n" };
+				std::string error{ "[Seasons of Skyrim] Missing dependencies! This mod may not work as expected without them.\n\n" };
 				error.append(tweaksError).append(sosESPError);
 				RE::DebugMessageBox(error.c_str());
+				RE::ConsoleLog::GetSingleton()->Print(error.c_str());
 			}
 
 			Cache::DataHolder::GetSingleton()->GetData();
@@ -174,9 +178,12 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 {
 	InitializeLog();
 
-	logger::info("Game version : {}", a_skse->RuntimeVersion().string());
+	gameVersion = a_skse->RuntimeVersion();
+	logger::info("Game version : {}", gameVersion.string());
 
 	SKSE::Init(a_skse);
+
+	SKSE::AllocTrampoline(84);
 
 	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);
@@ -189,12 +196,12 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 extern "C" DLLEXPORT std::uint32_t GetCurrentSeason()
 {
-	return stl::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
+	return std::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
 }
 
 extern "C" DLLEXPORT std::uint32_t GetSeasonOverride()
 {
-	return stl::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
+	return std::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
 }
 
 extern "C" DLLEXPORT void SetSeasonOverride(std::uint32_t a_season)

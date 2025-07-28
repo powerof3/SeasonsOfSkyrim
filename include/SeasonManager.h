@@ -3,7 +3,7 @@
 #include "Seasons.h"
 
 class SeasonManager final :
-	public ISingleton<SeasonManager>,
+	public REX::Singleton<SeasonManager>,
 	public RE::BSTEventSink<RE::TESActivateEvent>
 {
 public:
@@ -57,6 +57,8 @@ public:
 
 	SEASON GetSeasonOverride() const;
 	void   SetSeasonOverride(SEASON a_season);
+
+	bool PreferMultipass() const;
 
 protected:
 	using MONTH = RE::Calendar::Month;
@@ -146,6 +148,8 @@ private:
 	SEASON lastSeason{ SEASON::kNone };
 
 	SEASON seasonOverride{ SEASON::kNone };
+
+	bool preferMultipass{ true };
 
 	std::atomic_bool isExterior{ false };
 

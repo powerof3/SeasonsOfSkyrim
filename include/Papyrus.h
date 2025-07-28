@@ -9,7 +9,7 @@ namespace Papyrus
 
 	namespace Events
 	{
-		class Manager : public ISingleton<Manager>
+		class Manager : public REX::Singleton<Manager>
 		{
 		public:
 			enum : std::uint32_t

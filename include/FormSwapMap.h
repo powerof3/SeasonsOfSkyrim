@@ -136,8 +136,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 			}
 		}
 
-		constexpr auto is_in_blacklist = []<auto N>(const RE::TESObjectSTAT* a_stat, const std::array<std::string_view, N>& a_blacklist)
-		{
+		constexpr auto is_in_blacklist = []<auto N>(const RE::TESObjectSTAT* a_stat, const std::array<std::string_view, N>& a_blacklist) {
 			const auto editorID = edid::get_editorID(a_stat);
 			return std::ranges::any_of(a_blacklist, [&](const auto& str) { return string::icontains(editorID, str); });
 		};

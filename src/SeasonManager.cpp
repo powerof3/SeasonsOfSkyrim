@@ -64,7 +64,7 @@ bool SeasonManager::UpdateSeason()
 			shouldUpdate = seasonOverride != tempLastSeason;
 		}
 		if (!loadedFromSave && shouldUpdate) {
-			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(tempLastSeason), stl::to_underlying(seasonOverride), true);
+			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(std::to_underlying(tempLastSeason), std::to_underlying(seasonOverride), true);
 		}
 
 	} else {
@@ -77,7 +77,7 @@ bool SeasonManager::UpdateSeason()
 			shouldUpdate = currentSeason != lastSeason;
 		}
 		if (!loadedFromSave && shouldUpdate) {
-			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(stl::to_underlying(lastSeason), stl::to_underlying(currentSeason), false);
+			Papyrus::Events::Manager::GetSingleton()->seasonChange.QueueEvent(std::to_underlying(lastSeason), std::to_underlying(currentSeason), false);
 		}
 	}
 
@@ -146,7 +146,9 @@ void SeasonManager::LoadSettings()
 	ini::get_value(ini, mainWINSwap.skipStat, "Winter", "Skip Statics", nullptr);
 	ini::get_value(ini, mainWINSwap.skipTree, "Winter", "Skip Tree", nullptr);
 
-	logger::info("Season type is {}", stl::to_underlying(seasonType));
+	logger::info("Season type is {}", std::to_underlying(seasonType));
+
+	ini::get_value(ini, preferMultipass, "Settings", "Prefer Multipass", ";If true, multipass materials will be used where supported.\n;If false, single pass will be used instead.");
 
 	LoadMonthToSeasonMap(ini);
 
@@ -374,7 +376,7 @@ void SeasonManager::SaveSeason(std::string_view a_savePath)
 	const auto season = GetCurrentSeason(true);
 	currentSeason = season ? season->GetType() : SEASON::kNone;
 
-	const auto seasonData = std::format("{}|{}", stl::to_underlying(currentSeason), stl::to_underlying(seasonOverride));
+	const auto seasonData = std::format("{}|{}", std::to_underlying(currentSeason), std::to_underlying(seasonOverride));
 	ini.SetValue("Saves", a_savePath.data(), seasonData.c_str(), nullptr);
 
 	(void)ini.SaveFile(serializedSeasonList);
@@ -533,6 +535,11 @@ void SeasonManager::SetExterior(bool a_isExterior)
 SEASON SeasonManager::GetSeasonOverride() const
 {
 	return seasonOverride;
+}
+
+bool SeasonManager::PreferMultipass() const
+{
+	return preferMultipass;
 }
 
 void SeasonManager::SetSeasonOverride(SEASON a_season)
