@@ -113,7 +113,8 @@ namespace raycast
 		pickData.rayInput.from = rayStart * havokWorldScale;
 		pickData.rayInput.to = rayEnd * havokWorldScale;
 		pickData.rayInput.enableShapeCollectionFilter = false;
-		pickData.rayInput.filterInfo = RE::bhkCollisionFilter::GetSingleton()->GetNewSystemGroup() << 16 | std::to_underlying(RE::COL_LAYER::kLOS);
+		pickData.rayInput.filterInfo.SetSystemGroup(RE::bhkCollisionFilter::GetSingleton()->GetNewSystemGroup());
+		pickData.rayInput.filterInfo.SetCollisionLayer(RE::COL_LAYER::kLOS);
 
 		if (bhkWorld->PickObject(pickData); pickData.rayOutput.HasHit()) {
 			if (const auto hitRef = RE::TESHavokUtilities::FindCollidableRef(*pickData.rayOutput.rootCollidable); hitRef && hitRef != a_ref) {
