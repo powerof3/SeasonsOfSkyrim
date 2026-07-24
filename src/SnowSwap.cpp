@@ -6,7 +6,7 @@ namespace SnowSwap
 	void Manager::LoadSnowShaderSettings()
 	{
 		LoadSnowShaders();
-		
+
 		std::vector<std::string> configs;
 
 		for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
