@@ -302,7 +302,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 		if (entry.is_regular_file() && entry.path().extension() == ".ini"sv) {
 			const auto& path = entry.path().string();
 			const auto& pathStem = entry.path().string();
-			
+
 			if (pathStem.ends_with(suffix) && !path.contains("MainFormSwap"sv)) {
 				configs.push_back(path);
 			}
