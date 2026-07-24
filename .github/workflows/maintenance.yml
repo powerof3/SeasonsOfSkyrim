@@ -22,6 +22,6 @@ jobs:
     - name: Glob files
       run: python ${{ github.workspace }}/ProjectGen.py
 
-    - uses: stefanzweifel/git-auto-commit-action@v4
+    - uses: stefanzweifel/git-auto-commit-action@v5
       with:
         commit_message: maintenance
