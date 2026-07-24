@@ -191,6 +191,12 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	const auto papyrus = SKSE::GetPapyrusInterface();
 	papyrus->Register(Papyrus::Bind);
 
+	const auto serialization = SKSE::GetSerializationInterface();
+	serialization->SetUniqueID(Papyrus::Events::kSeasonsOfSkyrim);
+	serialization->SetSaveCallback(Papyrus::Events::SaveCallback);
+	serialization->SetLoadCallback(Papyrus::Events::LoadCallback);
+	serialization->SetRevertCallback(Papyrus::Events::RevertCallback);
+
 	return true;
 }
 

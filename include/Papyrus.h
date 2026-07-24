@@ -9,21 +9,29 @@ namespace Papyrus
 
 	namespace Events
 	{
+		enum : std::uint32_t
+		{
+			kSerializationVersion = 1,
+
+			kSeasonsOfSkyrim = 'SESN',
+
+			kSeasonChange = 'SOSC'
+		};
+		
 		class Manager : public REX::Singleton<Manager>
 		{
 		public:
-			enum : std::uint32_t
-			{
-				kSeasonChange = 'SOSC'
-			};
-
 			void Save(SKSE::SerializationInterface* a_intfc, std::uint32_t a_version);
-			void Load(SKSE::SerializationInterface* a_intfc, std::uint32_t a_type);
+			void Load(SKSE::SerializationInterface* a_intfc);
 			void Revert(SKSE::SerializationInterface* a_intfc);
 
 			// members
 			SKSE::RegistrationSet<std::uint32_t, std::uint32_t, bool> seasonChange{ "OnSeasonChange"sv };
 		};
+
+		void SaveCallback(SKSE::SerializationInterface* a_intfc);
+		void LoadCallback(SKSE::SerializationInterface* a_intfc);
+		void RevertCallback(SKSE::SerializationInterface* a_intfc);
 	}
 
 	namespace Functions

@@ -92,16 +92,39 @@ namespace Papyrus
 			seasonChange.Save(a_intfc, kSeasonChange, a_version);
 		}
 
-		void Manager::Load(SKSE::SerializationInterface* a_intfc, std::uint32_t a_type)
+		void Manager::Load(SKSE::SerializationInterface* a_intfc)
 		{
-			if (a_type == kSeasonChange) {
-				seasonChange.Load(a_intfc);
+			std::uint32_t type;
+			std::uint32_t version;
+			std::uint32_t length;
+			while (a_intfc->GetNextRecordInfo(type, version, length)) {
+				if (version != kSerializationVersion) {
+					continue;
+				}
+				if (type == kSeasonChange) {
+					seasonChange.Load(a_intfc);
+				}
 			}
 		}
 
 		void Manager::Revert(SKSE::SerializationInterface* a_intfc)
 		{
 			seasonChange.Revert(a_intfc);
+		}
+
+		void SaveCallback(SKSE::SerializationInterface* a_intfc)
+		{
+			Manager::GetSingleton()->Save(a_intfc, kSerializationVersion);
+		}
+
+		void LoadCallback(SKSE::SerializationInterface* a_intfc)
+		{
+			Manager::GetSingleton()->Load(a_intfc);
+		}
+
+		void RevertCallback(SKSE::SerializationInterface* a_intfc)
+		{
+			Manager::GetSingleton()->Revert(a_intfc);
 		}
 	}
 }
