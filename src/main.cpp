@@ -201,7 +201,7 @@ extern "C" DLLEXPORT std::uint32_t GetCurrentSeason()
 
 extern "C" DLLEXPORT std::uint32_t GetSeasonOverride()
 {
-	return std::to_underlying(SeasonManager::GetSingleton()->GetCurrentSeasonType());
+	return std::to_underlying(SeasonManager::GetSingleton()->GetSeasonOverride());
 }
 
 extern "C" DLLEXPORT void SetSeasonOverride(std::uint32_t a_season)
