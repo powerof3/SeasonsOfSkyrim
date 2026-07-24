@@ -12,8 +12,8 @@ namespace SnowSwap
 		for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 			if (entry.is_regular_file() && entry.path().extension() == ".ini"sv) {
 				const auto& path = entry.path();
-				const auto &pathStem = path.stem().string();
-				
+				const auto& pathStem = path.stem().string();
+
 				if (pathStem.ends_with("_SNOW") || pathStem.ends_with("_NOSNOW")) {
 					configs.push_back(path.string());
 				}
