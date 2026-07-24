@@ -34,7 +34,6 @@ namespace SnowSwap
 
 		struct ProjectedUV
 		{
-			bool         init{ false };
 			RE::NiColorA projectedParams{};
 			RE::NiColor  projectedColor{};
 		};
@@ -46,19 +45,23 @@ namespace SnowSwap
 
 		[[nodiscard]] SNOW_TYPE GetSnowType(const RE::TESObjectSTAT* a_static, RE::NiAVObject* a_node) const;
 
-		void ApplySinglePassSnow(RE::NiAVObject* a_node, float a_angle = 90.0f);
+		void ApplySinglePassSnow(RE::NiAVObject* a_node, float a_angle = 90.0f) const;
 		void RemoveSinglePassSnow(RE::NiAVObject* a_node) const;
 
 		[[nodiscard]] std::optional<SnowInfo> GetSnowInfo(const RE::TESObjectSTAT* a_static);
 		void                                  SetSnowInfo(const RE::TESObjectSTAT* a_static, RE::BGSMaterialObject* a_originalMat, SNOW_TYPE a_snowType);
 
-		[[nodiscard]] RE::BGSMaterialObject* GetMultiPassSnowShader();
-		[[nodiscard]] RE::BGSMaterialObject* GetSinglePassSnowShader();
+		[[nodiscard]] RE::BGSMaterialObject* GetMultiPassSnowShader() const { return _multiPassSnowShader; }
+		[[nodiscard]] RE::BGSMaterialObject* GetSinglePassSnowShader() const { return _singlePassSnowShader; }
 
 	private:
 		using Lock = std::shared_mutex;
-		using Locker = std::scoped_lock<Lock>;
+		using ReadLocker = std::shared_lock<Lock>;
+		using WriteLocker = std::unique_lock<Lock>;
+
 		using SnowInfoMap = Map<RE::FormID, SnowInfo>;
+
+		void LoadSnowShaders();
 
 		bool GetBlacklisted(const RE::TESForm* a_form) const;
 		bool GetBaseBlacklisted(const RE::TESForm* a_form) const;
@@ -151,6 +154,7 @@ namespace SnowSwap
 	//Movable Statics/Containers
 	namespace OtherForms
 	{
+		template <std::size_t N>
 		struct Clone3D
 		{
 			static RE::NiAVObject* thunk(RE::TESBoundObject* a_base, RE::TESObjectREFR* a_ref, bool a_arg3)
@@ -174,8 +178,8 @@ namespace SnowSwap
 
 		inline void Install()
 		{
-			stl::write_vfunc<RE::BGSMovableStatic, 2, Clone3D>();
-			stl::write_vfunc<RE::TESObjectCONT, Clone3D>();
+			stl::write_vfunc<RE::BGSMovableStatic, 2, Clone3D<0>>();
+			stl::write_vfunc<RE::TESObjectCONT, Clone3D<1>>();
 		}
 	}
 

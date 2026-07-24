@@ -43,7 +43,7 @@ namespace Cache
 
 	RE::TESBoundObject* DataHolder::GetOriginalBase(RE::TESObjectREFR* a_ref)
 	{
-		Locker locker(_originalsLock);
+		ReadLocker locker(_originalsLock);
 
 		const auto it = _originals.find(a_ref->GetFormID());
 		return it != _originals.end() ? RE::TESForm::LookupByID<RE::TESBoundObject>(it->second) :
@@ -52,7 +52,7 @@ namespace Cache
 
 	void DataHolder::SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase)
 	{
-		Locker locker(_originalsLock);
+		WriteLocker locker(_originalsLock);
 		_originals.emplace(a_ref->GetFormID(), a_originalBase->GetFormID());
 	}
 }

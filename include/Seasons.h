@@ -82,6 +82,7 @@ private:
 			return false;
 		}
 	}
+
 	[[nodiscard]] bool is_in_valid_worldspace() const
 	{
 		const auto worldSpace = RE::TES::GetSingleton()->worldSpace;

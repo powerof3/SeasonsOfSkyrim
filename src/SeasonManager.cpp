@@ -128,8 +128,6 @@ void SeasonManager::LoadSettings()
 
 	if (month == -1 || flora == "-1") {
 		ini.Delete("Settings", nullptr);
-
-		ini.Delete("Settings", nullptr);
 		ini.Delete("Winter", nullptr);
 		ini.Delete("Spring", nullptr);
 		ini.Delete("Summer", nullptr);
@@ -302,7 +300,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 
 	for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 		if (entry.exists() && !entry.path().empty() && entry.path().extension() == ".ini"sv) {
-			if (const auto path = entry.path().string(); path.contains(suffix) && !path.contains("MainFormSwap"sv)) {
+			if (const auto path = entry.path().string(); path.ends_with(suffix) && !path.contains("MainFormSwap"sv)) {
 				configs.push_back(path);
 			}
 		}

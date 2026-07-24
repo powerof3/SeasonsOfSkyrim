@@ -15,7 +15,8 @@ namespace Cache
 
 	private:
 		using Lock = std::shared_mutex;
-		using Locker = std::scoped_lock<Lock>;
+		using ReadLocker = std::shared_lock<Lock>;
+		using WriteLocker = std::unique_lock<Lock>;
 
 		MapPair<RE::FormID> _textureToLandMap;
 		Set<RE::FormID>     _snowShaders;
