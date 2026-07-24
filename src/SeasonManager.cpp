@@ -299,8 +299,11 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 	logger::info("{}", type);
 
 	for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
-		if (entry.exists() && !entry.path().empty() && entry.path().extension() == ".ini"sv) {
-			if (const auto path = entry.path().string(); path.ends_with(suffix) && !path.contains("MainFormSwap"sv)) {
+		if (entry.is_regular_file() && entry.path().extension() == ".ini"sv) {
+			const auto& path = entry.path().string();
+			const auto& pathStem = entry.path().string();
+			
+			if (pathStem.ends_with(suffix) && !path.contains("MainFormSwap"sv)) {
 				configs.push_back(path);
 			}
 		}

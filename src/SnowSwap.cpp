@@ -11,8 +11,11 @@ namespace SnowSwap
 
 		for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 			if (entry.is_regular_file() && entry.path().extension() == ".ini"sv) {
-				if (const auto path = entry.path().string(); path.ends_with("_SNOW") || path.ends_with("_NOSNOW")) {
-					configs.push_back(path);
+				const auto& path = entry.path();
+				const auto &pathStem = path.stem().string();
+				
+				if (pathStem.ends_with("_SNOW") || pathStem.ends_with("_NOSNOW")) {
+					configs.push_back(path.string());
 				}
 			}
 		}
@@ -84,7 +87,7 @@ namespace SnowSwap
 				data.falloffScale,
 				data.falloffBias,
 				1.0f / data.noiseUVScale,
-				std::cosf(90.0f)
+				0.0f
 			};
 		}
 	}
