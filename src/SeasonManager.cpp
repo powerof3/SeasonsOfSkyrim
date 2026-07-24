@@ -301,7 +301,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 	for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 		if (entry.is_regular_file() && entry.path().extension() == ".ini"sv) {
 			const auto& path = entry.path().string();
-			const auto& pathStem = entry.path().string();
+			const auto& pathStem = entry.path().stem().string();
 
 			if (pathStem.ends_with(suffix) && !path.contains("MainFormSwap"sv)) {
 				configs.push_back(path);
