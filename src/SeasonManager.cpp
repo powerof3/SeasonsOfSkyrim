@@ -223,12 +223,12 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 	} else {
 		for (const auto record : FormSwapMap::standard_records()) {
 			auto type = FormSwapMap::get_name(record);
-			
+
 			if (mainWINSwap.skipRecords[std::to_underlying(record)]) {
 				logger::info("\t[{}] skipping...", type);
 				continue;
 			}
-			
+
 			CSimpleIniA::TNamesDepend values;
 			ini.GetAllKeys(type.data(), values);
 			values.sort(CSimpleIniA::Entry::LoadOrder());
