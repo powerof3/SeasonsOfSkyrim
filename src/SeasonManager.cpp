@@ -336,8 +336,6 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 
 	//save worldspaces to settings so DynDOLOD can read them
 	a_season.SaveData(a_settings);
-
-	a_season.LoadWorldspaces();
 }
 
 void SeasonManager::LoadSeasonData()
@@ -353,6 +351,14 @@ void SeasonManager::LoadSeasonData()
 	LoadSeasonData(autumn, settingsINI);
 
 	(void)settingsINI.SaveFile(settings);
+}
+
+void SeasonManager::LoadValidWorldspaces()
+{
+	winter.LoadWorldspaces();
+	spring.LoadWorldspaces();
+	summer.LoadWorldspaces();
+	autumn.LoadWorldspaces();
 }
 
 void SeasonManager::CheckLODExists()

@@ -103,8 +103,12 @@ namespace SnowSwap
 			return true;
 		}
 
-		auto model = string::tolower(a_form->As<RE::TESModel>()->GetModel());
-		return model.empty() || std::ranges::any_of(_snowShaderModelBlackList, [&](const auto& str) { return model.contains(str); });
+		const std::string_view model = a_form->As<RE::TESModel>()->GetModel();
+		if (model.empty()) {
+			return true;
+		}
+
+		return std::ranges::any_of(_snowShaderModelBlackList, [&](const auto& str) { return string::icontains(model, str); });
 	}
 
 	bool Manager::GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const
@@ -112,8 +116,9 @@ namespace SnowSwap
 		if (_multipassSnowWhitelist.contains(a_form->GetFormID())) {
 			return true;
 		}
-		const auto model = string::tolower(a_form->As<RE::TESModel>()->GetModel());
-		return std::ranges::any_of(_multipassSnowStrWhitelist, [&](const auto& str) { return model.contains(str); });
+
+		const std::string_view model = a_form->As<RE::TESModel>()->GetModel();
+		return std::ranges::any_of(_multipassSnowStrWhitelist, [&](const auto& str) { return string::icontains(model, str); });
 	}
 
 	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectREFR* a_ref) const

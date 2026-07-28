@@ -25,6 +25,7 @@ public:
 	void LoadSettings();
 	void LoadOrGenerateWinterFormSwap();
 	void LoadSeasonData();
+	void LoadValidWorldspaces();
 	void CheckLODExists();
 
 	//Calendar is not initialized using savegame values when it is loaded from start

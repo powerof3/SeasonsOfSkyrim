@@ -80,6 +80,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			const auto manager = SeasonManager::GetSingleton();
 			manager->LoadOrGenerateWinterFormSwap();
 			manager->LoadSeasonData();
+			manager->LoadValidWorldspaces();
 
 			manager->CheckLODExists();
 			LODSwap::Install();
