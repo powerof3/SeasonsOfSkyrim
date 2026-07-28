@@ -17,7 +17,7 @@ namespace Papyrus
 
 			kSeasonChange = 'SOSC'
 		};
-		
+
 		class Manager : public REX::Singleton<Manager>
 		{
 		public:
