@@ -57,6 +57,7 @@ public:
 	[[nodiscard]] FormSwapMap& GetFormSwapMap();
 	void                       LoadData(const CSimpleIniA& a_ini);
 	void                       SaveData(CSimpleIniA& a_ini);
+	void                       LoadWorldspaces();
 
 private:
 	[[nodiscard]] bool is_valid_swap_type(const RE::FormType a_formType) const

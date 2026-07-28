@@ -80,7 +80,7 @@ namespace SnowSwap
 		RE::BGSMaterialObject* _multiPassSnowShader{ nullptr };
 		RE::BGSMaterialObject* _singlePassSnowShader{ nullptr };
 
-		StringSet _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD", "Marker", "Brazier" };
+		std::vector<std::string_view> _snowShaderModelBlackList{ R"(effects\)", R"(sky\)", R"(lod\)", "wetrocks", "dyndolod", "marker", "brazier" };
 	};
 
 	namespace Statics
