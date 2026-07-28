@@ -11,8 +11,12 @@ namespace Cache
 				}
 			}
 			for (const auto& mat : dataHandler->GetFormArray<RE::BGSMaterialObject>()) {
-				if (auto eid = edid::get_editorID(mat); string::icontains(eid, "Snow")) {
+				const auto edid = edid::get_editorID(mat);
+				if (string::icontains(edid, "Snow")) {
 					_snowShaders.emplace(mat->GetFormID());
+				}
+				if (string::icontains(edid, "Ice")) {
+					_iceShaders.emplace(mat->GetFormID());
 				}
 			}
 		}
@@ -39,6 +43,11 @@ namespace Cache
 	bool DataHolder::IsSnowShader(const RE::TESForm* a_form) const
 	{
 		return _snowShaders.contains(a_form->GetFormID());
+	}
+
+	bool DataHolder::IsIceShader(const RE::TESForm* a_form) const
+	{
+		return _iceShaders.contains(a_form->GetFormID());
 	}
 
 	RE::TESBoundObject* DataHolder::GetOriginalBase(RE::TESObjectREFR* a_ref)

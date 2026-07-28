@@ -16,6 +16,11 @@ namespace util
 	{
 		return Cache::DataHolder::GetSingleton()->IsSnowShader(a_shader);
 	}
+
+	inline bool is_ice_shader(const RE::BGSMaterialObject* a_shader)
+	{
+		return Cache::DataHolder::GetSingleton()->IsIceShader(a_shader);
+	}
 }
 
 namespace model
@@ -82,12 +87,12 @@ namespace model
 		return false;
 	}
 
-	inline std::string& process_model_path(std::string& a_path)
+    [[nodiscard]] inline std::string process_model_path(std::string_view a_model)
 	{
-		if (const auto it = a_path.rfind('\\'); it != std::string::npos) {
-			a_path = a_path.substr(it);
+		if (const auto pos = a_model.rfind('\\'); pos != std::string_view::npos) {
+			a_model.remove_prefix(pos); 
 		}
-		return a_path;
+		return string::tolower(a_model);
 	}
 }
 

@@ -135,7 +135,7 @@ endif()
 find_path(CLIB_UTIL_INCLUDE_DIRS "ClibUtil/detail/SimpleIni.h")
 find_path(MERGEMAPPER_INCLUDE_DIRS "MergeMapperPluginAPI.h")
 
-find_package(unordered_dense CONFIG REQUIRED)
+find_package(boost_unordered CONFIG REQUIRED)
 
 # ---- Add source files ----
 include(cmake/headerlist.cmake)
@@ -194,7 +194,7 @@ target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 	${CommonLibName}::${CommonLibName}
-	unordered_dense::unordered_dense
+	Boost::unordered
 )
 
 target_precompile_headers(

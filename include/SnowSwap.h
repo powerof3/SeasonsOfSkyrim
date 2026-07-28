@@ -59,7 +59,7 @@ namespace SnowSwap
 		using ReadLocker = std::shared_lock<Lock>;
 		using WriteLocker = std::unique_lock<Lock>;
 
-		using SnowInfoMap = Map<RE::FormID, SnowInfo>;
+		using SnowInfoMap = FlatMap<RE::FormID, SnowInfo>;
 
 		void LoadSnowShaders();
 
@@ -68,8 +68,9 @@ namespace SnowSwap
 
 		bool GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const;
 
-		Set<RE::FormID>                            _snowShaderBlacklist{};
-		Set<std::variant<RE::FormID, std::string>> _multipassSnowWhitelist{};
+		FlatSet<RE::FormID> _snowShaderBlacklist{};
+		StringSet           _multipassSnowStrWhitelist{};
+		FlatSet<RE::FormID> _multipassSnowWhitelist{};
 
 		mutable Lock _snowInfoLock;
 		SnowInfoMap  _snowInfoMap{};
@@ -79,7 +80,7 @@ namespace SnowSwap
 		RE::BGSMaterialObject* _multiPassSnowShader{ nullptr };
 		RE::BGSMaterialObject* _singlePassSnowShader{ nullptr };
 
-		Set<std::string> _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD", "Marker", "Brazier" };
+		StringSet _snowShaderModelBlackList{ R"(Effects\)", R"(Sky\)", R"(lod\)", "WetRocks", "DynDOLOD", "Marker", "Brazier" };
 	};
 
 	namespace Statics

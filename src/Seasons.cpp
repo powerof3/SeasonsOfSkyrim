@@ -121,6 +121,10 @@ void Season::LoadData(const CSimpleIniA& a_ini)
 	if (!values.empty()) {
 		std::ranges::transform(values, std::back_inserter(validWorldspaces), [&](const auto& val) { return val.pItem; });
 	}
+
+	for (auto& worldspace : validWorldspaces) {
+		validWorldspacesPtr.emplace(RE::TESForm::LookupByEditorID<RE::TESWorldSpace>(worldspace));
+	}
 }
 
 void Season::SaveData(CSimpleIniA& a_ini)

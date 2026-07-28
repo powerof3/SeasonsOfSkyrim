@@ -12,7 +12,8 @@
 
 #include "MergeMapperPluginAPI.h"
 
-#include <ankerl/unordered_dense.h>
+#include <boost/unordered/unordered_flat_map.hpp>
+#include <boost/unordered/unordered_flat_set.hpp>
 
 #include <spdlog/sinks/basic_file_sink.h>
 #include <xbyak/xbyak.h>
@@ -64,14 +65,43 @@ namespace stl
 	}
 }
 
-template <class T1, class T2>
-using Map = ankerl::unordered_dense::map<T1, T2>;
+template <class K, class D, class H = boost::hash<K>, class KEqual = std::equal_to<K>>
+using FlatMap = boost::unordered_flat_map<K, D, H, KEqual>;
 
-template <class T>
-using MapPair = ankerl::unordered_dense::map<T, T>;
+template <class K, class H = boost::hash<K>, class KEqual = std::equal_to<K>>
+using FlatSet = boost::unordered_flat_set<K, H, KEqual>;
 
-template <class T>
-using Set = ankerl::unordered_dense::set<T>;
+struct string_hash
+{
+	using is_transparent = void;  // enable heterogeneous overloads
+
+	std::size_t operator()(std::string_view str) const
+	{
+		std::size_t seed = 0;
+		for (auto it = str.begin(); it != str.end(); ++it) {
+			boost::hash_combine(seed, std::tolower(*it));
+		}
+		return seed;
+	}
+};
+
+struct string_cmp
+{
+	using is_transparent = void;  // enable heterogeneous overloads
+
+	bool operator()(const std::string& str1, const std::string& str2) const
+	{
+		return string::iequals(str1, str2);
+	}
+	bool operator()(std::string_view str1, std::string_view str2) const
+	{
+		return string::iequals(str1, str2);
+	}
+};
+
+template <class D>
+using StringMap = FlatMap<std::string, D, string_hash, string_cmp>;
+using StringSet = FlatSet<std::string, string_hash, string_cmp>;
 
 #ifdef SKYRIM_AE
 #	define OFFSET(se, ae) ae

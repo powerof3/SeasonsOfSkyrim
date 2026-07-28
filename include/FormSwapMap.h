@@ -21,7 +21,7 @@ public:
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
 	RE::TESLandTexture* GetSwapLandTexture(const RE::BGSTextureSet* a_txst);
 
-	MapPair<RE::FormID>& get_map(RE::FormType a_formType)
+	FlatMap<RE::FormID, RE::FormID>& get_map(RE::FormType a_formType)
 	{
 		switch (a_formType) {
 		case RE::FormType::Activator:
@@ -42,7 +42,7 @@ public:
 			return _nullMap;
 		}
 	}
-	MapPair<RE::FormID>& get_map(const std::string& a_section)
+	FlatMap<RE::FormID, RE::FormID>& get_map(const std::string& a_section)
 	{
 		const auto it = _formMap.find(a_section);
 		return it != _formMap.end() ? it->second : _nullMap;
@@ -67,8 +67,8 @@ private:
 	template <class T>
 	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap);
 
-	Map<RecordType, MapPair<RE::FormID>> _formMap;
-	MapPair<RE::FormID>                  _nullMap{};
+	FlatMap<RecordType, FlatMap<RE::FormID, RE::FormID>> _formMap;
+	FlatMap<RE::FormID, RE::FormID>                      _nullMap{};
 };
 
 template <class T>

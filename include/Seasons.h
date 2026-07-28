@@ -86,10 +86,9 @@ private:
 	[[nodiscard]] bool is_in_valid_worldspace() const
 	{
 		const auto worldSpace = RE::TES::GetSingleton()->worldSpace;
-		return worldSpace && std::ranges::find(validWorldspaces, worldSpace->GetFormEditorID()) != validWorldspaces.end();
+		return worldSpace && validWorldspacesPtr.contains(worldSpace);
 	}
 
-	SEASON    season{};
 	SEASON_ID ID{};
 
 	std::vector<std::string> validWorldspaces{
@@ -101,6 +100,9 @@ private:
 		"DLC1HunterHQWorld",
 		"DLC2SolstheimWorld"
 	};
+	FlatSet<RE::TESWorldSpace*> validWorldspacesPtr{};
+
+	SEASON season{};
 
 	bool swapActivators{ true };
 	bool swapFurniture{ true };

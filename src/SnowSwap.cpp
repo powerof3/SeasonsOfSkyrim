@@ -63,7 +63,7 @@ namespace SnowSwap
 				logger::info("	Reading [Multipass Snow Whitelist]");
 				for (const auto& key : values) {
 					if (std::string value = key.pItem; value.contains(R"(/)") || value.contains(R"(\)") || value.contains(".nif")) {
-						_multipassSnowWhitelist.emplace(value);
+						_multipassSnowStrWhitelist.emplace(value);
 					} else if (auto formID = INI::parse_form(value); formID != 0) {
 						_multipassSnowWhitelist.emplace(formID);
 					} else {
@@ -103,21 +103,13 @@ namespace SnowSwap
 			return true;
 		}
 
-		std::string model = a_form->As<RE::TESModel>()->GetModel();
-		return model.empty() || std::ranges::any_of(_snowShaderModelBlackList, [&](const auto& str) { return string::icontains(model, str); });
+		std::string_view model = a_form->As<RE::TESModel>()->GetModel();
+		return model.empty() || _snowShaderModelBlackList.contains(model);
 	}
 
 	bool Manager::GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const
 	{
-		const std::string model = a_form->As<RE::TESModel>()->GetModel();
-
-		const auto it = std::ranges::find_if(_multipassSnowWhitelist, [&](const auto& a_type) {
-			if (std::holds_alternative<std::string>(a_type)) {
-				return string::icontains(model, std::get<std::string>(a_type));
-			}
-			return a_form->GetFormID() == std::get<RE::FormID>(a_type);
-		});
-		return it != _multipassSnowWhitelist.end();
+		return _multipassSnowWhitelist.contains(a_form->GetFormID()) || _multipassSnowStrWhitelist.contains(a_form->As<RE::TESModel>()->GetModel());
 	}
 
 	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectREFR* a_ref) const
@@ -163,7 +155,7 @@ namespace SnowSwap
 			return SWAP_RESULT::kBaseFail;
 		}
 
-		if (const auto matObject = a_static->data.materialObj; matObject && (util::is_snow_shader(matObject) || edid::get_editorID(matObject).contains("Ice"sv))) {
+		if (const auto matObject = a_static->data.materialObj; matObject && (util::is_snow_shader(matObject) || util::is_ice_shader(matObject))) {
 			return SWAP_RESULT::kBaseFail;
 		}
 
@@ -266,12 +258,13 @@ namespace SnowSwap
 			return;
 		}
 
+		using Flag = RE::BSShaderProperty::EShaderPropertyFlag;
 		using Flag8 = RE::BSShaderProperty::EShaderPropertyFlag8;
 
 		RE::BSVisit::TraverseScenegraphGeometries(a_node, [&](RE::BSGeometry* a_geometry) -> RE::BSVisit::BSVisitControl {
 			const auto& effect = a_geometry->shaderProperty;
 
-			if (const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get())) {
+			if (const auto lightingShader = netimmerse_cast<RE::BSLightingShaderProperty*>(effect.get()); lightingShader && lightingShader->flags.any(Flag::kProjectedUV, Flag::kSnow)) {
 				lightingShader->SetFlags(Flag8::kProjectedUV, false);
 				lightingShader->SetFlags(Flag8::kSnow, false);
 			}

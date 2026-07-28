@@ -3,7 +3,7 @@
 FormSwapMap::FormSwapMap()
 {
 	for (auto& type : recordTypes) {
-		_formMap.emplace(type, MapPair<RE::FormID>{});
+		_formMap.emplace(type, FlatMap<RE::FormID, RE::FormID>{});
 	}
 }
 

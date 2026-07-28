@@ -9,6 +9,7 @@ namespace Cache
 
 		RE::TESLandTexture* GetLandTextureFromTextureSet(const RE::BGSTextureSet* a_txst);
 		[[nodiscard]] bool  IsSnowShader(const RE::TESForm* a_form) const;
+		[[nodiscard]] bool  IsIceShader(const RE::TESForm* a_form) const;
 
 		RE::TESBoundObject* GetOriginalBase(RE::TESObjectREFR* a_ref);
 		void                SetOriginalBase(const RE::TESObjectREFR* a_ref, const RE::TESBoundObject* a_originalBase);
@@ -18,10 +19,11 @@ namespace Cache
 		using ReadLocker = std::shared_lock<Lock>;
 		using WriteLocker = std::unique_lock<Lock>;
 
-		MapPair<RE::FormID> _textureToLandMap;
-		Set<RE::FormID>     _snowShaders;
+		FlatMap<RE::FormID, RE::FormID> _textureToLandMap;
+		FlatSet<RE::FormID>             _snowShaders;
+		FlatSet<RE::FormID>             _iceShaders;
 
-		mutable Lock        _originalsLock;
-		MapPair<RE::FormID> _originals;
+		mutable Lock                    _originalsLock;
+		FlatMap<RE::FormID, RE::FormID> _originals;
 	};
 }
