@@ -8,7 +8,9 @@ enum class SEASON : std::uint32_t
 	kWinter,
 	kSpring,
 	kSummer,
-	kAutumn
+	kAutumn,
+
+	kTotal
 };
 
 enum class SEASON_TYPE : std::uint32_t

@@ -1,12 +1,5 @@
 #include "FormSwapMap.h"
 
-FormSwapMap::FormSwapMap()
-{
-	for (auto& type : recordTypes) {
-		_formMap.emplace(type, FlatMap<RE::FormID, RE::FormID>{});
-	}
-}
-
 RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture)
 {
 	static constexpr std::array blackList = { "Snow"sv, "Ice"sv, "Winter"sv, "Frozen"sv, "Coast"sv, "River"sv };
@@ -97,15 +90,14 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 	return RE::TESForm::LookupByID<RE::TESLandTexture>(formID);
 }
 
-void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std::string>& a_values)
+void FormSwapMap::LoadFormSwaps(RECORD a_record, const std::vector<std::string>& a_values)
 {
-	auto& map = get_map(a_type);
+	auto& map = get_map(a_record);
 	for (const auto& key : a_values) {
 		const auto formPair = string::split(key, "|");
 
 		const auto formID = INI::parse_form(formPair[kBase]);
 		const auto swapFormID = INI::parse_form(formPair[kSwap]);
-
 		if (formID != 0 && swapFormID != 0) {
 			map.insert_or_assign(formID, swapFormID);
 		}
@@ -114,18 +106,21 @@ void FormSwapMap::LoadFormSwaps(const std::string& a_type, const std::vector<std
 
 void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 {
-	for (auto& type : recordTypes) {
+	for (const auto record : all_records()) {
+		const auto name = get_name(record);
+
 		CSimpleIniA::TNamesDepend values;
-		a_ini.GetAllKeys(type.c_str(), values);
+		a_ini.GetAllKeys(name.data(), values);
 		values.sort(CSimpleIniA::Entry::LoadOrder());
 
 		if (!values.empty()) {
-			logger::info("\t\t[{}] read {} variants", type, values.size());
+			logger::info("\t\t[{}] read {} variants", name, values.size());
 
 			std::vector<std::string> vec;
-			std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
+			vec.reserve(values.size());
+			std::ranges::transform(values, std::back_inserter(vec), [](const auto& val) { return val.pItem; });
 
-			LoadFormSwaps(type, vec);
+			LoadFormSwaps(record, vec);
 		}
 	}
 }
@@ -135,53 +130,55 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 {
 	bool save = false;
 
-	for (auto& type : standardTypes) {
+	for (const auto record : standard_records()) {
+		auto type = get_name(record);
+
 		CSimpleIniA::TNamesDepend values;
-		a_ini.GetAllKeys(type.c_str(), values);
+		a_ini.GetAllKeys(type.data(), values);
 		values.sort(CSimpleIniA::Entry::LoadOrder());
 
 		if (values.empty() || a_forceRegenerate) {
 			save = true;
 
 			if (a_forceRegenerate) {
-				a_ini.Delete(type.c_str(), nullptr, true);
+				a_ini.Delete(type.data(), nullptr, true);
 			}
 
-			switch (string::const_hash(type)) {
-			case string::const_hash("LandTextures"sv):
+			switch (record) {
+			case RECORD::kLandTextures:
 				{
-					TempFormSwapMap<RE::TESLandTexture> landTxstMap;
-					get_snow_variants(a_ini, type, landTxstMap);
+					TempFormSwapMap<RE::TESLandTexture> map;
+					get_snow_variants(a_ini, record, map);
 				}
 				break;
-			case string::const_hash("Activators"sv):
+			case RECORD::kActivators:
 				{
-					TempFormSwapMap<RE::TESObjectACTI> activatorMap;
-					get_snow_variants(a_ini, type, activatorMap);
+					TempFormSwapMap<RE::TESObjectACTI> map;
+					get_snow_variants(a_ini, record, map);
 				}
 				break;
-			case string::const_hash("Furniture"sv):
+			case RECORD::kFurniture:
 				{
-					TempFormSwapMap<RE::TESFurniture> furnitureMap;
-					get_snow_variants(a_ini, type, furnitureMap);
+					TempFormSwapMap<RE::TESFurniture> map;
+					get_snow_variants(a_ini, record, map);
 				}
 				break;
-			case string::const_hash("MovableStatics"sv):
+			case RECORD::kMovableStatics:
 				{
-					TempFormSwapMap<RE::BGSMovableStatic> movStaticMap;
-					get_snow_variants(a_ini, type, movStaticMap);
+					TempFormSwapMap<RE::BGSMovableStatic> map;
+					get_snow_variants(a_ini, record, map);
 				}
 				break;
-			case string::const_hash("Statics"sv):
+			case RECORD::kStatics:
 				{
-					TempFormSwapMap<RE::TESObjectSTAT> staticMap;
-					get_snow_variants(a_ini, type, staticMap);
+					TempFormSwapMap<RE::TESObjectSTAT> map;
+					get_snow_variants(a_ini, record, map);
 				}
 				break;
-			case string::const_hash("Trees"sv):
+			case RECORD::kTrees:
 				{
-					TempFormSwapMap<RE::TESObjectTREE> treeMap;
-					get_snow_variants(a_ini, type, treeMap);
+					TempFormSwapMap<RE::TESObjectTREE> map;
+					get_snow_variants(a_ini, record, map);
 				}
 				break;
 			default:
@@ -206,7 +203,7 @@ RE::TESBoundObject* FormSwapMap::GetSwapForm(const RE::TESForm* a_form)
 
 RE::TESLandTexture* FormSwapMap::GetSwapLandTexture(const RE::TESLandTexture* a_landTxst)
 {
-	const auto& map = _formMap["LandTextures"];
+	const auto& map = get_map(RECORD::kLandTextures);
 	if (map.empty()) {
 		return nullptr;
 	}

@@ -3,16 +3,29 @@
 class FormSwapMap
 {
 public:
-	FormSwapMap();
-
 	enum TYPE : std::uint32_t
 	{
 		kBase = 0,
 		kSwap
 	};
 
+	enum class RECORD : std::uint32_t
+	{
+		kLandTextures = 0,
+		kActivators,
+		kFurniture,
+		kMovableStatics,
+		kStatics,
+		kTrees,
+
+		kFlora,
+		kVisualEffects,
+
+		kTotal
+	};
+
 	void LoadFormSwaps(const CSimpleIniA& a_ini);
-	void LoadFormSwaps(const std::string& a_type, const std::vector<std::string>& a_values);
+	void LoadFormSwaps(RECORD a_record, const std::vector<std::string>& a_values);
 
 	bool GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate);
 
@@ -21,31 +34,47 @@ public:
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
 	RE::TESLandTexture* GetSwapLandTexture(const RE::BGSTextureSet* a_txst);
 
-	FlatMap<RE::FormID, RE::FormID>& get_map(RE::FormType a_formType)
+	[[nodiscard]] static constexpr std::string_view get_name(RECORD a_record)
+	{
+		return recordNames[std::to_underlying(a_record)];
+	}
+
+	[[nodiscard]] static constexpr auto all_records() { return util::enum_range(RECORD::kLandTextures, RECORD::kTotal); }
+	[[nodiscard]] static constexpr auto standard_records() { return util::enum_range(RECORD::kLandTextures, RECORD::kFlora); }
+
+	[[nodiscard]] FlatMap<RE::FormID, RE::FormID>& get_map(RECORD a_record)
+	{
+		return _formMaps[std::to_underlying(a_record)];
+	}
+
+	[[nodiscard]] FlatMap<RE::FormID, RE::FormID>& get_map(RE::FormType a_formType)
 	{
 		switch (a_formType) {
 		case RE::FormType::Activator:
-			return _formMap["Activators"];
+			return get_map(RECORD::kActivators);
 		case RE::FormType::Furniture:
-			return _formMap["Furniture"];
+			return get_map(RECORD::kFurniture);
 		case RE::FormType::MovableStatic:
-			return _formMap["MovableStatics"];
+			return get_map(RECORD::kMovableStatics);
 		case RE::FormType::Static:
-			return _formMap["Statics"];
+			return get_map(RECORD::kStatics);
 		case RE::FormType::Tree:
-			return _formMap["Trees"];
+			return get_map(RECORD::kTrees);
 		case RE::FormType::Flora:
-			return _formMap["Flora"];
+			return get_map(RECORD::kFlora);
 		case RE::FormType::ReferenceEffect:
-			return _formMap["VisualEffects"];
+			return get_map(RECORD::kVisualEffects);
 		default:
 			return _nullMap;
 		}
 	}
-	FlatMap<RE::FormID, RE::FormID>& get_map(const std::string& a_section)
+	[[nodiscard]] static std::optional<RECORD> get_record(std::string_view a_section)
 	{
-		const auto it = _formMap.find(a_section);
-		return it != _formMap.end() ? it->second : _nullMap;
+		const auto it = std::ranges::find(recordNames, a_section);
+		if (it == recordNames.end()) {
+			return std::nullopt;
+		}
+		return static_cast<RECORD>(std::distance(recordNames.begin(), it));
 	}
 
 private:
@@ -53,22 +82,21 @@ private:
 
 	template <class T>
 	using TempFormSwapMap = std::map<T*, T*>;
-	using RecordType = std::string;
 
-	static inline std::array<RecordType, 6>
-		standardTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees" };
-	static inline std::array<RecordType, 8>
-		recordTypes{ "LandTextures", "Activators", "Furniture", "MovableStatics", "Statics", "Trees", "Flora", "VisualEffects" };
+	static constexpr std::array<std::string_view, std::to_underlying(RECORD::kTotal)> recordNames{
+		"LandTextures"sv, "Activators"sv, "Furniture"sv, "MovableStatics"sv, "Statics"sv, "Trees"sv, "Flora"sv, "VisualEffects"sv
+	};
+	static_assert(recordNames.size() == std::to_underlying(RECORD::kTotal));
 
 	static RE::TESLandTexture* GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture);
 
 	template <class T>
 	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap<T>& a_tempFormMap);
 	template <class T>
-	void get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap);
+	void get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFormSwapMap<T>& a_tempFormMap);
 
-	FlatMap<RecordType, FlatMap<RE::FormID, RE::FormID>> _formMap;
-	FlatMap<RE::FormID, RE::FormID>                      _nullMap{};
+	std::array<FlatMap<RE::FormID, RE::FormID>, std::to_underlying(RECORD::kTotal)> _formMaps{};
+	FlatMap<RE::FormID, RE::FormID>                                                 _nullMap{};
 };
 
 template <class T>
@@ -104,11 +132,11 @@ void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, T
 }
 
 template <class T>
-void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_type, TempFormSwapMap<T>& a_tempFormMap)
+void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFormSwapMap<T>& a_tempFormMap)
 {
 	const auto dataHandler = RE::TESDataHandler::GetSingleton();
 
-	auto& formIDMap = get_map(a_type);
+	auto& formIDMap = get_map(a_record);
 
 	if constexpr (std::is_same_v<T, RE::TESLandTexture>) {
 		for (auto& landLT : dataHandler->GetFormArray<RE::TESLandTexture>()) {
@@ -188,6 +216,8 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 		get_snow_variants_by_form(dataHandler, a_tempFormMap);
 	}
 
+	const auto name = get_name(a_record);
+
 	for (auto& [form, swapForm] : a_tempFormMap) {
 		formIDMap.emplace(form->GetFormID(), swapForm->GetFormID());
 
@@ -198,8 +228,8 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, const std::string& a_typ
 		std::string comment = std::format(";{}|{}", formEID, swapEID);
 		std::string value = std::format("0x{:X}~{}|0x{:X}~{}", form->GetLocalFormID(), form->GetFile(0)->fileName, swapForm->GetLocalFormID(), swapForm->GetFile(0)->fileName);
 
-		a_ini.SetValue(a_type.c_str(), "", value.c_str(), comment.c_str());
+		a_ini.SetValue(name.data(), "", value.c_str(), comment.c_str());
 	}
 
-	logger::info("	[{}] : wrote {} variants", a_type, formIDMap.size());
+	logger::info("	[{}] : wrote {} variants", name, formIDMap.size());
 }

@@ -21,6 +21,19 @@ namespace util
 	{
 		return Cache::DataHolder::GetSingleton()->IsIceShader(a_shader);
 	}
+
+	constexpr inline auto enum_range(auto first, auto last)
+	{
+		auto enum_range =
+			std::views::iota(
+				std::to_underlying(first),
+				std::to_underlying(last)) |
+			std::views::transform([](auto enum_val) {
+				return (decltype(first))enum_val;
+			});
+
+		return enum_range;
+	};
 }
 
 namespace model
