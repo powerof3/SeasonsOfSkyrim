@@ -87,10 +87,10 @@ namespace model
 		return false;
 	}
 
-    [[nodiscard]] inline std::string process_model_path(std::string_view a_model)
+	[[nodiscard]] inline std::string process_model_path(std::string_view a_model)
 	{
 		if (const auto pos = a_model.rfind('\\'); pos != std::string_view::npos) {
-			a_model.remove_prefix(pos); 
+			a_model.remove_prefix(pos);
 		}
 		return string::tolower(a_model);
 	}
