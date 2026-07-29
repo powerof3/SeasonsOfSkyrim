@@ -30,6 +30,7 @@ namespace edid = clib_util::editorID;
 
 using namespace std::literals;
 using namespace string::literals;
+using namespace RE::literals;
 
 namespace stl
 {

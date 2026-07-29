@@ -374,7 +374,7 @@ void SeasonManager::CleanupSerializedSeasonList() const
 	constexpr auto get_save_directory = []() -> std::optional<std::filesystem::path> {
 		if (auto path = logger::log_directory()) {
 			path->remove_filename();  // remove "/SKSE"
-			path->append(RE::INISettingCollection::GetSingleton()->GetSetting("sLocalSavePath:General")->GetString());
+			path->append(*"sLocalSavePath:General"_ini);
 			return path;
 		}
 		return std::nullopt;

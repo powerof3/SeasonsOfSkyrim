@@ -78,10 +78,7 @@ public:
 	}
 
 private:
-	friend class SeasonManager;
-
-	template <class T>
-	using TempFormSwapMap = std::map<T*, T*>;
+	using TempFormSwapMap = std::map<RE::FormID, RE::FormID>;
 
 	static constexpr std::array<std::string_view, std::to_underlying(RECORD::kTotal)> recordNames{
 		"LandTextures"sv, "Activators"sv, "Furniture"sv, "MovableStatics"sv, "Statics"sv, "Trees"sv, "Flora"sv, "VisualEffects"sv
@@ -91,16 +88,16 @@ private:
 	static RE::TESLandTexture* GenerateLandTextureSnowVariant(const RE::TESLandTexture* a_landTexture);
 
 	template <class T>
-	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap<T>& a_tempFormMap);
+	void get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap& a_tempFormMap);
 	template <class T>
-	void get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFormSwapMap<T>& a_tempFormMap);
+	void get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFormSwapMap& a_tempFormMap);
 
 	std::array<FlatMap<RE::FormID, RE::FormID>, std::to_underlying(RECORD::kTotal)> _formMaps{};
 	FlatMap<RE::FormID, RE::FormID>                                                 _nullMap{};
 };
 
 template <class T>
-void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap<T>& a_tempFormMap)
+void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, TempFormSwapMap& a_tempFormMap)
 {
 	auto& forms = a_dataHandler->GetFormArray(T::FORMTYPE);
 
@@ -125,14 +122,14 @@ void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, T
 				if (std::ranges::any_of(blackList, [&](const auto& str) { return string::icontains(form->model, str); })) {
 					continue;
 				}
-				a_tempFormMap.emplace(form, snowForm);
+				a_tempFormMap.emplace(form->GetFormID(), snowForm->GetFormID());
 			}
 		}
 	}
 }
 
 template <class T>
-void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFormSwapMap<T>& a_tempFormMap)
+void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFormSwapMap& a_tempFormMap)
 {
 	const auto dataHandler = RE::TESDataHandler::GetSingleton();
 
@@ -141,7 +138,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 	if constexpr (std::is_same_v<T, RE::TESLandTexture>) {
 		for (auto& landLT : dataHandler->GetFormArray<RE::TESLandTexture>()) {
 			if (const auto snowLT = GenerateLandTextureSnowVariant(landLT)) {
-				a_tempFormMap.emplace(landLT, snowLT);
+				a_tempFormMap.emplace(landLT->GetFormID(), snowLT->GetFormID());
 			}
 		}
 	} else if constexpr (std::is_same_v<T, RE::TESObjectSTAT>) {
@@ -189,7 +186,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 						if (is_in_blacklist(stat, blackList)) {
 							continue;
 						}
-						a_tempFormMap.emplace(stat, snowStat);
+						a_tempFormMap.emplace(stat->GetFormID(), snowStat->GetFormID());
 					}
 				}
 			}
@@ -208,18 +205,24 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 		for (auto& [path, snowTree] : processedSnowTrees) {
 			for (auto& tree : trees) {
 				if (string::icontains(tree->GetModel(), path) && tree != snowTree) {
-					a_tempFormMap.emplace(tree, snowTree);
+					a_tempFormMap.emplace(tree->GetFormID(), snowTree->GetFormID());
 				}
 			}
 		}
 	} else {
-		get_snow_variants_by_form(dataHandler, a_tempFormMap);
+		get_snow_variants_by_form<T>(dataHandler, a_tempFormMap);
 	}
 
 	const auto name = get_name(a_record);
 
-	for (auto& [form, swapForm] : a_tempFormMap) {
-		formIDMap.emplace(form->GetFormID(), swapForm->GetFormID());
+	for (auto& [formID, swapFormID] : a_tempFormMap) {
+		auto form = RE::TESForm::LookupByID(formID);
+		auto swapForm = RE::TESForm::LookupByID(swapFormID);
+		if (!form || !swapForm) {
+			continue;
+		}
+
+		formIDMap.emplace(formID, swapFormID);
 
 		//write values
 		auto formEID = edid::get_editorID(form);

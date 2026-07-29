@@ -68,9 +68,9 @@ namespace SnowSwap
 
 		bool GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const;
 
-		FlatSet<RE::FormID> _snowShaderBlacklist{};
-		StringSet           _multipassSnowStrWhitelist{};
-		FlatSet<RE::FormID> _multipassSnowWhitelist{};
+		FlatSet<RE::FormID>      _snowShaderBlacklist{};
+		std::vector<std::string> _multipassSnowStrWhitelist{};
+		FlatSet<RE::FormID>      _multipassSnowWhitelist{};
 
 		mutable Lock _snowInfoLock;
 		SnowInfoMap  _snowInfoMap{};

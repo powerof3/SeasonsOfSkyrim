@@ -63,7 +63,7 @@ namespace SnowSwap
 				logger::info("	Reading [Multipass Snow Whitelist]");
 				for (const auto& key : values) {
 					if (std::string value = key.pItem; value.contains(R"(/)") || value.contains(R"(\)") || value.contains(".nif")) {
-						_multipassSnowStrWhitelist.emplace(value);
+						_multipassSnowStrWhitelist.push_back(value);
 					} else if (auto formID = INI::parse_form(value); formID != 0) {
 						_multipassSnowWhitelist.emplace(formID);
 					} else {

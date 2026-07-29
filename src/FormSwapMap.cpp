@@ -144,42 +144,26 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 				a_ini.Delete(type.data(), nullptr, true);
 			}
 
+			TempFormSwapMap map{};
+
 			switch (record) {
 			case RECORD::kLandTextures:
-				{
-					TempFormSwapMap<RE::TESLandTexture> map;
-					get_snow_variants(a_ini, record, map);
-				}
+				get_snow_variants<RE::TESLandTexture>(a_ini, record, map);
 				break;
 			case RECORD::kActivators:
-				{
-					TempFormSwapMap<RE::TESObjectACTI> map;
-					get_snow_variants(a_ini, record, map);
-				}
+				get_snow_variants<RE::TESObjectACTI>(a_ini, record, map);
 				break;
 			case RECORD::kFurniture:
-				{
-					TempFormSwapMap<RE::TESFurniture> map;
-					get_snow_variants(a_ini, record, map);
-				}
+				get_snow_variants<RE::TESFurniture>(a_ini, record, map);
 				break;
 			case RECORD::kMovableStatics:
-				{
-					TempFormSwapMap<RE::BGSMovableStatic> map;
-					get_snow_variants(a_ini, record, map);
-				}
+				get_snow_variants<RE::BGSMovableStatic>(a_ini, record, map);
 				break;
 			case RECORD::kStatics:
-				{
-					TempFormSwapMap<RE::TESObjectSTAT> map;
-					get_snow_variants(a_ini, record, map);
-				}
+				get_snow_variants<RE::TESObjectSTAT>(a_ini, record, map);
 				break;
 			case RECORD::kTrees:
-				{
-					TempFormSwapMap<RE::TESObjectTREE> map;
-					get_snow_variants(a_ini, record, map);
-				}
+				get_snow_variants<RE::TESObjectTREE>(a_ini, record, map);
 				break;
 			default:
 				break;
