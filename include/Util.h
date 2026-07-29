@@ -22,7 +22,7 @@ namespace util
 		return Cache::DataHolder::GetSingleton()->IsIceShader(a_shader);
 	}
 
-		inline std::size_t get_load_order_hash()
+	inline std::size_t get_load_order_hash()
 	{
 		const auto dataHandler = RE::TESDataHandler::GetSingleton();
 
