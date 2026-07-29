@@ -67,7 +67,7 @@ protected:
 
 	void ForEachSeason(auto&& func)
 	{
-		for (const auto type : util::enum_range(SEASON::kWinter, SEASON::kTotal)) {
+		for (const auto type : enum_range(SEASON::kWinter, SEASON::kTotal)) {
 			func(type, *GetSeasonImpl(type));
 		}
 	}

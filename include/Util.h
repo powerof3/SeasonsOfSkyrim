@@ -22,18 +22,44 @@ namespace util
 		return Cache::DataHolder::GetSingleton()->IsIceShader(a_shader);
 	}
 
-	constexpr inline auto enum_range(auto first, auto last)
+		inline std::size_t get_load_order_hash()
 	{
-		auto enum_range =
-			std::views::iota(
-				std::to_underlying(first),
-				std::to_underlying(last)) |
-			std::views::transform([](auto enum_val) {
-				return (decltype(first))enum_val;
-			});
+		const auto dataHandler = RE::TESDataHandler::GetSingleton();
 
-		return enum_range;
-	};
+		std::size_t seed = 0;
+
+#ifndef SKYRIMVR
+		const auto& mods = dataHandler->compiledFileCollection;
+		for (const auto& file : mods.files) {
+			if (file) {
+				boost::hash_combine(seed, file->fileName);
+			}
+		}
+		for (const auto& file : mods.smallFiles) {
+			if (file) {
+				boost::hash_combine(seed, file->fileName);
+			}
+		}
+#else
+		// unverified
+		if (const auto& mods = dataHandler->VRcompiledFileCollection) {
+			for (const auto& file : mods->files) {
+				if (file) {
+					boost::hash_combine(seed, file->fileName);
+				}
+			}
+			for (const auto& file : mods->smallFiles) {
+				if (file) {
+					boost::hash_combine(seed, file->fileName);
+				}
+			}
+		} else {
+			boost::hash_combine(seed, dataHandler->loadedModCount);
+		}
+#endif
+
+		return seed;
+	}
 }
 
 namespace model

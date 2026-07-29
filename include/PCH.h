@@ -103,6 +103,19 @@ template <class D>
 using StringMap = FlatMap<std::string, D, string_hash, string_cmp>;
 using StringSet = FlatSet<std::string, string_hash, string_cmp>;
 
+constexpr inline auto enum_range(auto first, auto last)
+{
+	auto enum_range =
+		std::views::iota(
+			std::to_underlying(first),
+			std::to_underlying(last)) |
+		std::views::transform([](auto enum_val) {
+			return (decltype(first))enum_val;
+		});
+
+	return enum_range;
+};
+
 #ifdef SKYRIM_AE
 #	define OFFSET(se, ae) ae
 #	define OFFSET_3(se, ae, vr) ae

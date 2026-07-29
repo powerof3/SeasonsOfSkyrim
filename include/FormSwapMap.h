@@ -39,8 +39,8 @@ public:
 		return recordNames[std::to_underlying(a_record)];
 	}
 
-	[[nodiscard]] static constexpr auto all_records() { return util::enum_range(RECORD::kLandTextures, RECORD::kTotal); }
-	[[nodiscard]] static constexpr auto standard_records() { return util::enum_range(RECORD::kLandTextures, RECORD::kFlora); }
+	[[nodiscard]] static constexpr auto all_records() { return enum_range(RECORD::kLandTextures, RECORD::kTotal); }
+	[[nodiscard]] static constexpr auto standard_records() { return enum_range(RECORD::kLandTextures, RECORD::kFlora); }
 
 	[[nodiscard]] FlatMap<RE::FormID, RE::FormID>& get_map(RECORD a_record)
 	{
@@ -231,5 +231,5 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 		a_ini.SetValue(name.data(), "", value.c_str(), comment.c_str());
 	}
 
-	logger::info("	[{}] : wrote {} variants", name, formIDMap.size());
+	logger::info("\t\t[{}] : wrote {} variants", name, formIDMap.size());
 }

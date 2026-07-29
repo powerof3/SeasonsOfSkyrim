@@ -182,7 +182,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	gameVersion = a_skse->RuntimeVersion();
 	logger::info("Game version : {}", gameVersion.string());
 
-	SKSE::Init(a_skse);
+	SKSE::Init(a_skse, false);
 
 	SKSE::AllocTrampoline(11 * 14);
 

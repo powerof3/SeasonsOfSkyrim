@@ -166,33 +166,26 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 
 	ini.LoadFile(serializedSeasonList);
 
-#ifndef SKYRIMVR
-	const auto&  mods = RE::TESDataHandler::GetSingleton()->compiledFileCollection;
-	const size_t actualModCount = mods.files.size() + mods.smallFiles.size();
-#else
-	auto&  mods = RE::TESDataHandler::GetSingleton()->VRcompiledFileCollection;
-	size_t actualModCount = 0;
-	if (mods) {
-		actualModCount = mods->files.size() + mods->smallFiles.size();
-	} else {
-		actualModCount = RE::TESDataHandler::GetSingleton()->loadedModCount;
-	}
-#endif
 	//1.6.0 - delete old serialized value to force regeneration
 	ini.DeleteValue("Game", "Mod Count", nullptr);
+	//2.0.0 - delete old serialized value to force regeneration
+	ini.DeleteValue("Game", "Total Mod Count", nullptr);
 
-	const auto expectedModCount = string::to_num<size_t>(ini.GetValue("Game", "Total Mod Count", "0"));
+	const auto actualHash = util::get_load_order_hash();
+	const auto expectedHash = string::to_num<size_t>(ini.GetValue("Game", "uLoadOrderHash", "0"));
 
-	const auto shouldRegenerate = actualModCount != expectedModCount;
+	const auto shouldRegenerate = actualHash != expectedHash;
 
 	if (shouldRegenerate) {
-		ini.SetValue("Game", "Total Mod Count", std::to_string(actualModCount).c_str(), nullptr);
-		if (expectedModCount != 0) {
-			logger::info("Mod count has changed since last run ({} -> {}), regenerating main WIN formswap", expectedModCount, actualModCount);
+		ini.SetValue("Game", "uLoadOrderHash", std::to_string(actualHash).c_str(), nullptr);
+		if (expectedHash != 0) {
+			logger::info("\tLoad order has changed since last session, regenerating main WIN formswap");
 		} else {
-			logger::info("Regenerating main WIN formswap since last update");
+			logger::info("\tRegenerating main WIN formswap since last update");
 		}
 		(void)ini.SaveFile(serializedSeasonList);
+	} else {
+		logger::info("\tLoad order has not changed since last session");
 	}
 
 	return shouldRegenerate;
@@ -225,7 +218,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			auto type = FormSwapMap::get_name(record);
 
 			if (mainWINSwap.skipRecords[std::to_underlying(record)]) {
-				logger::info("\t[{}] skipping...", type);
+				logger::info("\t\t[{}] skipping...", type);
 				continue;
 			}
 
@@ -234,7 +227,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				logger::info("\t[{}] read {} variants", type, values.size());
+				logger::info("\t\t[{}] read {} variants", type, values.size());
 
 				std::vector<std::string> vec;
 				std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
