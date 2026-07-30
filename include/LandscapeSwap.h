@@ -15,9 +15,7 @@ namespace LandscapeSwap
 			{
 				static float thunk(const RE::TESLandTexture* a_LT)
 				{
-					const auto manager = SeasonManager::GetSingleton();
-
-					const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_LT) : a_LT;
+					const auto swapLT = SeasonManager::GetSingleton()->GetSwapLandTexture(a_LT);
 					return swapLT ? swapLT->shaderTextureIndex != 0 : a_LT->shaderTextureIndex != 0;
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
@@ -42,9 +40,7 @@ namespace LandscapeSwap
 			{
 				static float thunk(const RE::TESLandTexture* a_LT)
 				{
-					const auto manager = SeasonManager::GetSingleton();
-
-					const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_LT) : nullptr;
+					const auto swapLT = SeasonManager::GetSingleton()->GetSwapLandTexture(a_LT);
 					return swapLT ? swapLT->specularExponent : a_LT->specularExponent;
 				}
 				static inline REL::Relocation<decltype(thunk)> func;
@@ -70,9 +66,7 @@ namespace LandscapeSwap
 			{
 				static RE::BSTextureSet* thunk(RE::BGSTextureSet* a_txst)
 				{
-					const auto manager = SeasonManager::GetSingleton();
-
-					const auto swapLT = manager->CanSwapLandscape() ? manager->GetSwapLandTexture(a_txst) : nullptr;
+					const auto swapLT = SeasonManager::GetSingleton()->GetSwapLandTexture(a_txst);
 					if (swapLT == nullptr) {
 						// no swap found
 						if (a_txst != nullptr) {
@@ -118,12 +112,8 @@ namespace LandscapeSwap
 		{
 			static RE::BSSimpleList<RE::TESGrass*>& func(RE::TESLandTexture* a_landTexture)
 			{
-				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapGrass()) {
-					const auto swapLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
-
-					return swapLandTexture ? swapLandTexture->textureGrassList : a_landTexture->textureGrassList;
-				}
-				return a_landTexture->textureGrassList;
+				const auto swapLandTexture = SeasonManager::GetSingleton()->GetSwapLandTextureForGrass(a_landTexture);
+				return swapLandTexture ? swapLandTexture->textureGrassList : a_landTexture->textureGrassList;
 			}
 
 			static inline std::size_t size = 0x5;
@@ -142,13 +132,10 @@ namespace LandscapeSwap
 		{
 			static RE::MATERIAL_ID func(const RE::TESLandTexture* a_landTexture)
 			{
-				if (const auto seasonManager = SeasonManager::GetSingleton(); seasonManager->CanSwapLandscape()) {
-					const auto newLandTexture = seasonManager->GetSwapLandTexture(a_landTexture);
-					const auto materialType = newLandTexture ? newLandTexture->materialType : a_landTexture->materialType;
+				const auto swapLandTexture = SeasonManager::GetSingleton()->GetSwapLandTexture(a_landTexture);
+				const auto materialType = swapLandTexture ? swapLandTexture->materialType : a_landTexture->materialType;
 
-					return materialType ? materialType->materialID : RE::MATERIAL_ID::kNone;
-				}
-				return a_landTexture->materialType ? a_landTexture->materialType->materialID : RE::MATERIAL_ID::kNone;
+				return materialType ? materialType->materialID : RE::MATERIAL_ID::kNone;
 			}
 
 			static inline std::size_t size = 0xE;

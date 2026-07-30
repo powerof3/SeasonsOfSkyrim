@@ -258,7 +258,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 	}
 
 	if (configs.empty()) {
-		logger::warn("\tNo .ini files with _{} suffix were found in Data/Seasons folder, skipping {} formswaps", suffix, suffix == "WIN" ? "secondary" : "all");
+		logger::warn("\tNo .ini files with _{} suffix were found in Data/Seasons folder, skipping {} formswaps", suffix, suffix == "WIN"sv ? "secondary" : "all");
 		return;
 	}
 
@@ -434,46 +434,34 @@ bool SeasonManager::CanApplySnowShader()
 	return season ? season->CanApplySnowShader() : false;
 }
 
-std::pair<bool, std::string> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
+std::pair<bool, std::string_view> SeasonManager::CanSwapLOD(LOD_TYPE a_type)
 {
 	const auto season = GetSeason();
-	return season ? std::make_pair(season->CanSwapLOD(a_type), season->GetID().suffix) : std::make_pair(false, "");
-}
-
-bool SeasonManager::CanSwapLandscape()
-{
-	const auto season = GetSeason();
-	return season ? season->CanSwapLandscape() : false;
-}
-
-bool SeasonManager::CanSwapForm(RE::FormType a_formType)
-{
-	const auto season = GetSeason();
-	return season ? season->CanSwapForm(a_formType) : false;
-}
-
-bool SeasonManager::CanSwapGrass()
-{
-	const auto season = GetSeason();
-	return season ? season->CanSwapForm(RE::FormType::Grass) : false;
+	return season ? std::make_pair(season->CanSwapLOD(a_type), season->GetID().suffix) : std::make_pair(false, ""sv);
 }
 
 RE::TESBoundObject* SeasonManager::GetSwapForm(const RE::TESForm* a_form)
 {
 	const auto season = GetSeason();
-	return season ? season->GetFormSwapMap().GetSwapForm(a_form) : nullptr;
+	return season && season->CanSwapForm(a_form->GetFormType()) ? season->GetFormSwapMap().GetSwapForm(a_form) : nullptr;
 }
 
 RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::TESLandTexture* a_landTxst)
 {
 	const auto season = GetSeason();
-	return season ? season->GetFormSwapMap().GetSwapLandTexture(a_landTxst) : nullptr;
+	return season && season->CanSwapLandscape() ? season->GetFormSwapMap().GetSwapLandTexture(a_landTxst) : nullptr;
 }
 
 RE::TESLandTexture* SeasonManager::GetSwapLandTexture(const RE::BGSTextureSet* a_txst)
 {
 	const auto season = GetSeason();
-	return season ? season->GetFormSwapMap().GetSwapLandTexture(a_txst) : nullptr;
+	return season && season->CanSwapLandscape() ? season->GetFormSwapMap().GetSwapLandTexture(a_txst) : nullptr;
+}
+
+RE::TESLandTexture* SeasonManager::GetSwapLandTextureForGrass(const RE::TESLandTexture* a_landTxst)
+{
+	const auto season = GetSeason();
+	return season && season->CanSwapForm(RE::FormType::Grass) ? season->GetFormSwapMap().GetSwapLandTexture(a_landTxst) : nullptr;
 }
 
 bool SeasonManager::GetExterior()

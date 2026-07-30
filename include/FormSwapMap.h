@@ -152,7 +152,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 		if (const auto snowOverSkyrim = dataHandler->LookupModByName("SnowOverSkyrim.esp")) {
 			for (auto& stat : statics) {
 				if (stat && snowOverSkyrim->IsFormInMod(stat->GetFormID())) {
-					std::string path = stat->GetModel();
+					std::string_view path = stat->GetModel();
 					if (path.empty()) {
 						continue;
 					}
@@ -168,7 +168,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 
 		for (auto& stat : statics) {
 			const auto mat = stat->data.materialObj;
-			if (mat && util::is_snow_shader(mat) && model::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || model::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
+			if (mat && Cache::is_snow_shader(mat) && model::only_contains_textureset(stat, { "Snow"sv, "Mask"sv }) || model::must_only_contain_textureset(stat, { "Snow", "Mask" })) {
 				std::string path = stat->GetModel();
 				if (path.empty() || is_in_blacklist(stat, snowBlackList)) {
 					continue;
@@ -182,7 +182,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 				std::string path = stat->GetModel();
 				string::replace_last_instance(path, "Moss"sv, ""sv);
 				if (string::icontains(path, snowPath) && snowStat != stat) {
-					if (const auto mat = stat->data.materialObj; !mat || !util::is_snow_shader(mat)) {
+					if (const auto mat = stat->data.materialObj; !mat || !Cache::is_snow_shader(mat)) {
 						if (is_in_blacklist(stat, blackList)) {
 							continue;
 						}

@@ -40,6 +40,7 @@ namespace SnowSwap
 
 		void LoadSnowShaderSettings();
 
+		[[nodiscard]] SWAP_RESULT CanApplySnowToRef(const RE::TESObjectREFR* a_ref) const;
 		[[nodiscard]] SWAP_RESULT CanApplySnowShader(RE::TESObjectREFR* a_ref) const;
 		[[nodiscard]] SWAP_RESULT CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const;
 

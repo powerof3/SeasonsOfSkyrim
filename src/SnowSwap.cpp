@@ -121,23 +121,37 @@ namespace SnowSwap
 		return std::ranges::any_of(_multipassSnowStrWhitelist, [&](const auto& str) { return string::icontains(model, str); });
 	}
 
-	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectREFR* a_ref) const
+	SWAP_RESULT Manager::CanApplySnowToRef(const RE::TESObjectREFR* a_ref) const
 	{
 		if (!SeasonManager::GetSingleton()->CanApplySnowShader()) {
 			return SWAP_RESULT::kSeasonFail;
 		}
 
-		if (!a_ref || a_ref->IsDisabled() || a_ref->IsDeleted() || a_ref->IsInWater() || !a_ref->IsDynamicForm() && GetBlacklisted(a_ref)) {
+		if (!a_ref || a_ref->IsDisabled() || a_ref->IsDeleted() || a_ref->IsInWater() || (!a_ref->IsDynamicForm() && GetBlacklisted(a_ref))) {
 			return SWAP_RESULT::kRefFail;
 		}
 
-		if (auto invMgr = RE::Inventory3DManager::GetSingleton(); invMgr && invMgr->tempRef == a_ref) {
+		if (const auto invMgr = RE::Inventory3DManager::GetSingleton(); invMgr && invMgr->tempRef == a_ref) {
 			return SWAP_RESULT::kRefFail;
 		}
 
-		const auto base = util::get_original_base(a_ref);
+		return SWAP_RESULT::kSuccess;
+	}
 
-		if (base != a_ref->GetBaseObject() || base->IsNot(RE::FormType::MovableStatic, RE::FormType::Container) || base->IsMarker() || base->IsHeadingMarker() || GetBlacklisted(base)) {
+	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectREFR* a_ref) const
+	{
+		auto swapResult = CanApplySnowToRef(a_ref);
+		if (swapResult != SWAP_RESULT::kSuccess) {
+			return swapResult;
+		}
+
+		const auto base = a_ref->GetBaseObject();
+
+		if (!base || base->IsNot(RE::FormType::MovableStatic, RE::FormType::Container) || base->IsMarker() || base->IsHeadingMarker()) {
+			return SWAP_RESULT::kBaseFail;
+		}
+
+		if (Cache::get_original_base(a_ref) != base || GetBlacklisted(base)) {
 			return SWAP_RESULT::kBaseFail;
 		}
 
@@ -150,25 +164,20 @@ namespace SnowSwap
 
 	SWAP_RESULT Manager::CanApplySnowShader(RE::TESObjectSTAT* a_static, RE::TESObjectREFR* a_ref) const
 	{
-		if (!SeasonManager::GetSingleton()->CanApplySnowShader()) {
-			return SWAP_RESULT::kSeasonFail;
+		auto swapResult = CanApplySnowToRef(a_ref);
+		if (swapResult != SWAP_RESULT::kSuccess) {
+			return swapResult;
 		}
 
-		if (!a_ref || a_ref->IsDisabled() || a_ref->IsDeleted() || a_ref->IsInWater() || !a_ref->IsDynamicForm() && GetBlacklisted(a_ref)) {
-			return SWAP_RESULT::kRefFail;
-		}
-
-		const auto base = util::get_original_base(a_ref);
-
-		if (base != a_static || a_static->IsMarker() || a_static->IsHeadingMarker() || GetBaseBlacklisted(a_static)) {
+		if (a_static->IsMarker() || a_static->IsHeadingMarker() || a_static->IsSnowObject() || a_static->IsSkyObject() || a_static->HasTreeLOD()) {
 			return SWAP_RESULT::kBaseFail;
 		}
 
-		if (const auto matObject = a_static->data.materialObj; matObject && (util::is_snow_shader(matObject) || util::is_ice_shader(matObject))) {
+		if (const auto matObject = a_static->data.materialObj; matObject && (Cache::is_snow_shader(matObject) || Cache::is_ice_shader(matObject))) {
 			return SWAP_RESULT::kBaseFail;
 		}
 
-		if (a_static->IsSnowObject() || a_static->IsSkyObject() || a_static->HasTreeLOD()) {
+		if (Cache::get_original_base(a_ref) != a_static || GetBaseBlacklisted(a_static)) {
 			return SWAP_RESULT::kBaseFail;
 		}
 

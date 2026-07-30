@@ -26,4 +26,9 @@ namespace Cache
 		mutable Lock                    _originalsLock;
 		FlatMap<RE::FormID, RE::FormID> _originals;
 	};
+
+	RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref);
+	void                set_original_base(RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_originalBase);
+	bool                is_snow_shader(const RE::BGSMaterialObject* a_shader);
+	bool                is_ice_shader(const RE::BGSMaterialObject* a_shader);
 }

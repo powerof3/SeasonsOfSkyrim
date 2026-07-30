@@ -40,11 +40,7 @@ public:
 	[[nodiscard]] SEASON GetSeasonType();
 	[[nodiscard]] bool   CanApplySnowShader();
 
-	[[nodiscard]] std::pair<bool, std::string> CanSwapLOD(LOD_TYPE a_type);
-
-	[[nodiscard]] bool CanSwapLandscape();
-	[[nodiscard]] bool CanSwapForm(RE::FormType a_formType);
-	[[nodiscard]] bool CanSwapGrass();
+	[[nodiscard]] std::pair<bool, std::string_view> CanSwapLOD(LOD_TYPE a_type);
 
 	RE::TESBoundObject* GetSwapForm(const RE::TESForm* a_form);
 	template <class T>
@@ -52,6 +48,7 @@ public:
 
 	RE::TESLandTexture* GetSwapLandTexture(const RE::TESLandTexture* a_landTxst);
 	RE::TESLandTexture* GetSwapLandTexture(const RE::BGSTextureSet* a_txst);
+	RE::TESLandTexture* GetSwapLandTextureForGrass(const RE::TESLandTexture* a_landTxst);
 
 	[[nodiscard]] bool GetExterior();
 	void               SetExterior(bool a_isExterior);

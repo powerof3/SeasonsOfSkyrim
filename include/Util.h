@@ -2,25 +2,7 @@
 
 namespace util
 {
-	inline RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref)
-	{
-		return Cache::DataHolder::GetSingleton()->GetOriginalBase(a_ref);
-	}
 
-	inline void set_original_base(RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_originalBase)
-	{
-		Cache::DataHolder::GetSingleton()->SetOriginalBase(a_ref, a_originalBase);
-	}
-
-	inline bool is_snow_shader(const RE::BGSMaterialObject* a_shader)
-	{
-		return Cache::DataHolder::GetSingleton()->IsSnowShader(a_shader);
-	}
-
-	inline bool is_ice_shader(const RE::BGSMaterialObject* a_shader)
-	{
-		return Cache::DataHolder::GetSingleton()->IsIceShader(a_shader);
-	}
 
 	inline std::size_t get_load_order_hash()
 	{

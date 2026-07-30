@@ -26,8 +26,8 @@ enum class SEASON_TYPE : std::uint32_t
 //type, suffix (Winter, WIN)
 struct SEASON_ID
 {
-	std::string type{};
-	std::string suffix{};
+	std::string_view type{};
+	std::string_view suffix{};
 };
 
 enum class LOD_TYPE : std::uint32_t

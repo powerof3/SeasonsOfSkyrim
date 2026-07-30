@@ -4,21 +4,21 @@ void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
 {
 	const auto& [seasonType, suffix] = ID;
 
-	ini::get_value(a_ini, validWorldspaces, seasonType.c_str(), "Worldspaces", a_writeComment ? ";Valid worldspaces." : ";");
+	ini::get_value(a_ini, validWorldspaces, seasonType.data(), "Worldspaces", a_writeComment ? ";Valid worldspaces." : ";");
 
-	ini::get_value(a_ini, swapActivators, seasonType.c_str(), "Activators", a_writeComment ? ";Swap objects of these types for seasonal variants." : ";");
-	ini::get_value(a_ini, swapFurniture, seasonType.c_str(), "Furniture", nullptr);
-	ini::get_value(a_ini, swapMovableStatics, seasonType.c_str(), "Movable Statics", nullptr);
-	ini::get_value(a_ini, swapStatics, seasonType.c_str(), "Statics", nullptr);
-	ini::get_value(a_ini, swapTrees, seasonType.c_str(), "Trees", nullptr);
-	ini::get_value(a_ini, swapFlora, seasonType.c_str(), "Flora", nullptr);
-	ini::get_value(a_ini, swapVFX, seasonType.c_str(), "Visual Effects", nullptr);
+	ini::get_value(a_ini, swapActivators, seasonType.data(), "Activators", a_writeComment ? ";Swap objects of these types for seasonal variants." : ";");
+	ini::get_value(a_ini, swapFurniture, seasonType.data(), "Furniture", nullptr);
+	ini::get_value(a_ini, swapMovableStatics, seasonType.data(), "Movable Statics", nullptr);
+	ini::get_value(a_ini, swapStatics, seasonType.data(), "Statics", nullptr);
+	ini::get_value(a_ini, swapTrees, seasonType.data(), "Trees", nullptr);
+	ini::get_value(a_ini, swapFlora, seasonType.data(), "Flora", nullptr);
+	ini::get_value(a_ini, swapVFX, seasonType.data(), "Visual Effects", nullptr);
 
-	ini::get_value(a_ini, swapObjectLOD, seasonType.c_str(), "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n;See https://dyndolod.info/Help/Seasons for more info" : ";");
-	ini::get_value(a_ini, swapTerrainLOD, seasonType.c_str(), "Terrain LOD", nullptr);
-	ini::get_value(a_ini, swapTreeLOD, seasonType.c_str(), "Tree LOD", nullptr);
+	ini::get_value(a_ini, swapObjectLOD, seasonType.data(), "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n;See https://dyndolod.info/Help/Seasons for more info" : ";");
+	ini::get_value(a_ini, swapTerrainLOD, seasonType.data(), "Terrain LOD", nullptr);
+	ini::get_value(a_ini, swapTreeLOD, seasonType.data(), "Tree LOD", nullptr);
 
-	ini::get_value(a_ini, swapGrass, seasonType.c_str(), "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)." : ";");
+	ini::get_value(a_ini, swapGrass, seasonType.data(), "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)." : ";");
 }
 
 void Season::CheckLODExists()
@@ -34,7 +34,7 @@ void Season::CheckLODExists()
 			bool existsInBSA = false;
 			if (std::filesystem::exists(a_folderPath)) {
 				for (const auto& entry : std::filesystem::directory_iterator(a_folderPath)) {
-					if (entry.exists() && entry.is_regular_file() && entry.path().string().contains(suffix)) {
+					if (entry.is_regular_file() && entry.path().string().contains(suffix)) {
 						exists = true;
 						break;
 					}
@@ -128,7 +128,7 @@ void Season::SaveData(CSimpleIniA& a_ini)
 	std::ranges::sort(validWorldspaces);
 	validWorldspaces.erase(std::ranges::unique(validWorldspaces).begin(), validWorldspaces.end());
 
-	INI::set_value(a_ini, validWorldspaces, ID.type.c_str(), "Worldspaces", ";Valid worldspaces");
+	INI::set_value(a_ini, validWorldspaces, ID.type.data(), "Worldspaces", ";Valid worldspaces");
 }
 
 void Season::LoadWorldspaces()

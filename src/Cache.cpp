@@ -22,11 +22,11 @@ namespace Cache
 		}
 
 		const auto sosShaderSP = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SOS_WIN_SnowMaterialObjectSP");
+		const auto snowShaderSP = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P");
 
-		const auto  snowShaderSP = RE::TESForm::LookupByEditorID<RE::BGSMaterialObject>("SnowMaterialObject1P");
-		const auto& spColor = snowShaderSP ? snowShaderSP->directionalData.singlePassColor : RE::NiColor();
+		const auto spColor = snowShaderSP ? snowShaderSP->directionalData.singlePassColor : RE::NiColor();
 
-		if (spColor.red != 0.0f && spColor.green != 0.0f && spColor.blue != 0.0f) {
+		if (spColor != RE::NiColor()) {
 			if (sosShaderSP) {
 				sosShaderSP->directionalData.singlePassColor = spColor;
 			}
@@ -63,5 +63,25 @@ namespace Cache
 	{
 		WriteLocker locker(_originalsLock);
 		_originals.emplace(a_ref->GetFormID(), a_originalBase->GetFormID());
+	}
+
+	RE::TESBoundObject* get_original_base(RE::TESObjectREFR* a_ref)
+	{
+		return Cache::DataHolder::GetSingleton()->GetOriginalBase(a_ref);
+	}
+
+	void set_original_base(RE::TESObjectREFR* a_ref, RE::TESBoundObject* a_originalBase)
+	{
+		Cache::DataHolder::GetSingleton()->SetOriginalBase(a_ref, a_originalBase);
+	}
+
+	bool is_snow_shader(const RE::BGSMaterialObject* a_shader)
+	{
+		return Cache::DataHolder::GetSingleton()->IsSnowShader(a_shader);
+	}
+
+	bool is_ice_shader(const RE::BGSMaterialObject* a_shader)
+	{
+		return Cache::DataHolder::GetSingleton()->IsIceShader(a_shader);
 	}
 }
