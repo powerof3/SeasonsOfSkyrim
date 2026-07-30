@@ -3,7 +3,6 @@
 namespace util
 {
 
-
 	inline std::size_t get_load_order_hash()
 	{
 		const auto dataHandler = RE::TESDataHandler::GetSingleton();
