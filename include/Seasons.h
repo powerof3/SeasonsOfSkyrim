@@ -2,7 +2,7 @@
 
 #include "FormSwapMap.h"
 
-enum class SEASON : std::uint32_t
+enum class SEASON_TYPE : std::uint32_t
 {
 	kNone = 0,
 	kWinter,
@@ -13,7 +13,7 @@ enum class SEASON : std::uint32_t
 	kTotal
 };
 
-enum class SEASON_TYPE : std::uint32_t
+enum class SEASON_MODE : std::uint32_t
 {
 	kOff = 0,
 	kPermanentWinter,
@@ -40,12 +40,26 @@ enum class LOD_TYPE : std::uint32_t
 class Season
 {
 public:
-	explicit Season(SEASON a_season, SEASON_ID a_ID) :
+	explicit Season(SEASON_TYPE a_season, SEASON_ID a_ID, bool a_writeComment) :
+		ID(std::move(a_ID)),
 		season(a_season),
-		ID(std::move(a_ID))
+		validWorldspaces(ID.type, "Worldspaces", a_writeComment ? ";Valid worldspaces."sv : "", "Tamriel|MarkarthWorld|RiftenWorld|SolitudeWorld|WhiterunWorld|DLC1HunterHQWorld|DLC2SolstheimWorld"s),
+		swapActivators(ID.type, "Activators", a_writeComment ? ";Swap objects of these types for seasonal variants."sv : "", true),
+		swapFurniture(ID.type, "Furniture", "", true),
+		swapMovableStatics(ID.type, "Movable Statics", "", true),
+		swapStatics(ID.type, "Statics", "", true),
+		swapTrees(ID.type, "Trees", "", true),
+		swapFlora(ID.type, "Flora", "", true),
+		swapVFX(ID.type, "Visual Effects", "", true),
+		swapObjectLOD(ID.type, "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n"
+															  ";See https://dyndolod.info/Help/Seasons for more info"sv :
+															  "",
+			true),
+		swapTerrainLOD(ID.type, "Terrain LOD", "", true),
+		swapTreeLOD(ID.type, "Tree LOD", "", true),
+		swapGrass(ID.type, "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)."sv : "", true)
 	{}
 
-	void LoadSettings(CSimpleIniA& a_ini, bool a_writeComment = false);
 	void CheckLODExists();
 
 	[[nodiscard]] bool CanApplySnowShader() const;
@@ -54,7 +68,7 @@ public:
 	[[nodiscard]] bool CanSwapLandscape() const;
 
 	[[nodiscard]] const SEASON_ID& GetID() const;
-	[[nodiscard]] SEASON           GetType() const;
+	[[nodiscard]] SEASON_TYPE      GetType() const;
 
 	[[nodiscard]] FormSwapMap& GetFormSwapMap();
 	void                       LoadData(const CSimpleIniA& a_ini);
@@ -92,34 +106,26 @@ private:
 		return worldSpace && validWorldspacesPtr.contains(worldSpace);
 	}
 
-	SEASON_ID ID{};
+	// members
+	SEASON_ID   ID{};
+	SEASON_TYPE season{};
 
-	std::vector<std::string> validWorldspaces{
-		"Tamriel",
-		"MarkarthWorld",
-		"RiftenWorld",
-		"SolitudeWorld",
-		"WhiterunWorld",
-		"DLC1HunterHQWorld",
-		"DLC2SolstheimWorld"
-	};
+	Setting::StrA               validWorldspaces;
 	FlatSet<RE::TESWorldSpace*> validWorldspacesPtr{};
 
-	SEASON season{};
+	Setting::Bool swapActivators;
+	Setting::Bool swapFurniture;
+	Setting::Bool swapMovableStatics;
+	Setting::Bool swapStatics;
+	Setting::Bool swapTrees;
+	Setting::Bool swapFlora;
+	Setting::Bool swapVFX;
 
-	bool swapActivators{ true };
-	bool swapFurniture{ true };
-	bool swapMovableStatics{ true };
-	bool swapStatics{ true };
-	bool swapTrees{ true };
-	bool swapFlora{ true };
-	bool swapVFX{ true };
+	Setting::Bool swapObjectLOD;
+	Setting::Bool swapTerrainLOD;
+	Setting::Bool swapTreeLOD;
 
-	bool swapObjectLOD{ true };
-	bool swapTerrainLOD{ true };
-	bool swapTreeLOD{ true };
-
-	bool swapGrass{ true };
+	Setting::Bool swapGrass;
 
 	FormSwapMap formMap{};
 };

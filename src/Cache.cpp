@@ -12,10 +12,10 @@ namespace Cache
 			}
 			for (const auto& mat : dataHandler->GetFormArray<RE::BGSMaterialObject>()) {
 				const auto edid = edid::get_editorID(mat);
-				if (string::icontains(edid, "Snow")) {
+				if (REX::STR::ICONTAINS(edid, "Snow")) {
 					_snowShaders.emplace(mat->GetFormID());
 				}
-				if (string::icontains(edid, "Ice")) {
+				if (REX::STR::ICONTAINS(edid, "Ice")) {
 					_iceShaders.emplace(mat->GetFormID());
 				}
 			}

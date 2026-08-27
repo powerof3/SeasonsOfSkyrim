@@ -6,11 +6,11 @@ namespace Papyrus
 	bool Bind(VM* a_vm)
 	{
 		if (!a_vm) {
-			logger::critical("couldn't get VM State"sv);
+			REX::CRITICAL("couldn't get VM State"sv);
 			return false;
 		}
 
-		logger::info("{:*^30}", "FUNCTIONS"sv);
+		REX::INFO("{:*^30}", "FUNCTIONS"sv);
 
 		Functions::Bind(*a_vm);
 
@@ -56,11 +56,11 @@ namespace Papyrus
 		}
 		void SetSeasonOverride(VM*, StackID, RE::StaticFunctionTag*, std::uint32_t a_season)
 		{
-			SeasonManager::GetSingleton()->SetSeasonOverride(static_cast<SEASON>(a_season));
+			SeasonManager::GetSingleton()->SetSeasonOverride(static_cast<SEASON_TYPE>(a_season));
 		}
 		void ClearSeasonOverride(VM*, StackID, RE::StaticFunctionTag*)
 		{
-			SeasonManager::GetSingleton()->SetSeasonOverride(SEASON::kNone);
+			SeasonManager::GetSingleton()->SetSeasonOverride(SEASON_TYPE::kNone);
 		}
 
 		void Bind(VM& a_vm)
@@ -81,7 +81,7 @@ namespace Papyrus
 			a_vm.RegisterFunction("UnregisterForSeasonChange_AME", script, UnregisterForSeasonChange_AME);
 			a_vm.RegisterFunction("UnregisterForSeasonChange_Form", script, UnregisterForSeasonChange_Form);
 
-			logger::info("Registered season functions"sv);
+			REX::INFO("Registered season functions"sv);
 		}
 	}
 

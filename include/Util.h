@@ -1,8 +1,10 @@
 #pragma once
 
+#include <SimpleIni.h>
+#undef ERROR
+
 namespace util
 {
-
 	inline std::size_t get_load_order_hash()
 	{
 		const auto dataHandler = RE::TESDataHandler::GetSingleton();
@@ -51,7 +53,7 @@ namespace model
 			const std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 
 			return std::ranges::any_of(altTextures, [&](const auto& textures) {
-				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
+				return textures.textureSet ? REX::STR::ICONTAINS(textures.textureSet->textures[0].textureName, a_txstPath) :
 				                             false;
 			});
 		}
@@ -66,8 +68,8 @@ namespace model
 
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				if (const auto txst = textures.textureSet) {
-					return string::icontains(txst->textures[0].textureName, a_txstPaths.first) ||
-					       string::icontains(txst->textures[0].textureName, a_txstPaths.second);
+					return REX::STR::ICONTAINS(txst->textures[0].textureName, a_txstPaths.first) ||
+					       REX::STR::ICONTAINS(txst->textures[0].textureName, a_txstPaths.second);
 				}
 				return false;
 			});
@@ -82,7 +84,7 @@ namespace model
 			const std::span altTextures{ model->alternateTextures, model->numAlternateTextures };
 
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
-				return textures.textureSet ? string::icontains(textures.textureSet->textures[0].textureName, a_txstPath) :
+				return textures.textureSet ? REX::STR::ICONTAINS(textures.textureSet->textures[0].textureName, a_txstPath) :
 				                             false;
 			});
 		}
@@ -97,8 +99,8 @@ namespace model
 
 			return std::ranges::all_of(altTextures, [&](const auto& textures) {
 				if (const auto txst = textures.textureSet) {
-					return string::icontains(txst->textures[0].textureName, a_txstPaths.first) ||
-					       string::icontains(txst->textures[0].textureName, a_txstPaths.second);
+					return REX::STR::ICONTAINS(txst->textures[0].textureName, a_txstPaths.first) ||
+					       REX::STR::ICONTAINS(txst->textures[0].textureName, a_txstPaths.second);
 				}
 				return false;
 			});
@@ -112,7 +114,7 @@ namespace model
 		if (const auto pos = a_model.rfind('\\'); pos != std::string_view::npos) {
 			a_model.remove_prefix(pos);
 		}
-		return string::tolower(a_model);
+		return REX::STR::TO_LOWER(a_model);
 	}
 }
 
@@ -154,13 +156,13 @@ namespace INI
 {
 	inline void set_value(CSimpleIniA& a_ini, const std::vector<std::string>& a_value, const char* a_section, const char* a_key, const char* a_comment, const char* a_deliminator = R"(|)")
 	{
-		a_ini.SetValue(a_section, a_key, string::join(a_value, a_deliminator).c_str(), a_comment);
+		a_ini.SetValue(a_section, a_key, REX::STR::JOIN(a_value, a_deliminator).c_str(), a_comment);
 	}
 
 	inline RE::FormID parse_form(const std::string& a_str)
 	{
-		if (const auto splitID = string::split(a_str, "~"); splitID.size() == 2) {
-			const auto  formID = string::to_num<RE::FormID>(splitID[0], true);
+		if (const auto splitID = REX::STR::SPLIT(a_str, "~"); splitID.size() == 2) {
+			const auto  formID = REX::STR::TO_NUM<RE::FormID>(splitID[0], true);
 			const auto& modName = splitID[1];
 			if (g_mergeMapperInterface) {
 				const auto [mergedModName, mergedFormID] = g_mergeMapperInterface->GetNewFormID(modName.c_str(), formID);
@@ -174,4 +176,61 @@ namespace INI
 		}
 		return static_cast<RE::FormID>(0);
 	}
+}
+
+namespace Setting
+{
+	template <class T, class Base = REX::TIniSetting<T>>
+	class TSetting : public Base
+	{
+	public:
+		TSetting(std::string_view a_section, std::string_view a_key, std::string_view a_comment, T a_value) :
+			Base(a_section, a_key, std::move(a_value)),
+			m_section(a_section),
+			m_key(a_key),
+			m_comment(a_comment)
+		{}
+
+		void Save(void* a_data) override
+		{
+			Base::Save(a_data);
+
+			auto& ini = *static_cast<CSimpleIniA*>(a_data);
+
+			CSimpleIniA::TNamesDepend values;
+			if (!ini.GetAllValues(m_section.data(), m_key.data(), values) || values.empty()) {
+				return;
+			}
+
+			const auto&       entry = values.front();
+			const std::string value{ entry.pItem };
+
+			ini.Delete(m_section.data(), m_key.data());
+			ini.SetValue(m_section.data(), m_key.data(), value.c_str(), m_comment.data());
+		}
+
+	private:
+		std::string_view m_section;
+		std::string_view m_key;
+		std::string_view m_comment;
+	};
+
+	template <class T>
+	using Setting = TSetting<T>;
+
+	using Bool = Setting<bool>;
+	using F32 = Setting<float>;
+	using F64 = Setting<double>;
+	using I8 = Setting<std::int8_t>;
+	using I16 = Setting<std::int16_t>;
+	using I32 = Setting<std::int32_t>;
+	using U8 = Setting<std::uint8_t>;
+	using U16 = Setting<std::uint16_t>;
+	using U32 = Setting<std::uint32_t>;
+	using Str = Setting<std::string>;
+
+	template <class T = std::string>
+	using Array = TSetting<T, REX::TIniSettingA<T>>;
+
+	using StrA = Array<std::string>;
 }

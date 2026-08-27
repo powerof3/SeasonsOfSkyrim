@@ -1,31 +1,10 @@
 #include "Seasons.h"
 
-void Season::LoadSettings(CSimpleIniA& a_ini, bool a_writeComment)
-{
-	const auto& [seasonType, suffix] = ID;
-
-	ini::get_value(a_ini, validWorldspaces, seasonType.data(), "Worldspaces", a_writeComment ? ";Valid worldspaces." : ";");
-
-	ini::get_value(a_ini, swapActivators, seasonType.data(), "Activators", a_writeComment ? ";Swap objects of these types for seasonal variants." : ";");
-	ini::get_value(a_ini, swapFurniture, seasonType.data(), "Furniture", nullptr);
-	ini::get_value(a_ini, swapMovableStatics, seasonType.data(), "Movable Statics", nullptr);
-	ini::get_value(a_ini, swapStatics, seasonType.data(), "Statics", nullptr);
-	ini::get_value(a_ini, swapTrees, seasonType.data(), "Trees", nullptr);
-	ini::get_value(a_ini, swapFlora, seasonType.data(), "Flora", nullptr);
-	ini::get_value(a_ini, swapVFX, seasonType.data(), "Visual Effects", nullptr);
-
-	ini::get_value(a_ini, swapObjectLOD, seasonType.data(), "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n;See https://dyndolod.info/Help/Seasons for more info" : ";");
-	ini::get_value(a_ini, swapTerrainLOD, seasonType.data(), "Terrain LOD", nullptr);
-	ini::get_value(a_ini, swapTreeLOD, seasonType.data(), "Tree LOD", nullptr);
-
-	ini::get_value(a_ini, swapGrass, seasonType.data(), "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)." : ";");
-}
-
 void Season::CheckLODExists()
 {
 	const auto& [seasonType, suffix] = ID;
 
-	logger::info("{}", seasonType);
+	REX::INFO("{}", seasonType);
 
 	//make sure LOD has been generated! No need to check form swaps
 	const auto check_if_lod_exists = [&](bool& a_swaplod, std::string_view a_lodType, std::string_view a_folderPath, std::string_view a_fileType) {
@@ -50,9 +29,9 @@ void Season::CheckLODExists()
 			}
 			if (!exists && !existsInBSA) {
 				a_swaplod = false;
-				logger::warn("\t{} LOD files not found! Fallback to default LOD", a_lodType);
+				REX::WARN("\t{} LOD files not found! Fallback to default LOD", a_lodType);
 			} else {
-				logger::info("\t{} LOD files found ({})", a_lodType, existsInBSA ? "BSA" : "Loose");
+				REX::INFO("\t{} LOD files found ({})", a_lodType, existsInBSA ? "BSA" : "Loose");
 			}
 		}
 	};
@@ -64,7 +43,7 @@ void Season::CheckLODExists()
 
 bool Season::CanApplySnowShader() const
 {
-	return season == SEASON::kWinter && is_in_valid_worldspace();
+	return season == SEASON_TYPE::kWinter && is_in_valid_worldspace();
 }
 
 bool Season::CanSwapForm(RE::FormType a_formType) const
@@ -100,7 +79,7 @@ const SEASON_ID& Season::GetID() const
 	return ID;
 }
 
-SEASON Season::GetType() const
+SEASON_TYPE Season::GetType() const
 {
 	return season;
 }
@@ -118,22 +97,26 @@ void Season::LoadData(const CSimpleIniA& a_ini)
 	a_ini.GetAllKeys("Worldspaces", values);
 	values.sort(CSimpleIniA::Entry::LoadOrder());
 
+	auto& vec = stl::get_setting_ref(validWorldspaces);
+
 	if (!values.empty()) {
-		std::ranges::transform(values, std::back_inserter(validWorldspaces), [&](const auto& val) { return val.pItem; });
+		std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
 	}
 }
 
 void Season::SaveData(CSimpleIniA& a_ini)
 {
-	std::ranges::sort(validWorldspaces);
-	validWorldspaces.erase(std::ranges::unique(validWorldspaces).begin(), validWorldspaces.end());
+	auto& worldspaces = stl::get_setting_ref(validWorldspaces);
 
-	INI::set_value(a_ini, validWorldspaces, ID.type.data(), "Worldspaces", ";Valid worldspaces");
+	std::ranges::sort(worldspaces);
+	worldspaces.erase(std::ranges::unique(worldspaces).begin(), worldspaces.end());
+
+	INI::set_value(a_ini, worldspaces, ID.type.data(), "Worldspaces", ";Valid worldspaces");
 }
 
 void Season::LoadWorldspaces()
 {
-	for (auto& worldspace : validWorldspaces) {
+	for (const auto& worldspace : stl::get_setting_ref(validWorldspaces)) {
 		if (auto worldspacePtr = RE::TESForm::LookupByEditorID<RE::TESWorldSpace>(worldspace)) {
 			validWorldspacesPtr.emplace(worldspacePtr);
 		}

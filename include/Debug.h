@@ -53,7 +53,7 @@ namespace Debug
 			function->executeFunction = &detail::Execute;
 			function->conditionFunction = nullptr;
 
-			logger::debug("installed {}", detail::LONG_NAME);
+			REX::DEBUG("installed {}", detail::LONG_NAME);
 		}
 	}
 }

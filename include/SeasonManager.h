@@ -3,7 +3,7 @@
 #include "Seasons.h"
 
 class SeasonManager final :
-	public REX::Singleton<SeasonManager>,
+	public REX::TSingleton<SeasonManager>,
 	public RE::BSTEventSink<RE::TESActivateEvent>
 {
 public:
@@ -14,11 +14,11 @@ public:
 
 	void RegisterEvents()
 	{
-		logger::info("{:*^30}", "EVENTS");
+		REX::INFO("{:*^30}", "EVENTS");
 
 		if (const auto scripts = RE::ScriptEventSourceHolder::GetSingleton()) {
 			scripts->AddEventSink<RE::TESActivateEvent>(this);
-			logger::info("Registered {}"sv, typeid(RE::TESActivateEvent).name());
+			REX::INFO("Registered {}"sv, typeid(RE::TESActivateEvent).name());
 		}
 	}
 
@@ -36,9 +36,10 @@ public:
 
 	bool UpdateSeason();
 
-	[[nodiscard]] SEASON GetCurrentSeasonType();
-	[[nodiscard]] SEASON GetSeasonType();
-	[[nodiscard]] bool   CanApplySnowShader();
+	[[nodiscard]] SEASON_MODE GetSeasonMode() const;
+	[[nodiscard]] SEASON_TYPE GetCurrentSeasonType();
+	[[nodiscard]] SEASON_TYPE GetSeasonType();
+	[[nodiscard]] bool        CanApplySnowShader();
 
 	[[nodiscard]] std::pair<bool, std::string_view> CanSwapLOD(LOD_TYPE a_type);
 
@@ -53,8 +54,8 @@ public:
 	[[nodiscard]] bool GetExterior();
 	void               SetExterior(bool a_isExterior);
 
-	SEASON GetSeasonOverride() const;
-	void   SetSeasonOverride(SEASON a_season);
+	SEASON_TYPE GetSeasonOverride() const;
+	void        SetSeasonOverride(SEASON_TYPE a_season);
 
 	bool PreferMultipass() const;
 
@@ -64,16 +65,17 @@ protected:
 
 	void ForEachSeason(auto&& func)
 	{
-		for (const auto type : enum_range(SEASON::kWinter, SEASON::kTotal)) {
+		for (const auto type : enum_range(SEASON_TYPE::kWinter, SEASON_TYPE::kTotal)) {
 			func(type, *GetSeasonImpl(type));
 		}
 	}
 
 	Season* GetSeason();
 	Season* GetCurrentSeason(bool a_ignoreOverride = false);
-	Season* GetSeasonImpl(SEASON a_season);
+	Season* GetSeasonImpl(SEASON_TYPE a_season);
 
-	void LoadMonthToSeasonMap(CSimpleIniA& a_ini);
+	void RebuildMonthToSeasonMap();
+	void ResetOutdatedSettings();
 
 	static void LoadSeasonData(Season& a_season, CSimpleIniA& a_settings);
 
@@ -106,54 +108,61 @@ protected:
 			REL::Relocation<std::uintptr_t> leave_interior{ RELOCATION_ID(13172, 13317), OFFSET(0x2A, 0x1E) };
 			stl::write_thunk_call<SetInterior<1>>(leave_interior.address());
 
-			logger::info("Installed interior-exterior detection"sv);
+			REX::INFO("Installed interior-exterior detection"sv);
 		}
 	};
 
 	EventResult ProcessEvent(const RE::TESActivateEvent* a_event, RE::BSTEventSource<RE::TESActivateEvent>*) override;
 
 private:
-	std::map<MONTH, SEASON> monthToSeasons{
-		{ MONTH::kMorningStar, SEASON::kWinter },
-		{ MONTH::kSunsDawn, SEASON::kWinter },
-		{ MONTH::kFirstSeed, SEASON::kSpring },
-		{ MONTH::kRainsHand, SEASON::kSpring },
-		{ MONTH::kSecondSeed, SEASON::kSpring },
-		{ MONTH::kMidyear, SEASON::kSummer },
-		{ MONTH::kSunsHeight, SEASON::kSummer },
-		{ MONTH::kLastSeed, SEASON::kSummer },
-		{ MONTH::kHearthfire, SEASON::kAutumn },
-		{ MONTH::kFrostfall, SEASON::kAutumn },
-		{ MONTH::kSunsDusk, SEASON::kAutumn },
-		{ MONTH::kEveningStar, SEASON::kWinter }
+	static constexpr auto settings{ R"(Data\SKSE\Plugins\po3_SeasonsOfSkyrim.ini)" };
+	static constexpr auto serializedSeasonList{ R"(Data\Seasons\Serialization.ini)" };
+
+	std::map<MONTH, SEASON_TYPE> monthToSeasons{};
+
+	Setting::U32 seasonType{
+		"Settings", "Season Type",
+			";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n"
+			";3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal"sv,
+		std::to_underlying(SEASON_MODE::kSeasonal)
 	};
 
-	static constexpr std::array<std::pair<MONTH, std::pair<std::string_view, std::string_view>>, MONTH::kTotal> monthNames{
-		{ { MONTH::kMorningStar, { "Morning Star"sv, ";January"sv } },
-			{ MONTH::kSunsDawn, { "Sun's Dawn"sv, ";February"sv } },
-			{ MONTH::kFirstSeed, { "First Seed"sv, ";March"sv } },
-			{ MONTH::kRainsHand, { "Rain's Hand"sv, ";April"sv } },
-			{ MONTH::kSecondSeed, { "Second Seed"sv, ";May"sv } },
-			{ MONTH::kMidyear, { "Mid Year"sv, ";June"sv } },
-			{ MONTH::kSunsHeight, { "Sun's Height"sv, ";July"sv } },
-			{ MONTH::kLastSeed, { "Last Seed"sv, ";August"sv } },
-			{ MONTH::kHearthfire, { "Hearthfire"sv, ";September"sv } },
-			{ MONTH::kFrostfall, { "Frost Fall"sv, ";October"sv } },
-			{ MONTH::kSunsDusk, { "Sun's Dusk"sv, ";November"sv } },
-			{ MONTH::kEveningStar, { "Evening Star"sv, ";December"sv } } }
+	std::array<Setting::U32, MONTH::kTotal> monthSettings{
+		Setting::U32{ "Settings", "Morning Star",
+			";0 - none\n;1 - winter\n;2 - spring\n;3 - summer\n;4 - autumn\n\n;January"sv,
+			std::to_underlying(SEASON_TYPE::kWinter) },
+		{ "Settings", "Sun's Dawn", ";February"sv, std::to_underlying(SEASON_TYPE::kWinter) },
+		Setting::U32{ "Settings", "First Seed", ";March"sv, std::to_underlying(SEASON_TYPE::kSpring) },
+		Setting::U32{ "Settings", "Rain's Hand", ";April"sv, std::to_underlying(SEASON_TYPE::kSpring) },
+		Setting::U32{ "Settings", "Second Seed", ";May"sv, std::to_underlying(SEASON_TYPE::kSpring) },
+		Setting::U32{ "Settings", "Mid Year", ";June"sv, std::to_underlying(SEASON_TYPE::kSummer) },
+		Setting::U32{ "Settings", "Sun's Height", ";July"sv, std::to_underlying(SEASON_TYPE::kSummer) },
+		Setting::U32{ "Settings", "Last Seed", ";August"sv, std::to_underlying(SEASON_TYPE::kSummer) },
+		Setting::U32{ "Settings", "Hearthfire", ";September"sv, std::to_underlying(SEASON_TYPE::kAutumn) },
+		Setting::U32{ "Settings", "Frost Fall", ";October"sv, std::to_underlying(SEASON_TYPE::kAutumn) },
+		Setting::U32{ "Settings", "Sun's Dusk", ";November"sv, std::to_underlying(SEASON_TYPE::kAutumn) },
+		Setting::U32{ "Settings", "Evening Star", ";December"sv, std::to_underlying(SEASON_TYPE::kWinter) },
 	};
 
-	Season winter{ SEASON::kWinter, { "Winter", "WIN" } };
-	Season spring{ SEASON::kSpring, { "Spring", "SPR" } };
-	Season summer{ SEASON::kSummer, { "Summer", "SUM" } };
-	Season autumn{ SEASON::kAutumn, { "Autumn", "AUT" } };
+	Setting::Bool preferMultipass{ "Settings", "Prefer Multipass", ";Use multipass snow shader when applying snow shader to objects if possible", true };
 
-	SEASON_TYPE seasonType{ SEASON_TYPE::kSeasonal };
-	SEASON      currentSeason{ SEASON::kNone };
-	SEASON      lastSeason{ SEASON::kNone };
-	SEASON      seasonOverride{ SEASON::kNone };
+	Setting::Bool skipWINSwap{ "Winter", "Ignore auto generated WIN formswap", ";Autogenerated winter formswap config will not be applied."sv, false };
+	Setting::Bool skipLandTextures{ "Winter", "Skip Land Textures", ";Skip loading these form types from autogenerated winter formswap."sv, false };
+	Setting::Bool skipActivators{ "Winter", "Skip Activator", "", false };
+	Setting::Bool skipFurniture{ "Winter", "Skip Furniture", "", false };
+	Setting::Bool skipMovableStatics{ "Winter", "Skip Movable Statics", "", false };
+	Setting::Bool skipStatics{ "Winter", "Skip Statics", "", false };
+	Setting::Bool skipTrees{ "Winter", "Skip Tree", "", false };
 
-	bool             preferMultipass{ true };
+	Season winter{ SEASON_TYPE::kWinter, { "Winter", "WIN" }, true };
+	Season spring{ SEASON_TYPE::kSpring, { "Spring", "SPR" }, false };
+	Season summer{ SEASON_TYPE::kSummer, { "Summer", "SUM" }, false };
+	Season autumn{ SEASON_TYPE::kAutumn, { "Autumn", "AUT" }, false };
+
+	SEASON_TYPE currentSeason{ SEASON_TYPE::kNone };
+	SEASON_TYPE lastSeason{ SEASON_TYPE::kNone };
+	SEASON_TYPE seasonOverride{ SEASON_TYPE::kNone };
+
 	std::atomic_bool isExterior{ false };
 	bool             loadedFromSave{ false };
 
@@ -162,9 +171,6 @@ private:
 		bool                                                              skip{ false };
 		std::array<bool, std::to_underlying(FormSwapMap::RECORD::kFlora)> skipRecords{};
 	} mainWINSwap;
-
-	const wchar_t* settings{ L"Data/SKSE/Plugins/po3_SeasonsOfSkyrim.ini" };
-	const wchar_t* serializedSeasonList{ L"Data/Seasons/Serialization.ini" };
 };
 
 template <class T>

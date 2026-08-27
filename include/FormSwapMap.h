@@ -118,8 +118,8 @@ void FormSwapMap::get_snow_variants_by_form(RE::TESDataHandler* a_dataHandler, T
 	for (auto& [path, snowForm] : processedSnowForms) {
 		for (auto& baseForm : forms) {
 			const auto form = skyrim_cast<T*>(baseForm);
-			if (form && string::icontains(form->model, path) && !model::contains_textureset(form, "Snow"sv) && !model::contains_textureset(form, "Frozen"sv)) {
-				if (std::ranges::any_of(blackList, [&](const auto& str) { return string::icontains(form->model, str); })) {
+			if (form && REX::STR::ICONTAINS(form->model, path) && !model::contains_textureset(form, "Snow"sv) && !model::contains_textureset(form, "Frozen"sv)) {
+				if (std::ranges::any_of(blackList, [&](const auto& str) { return REX::STR::ICONTAINS(form->model, str); })) {
 					continue;
 				}
 				a_tempFormMap.emplace(form->GetFormID(), snowForm->GetFormID());
@@ -163,7 +163,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 
 		constexpr auto is_in_blacklist = []<auto N>(const RE::TESObjectSTAT* a_stat, const std::array<std::string_view, N>& a_blacklist) {
 			const auto editorID = edid::get_editorID(a_stat);
-			return std::ranges::any_of(a_blacklist, [&](const auto& str) { return string::icontains(editorID, str); });
+			return std::ranges::any_of(a_blacklist, [&](const auto& str) { return REX::STR::ICONTAINS(editorID, str); });
 		};
 
 		for (auto& stat : statics) {
@@ -180,8 +180,8 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 		for (auto& [snowPath, snowStat] : processedSnowStats) {
 			for (auto& stat : statics) {
 				std::string path = stat->GetModel();
-				string::replace_last_instance(path, "Moss"sv, ""sv);
-				if (string::icontains(path, snowPath) && snowStat != stat) {
+				REX::STR::REPLACE_LAST_INSTANCE(path, "Moss"sv, ""sv);
+				if (REX::STR::ICONTAINS(path, snowPath) && snowStat != stat) {
 					if (const auto mat = stat->data.materialObj; !mat || !Cache::is_snow_shader(mat)) {
 						if (is_in_blacklist(stat, blackList)) {
 							continue;
@@ -196,15 +196,15 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 
 		std::map<std::string, RE::TESObjectTREE*> processedSnowTrees;
 		for (auto& tree : trees) {
-			if (std::string path = tree->GetModel(); string::icontains(path, "Snow")) {
-				string::replace_all(path, "Snow", "");
+			if (std::string path = tree->GetModel(); REX::STR::ICONTAINS(path, "Snow")) {
+				REX::STR::REPLACE_ALL(path, "Snow", "");
 				processedSnowTrees.emplace(path, tree);
 			}
 		}
 
 		for (auto& [path, snowTree] : processedSnowTrees) {
 			for (auto& tree : trees) {
-				if (string::icontains(tree->GetModel(), path) && tree != snowTree) {
+				if (REX::STR::ICONTAINS(tree->GetModel(), path) && tree != snowTree) {
 					a_tempFormMap.emplace(tree->GetFormID(), snowTree->GetFormID());
 				}
 			}
@@ -234,5 +234,5 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 		a_ini.SetValue(name.data(), "", value.c_str(), comment.c_str());
 	}
 
-	logger::info("\t\t[{}] : wrote {} variants", name, formIDMap.size());
+	REX::INFO("\t\t[{}] : wrote {} variants", name, formIDMap.size());
 }

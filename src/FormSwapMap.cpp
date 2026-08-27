@@ -5,7 +5,7 @@ RE::TESLandTexture* FormSwapMap::GenerateLandTextureSnowVariant(const RE::TESLan
 	static constexpr std::array blackList = { "Snow"sv, "Ice"sv, "Winter"sv, "Frozen"sv, "Coast"sv, "River"sv };
 
 	const auto editorID = edid::get_editorID(a_landTexture);
-	if (!editorID.empty() && std::ranges::any_of(blackList, [&](const auto str) { return string::icontains(editorID, str); })) {
+	if (!editorID.empty() && std::ranges::any_of(blackList, [&](const auto str) { return REX::STR::ICONTAINS(editorID, str); })) {
 		return nullptr;
 	}
 
@@ -94,7 +94,7 @@ void FormSwapMap::LoadFormSwaps(RECORD a_record, const std::vector<std::string>&
 {
 	auto& map = get_map(a_record);
 	for (const auto& key : a_values) {
-		const auto formPair = string::split(key, "|");
+		const auto formPair = REX::STR::SPLIT(key, "|");
 
 		const auto formID = INI::parse_form(formPair[kBase]);
 		const auto swapFormID = INI::parse_form(formPair[kSwap]);
@@ -114,7 +114,7 @@ void FormSwapMap::LoadFormSwaps(const CSimpleIniA& a_ini)
 		values.sort(CSimpleIniA::Entry::LoadOrder());
 
 		if (!values.empty()) {
-			logger::info("\t\t[{}] read {} variants", name, values.size());
+			REX::INFO("\t\t[{}] read {} variants", name, values.size());
 
 			std::vector<std::string> vec;
 			vec.reserve(values.size());

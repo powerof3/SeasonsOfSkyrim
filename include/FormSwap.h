@@ -35,6 +35,6 @@ namespace FormSwap
 		REL::Relocation<std::uintptr_t> target{ RELOCATION_ID(12910, 13057), 0x3E };  //ModelLoader::QueueReference
 		stl::write_thunk_call<GetHandle>(target.address());
 
-		logger::info("Installed form swapper"sv);
+		REX::INFO("Installed form swapper"sv);
 	}
 }

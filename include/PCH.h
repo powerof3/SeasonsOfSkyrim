@@ -1,14 +1,14 @@
 #pragma once
 
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 
 #include <ranges>
 #include <shared_mutex>
 
 #include "RE/Skyrim.h"
+#include "REX/REX.h"
 #include "SKSE/SKSE.h"
-
-#include "REX/REX/Singleton.h"
 
 #include "MergeMapperPluginAPI.h"
 
@@ -19,23 +19,19 @@
 #include <xbyak/xbyak.h>
 
 #include <ClibUtil/editorID.hpp>
-#include <ClibUtil/simpleINI.hpp>
+
+#include <SimpleIni.h>
+#undef ERROR
 
 #define DLLEXPORT __declspec(dllexport)
 
-namespace logger = SKSE::log;
-namespace string = clib_util::string;
-namespace ini = clib_util::ini;
 namespace edid = clib_util::editorID;
 
 using namespace std::literals;
-using namespace string::literals;
 using namespace RE::literals;
 
 namespace stl
 {
-	using namespace SKSE::stl;
-
 	void asm_replace(std::uintptr_t a_from, std::size_t a_size, std::uintptr_t a_to);
 
 	template <class T>
@@ -48,7 +44,7 @@ namespace stl
 	template <class T>
 	void write_thunk_call(std::uintptr_t a_src)
 	{
-		auto& trampoline = SKSE::GetTrampoline();
+		auto& trampoline = REL::GetTrampoline();
 		T::func = trampoline.write_call<5>(a_src, T::thunk);
 	}
 
@@ -63,6 +59,18 @@ namespace stl
 	void write_vfunc()
 	{
 		write_vfunc<F, 0, T>();
+	}
+
+	template <class T>
+	T& get_setting_ref(REX::TSetting<T>& a_setting)
+	{
+		return static_cast<T&>(a_setting);
+	}
+
+	template <class T>
+	const T& get_setting_ref(const REX::TSetting<T>& a_setting)
+	{
+		return static_cast<const T&>(a_setting);
 	}
 }
 
@@ -92,11 +100,11 @@ struct string_cmp
 
 	bool operator()(const std::string& str1, const std::string& str2) const
 	{
-		return string::iequals(str1, str2);
+		return REX::STR::IEQUALS(str1, str2);
 	}
 	bool operator()(std::string_view str1, std::string_view str2) const
 	{
-		return string::iequals(str1, str2);
+		return REX::STR::IEQUALS(str1, str2);
 	}
 };
 
@@ -116,6 +124,18 @@ constexpr inline auto enum_range(auto first, auto last)
 
 	return enum_range;
 };
+
+namespace Runtime
+{
+	inline constexpr REL::Version SSE_1_7_99(1, 7, 99, 0);
+	inline constexpr REL::Version MIN_ADDRESS_LIBRARY_V5 = SSE_1_7_99;
+
+	[[nodiscard]] inline bool IsAtLeast1_7_99() noexcept
+	{
+		static bool result = REX::FModule::GetExecutingModule().GetFileVersion() >= Runtime::SSE_1_7_99;
+		return result;
+	}
+}
 
 #ifdef SKYRIM_AE
 #	define OFFSET(se, ae) ae

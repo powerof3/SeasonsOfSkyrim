@@ -18,7 +18,7 @@ namespace Papyrus
 			kSeasonChange = 'SOSC'
 		};
 
-		class Manager : public REX::Singleton<Manager>
+		class Manager : public REX::TSingleton<Manager>
 		{
 		public:
 			void Save(SKSE::SerializationInterface* a_intfc, std::uint32_t a_version);

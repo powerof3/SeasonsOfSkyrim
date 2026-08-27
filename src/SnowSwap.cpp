@@ -21,14 +21,14 @@ namespace SnowSwap
 		}
 
 		if (configs.empty()) {
-			logger::info("No .ini files with _SNOW suffix were found in Data/Seasons folder. Snow Shader settings will not be loaded");
+			REX::INFO("No .ini files with _SNOW suffix were found in Data/Seasons folder. Snow Shader settings will not be loaded");
 			return;
 		}
 
-		logger::info("{} matching inis found", configs.size());
+		REX::INFO("{} matching inis found", configs.size());
 
 		for (auto& path : configs) {
-			logger::info("\tINI : {}", path);
+			REX::INFO("\tINI : {}", path);
 
 			CSimpleIniA ini;
 			ini.SetUnicode();
@@ -36,7 +36,7 @@ namespace SnowSwap
 			ini.SetAllowKeyOnly();
 
 			if (const auto rc = ini.LoadFile(path.c_str()); rc < 0) {
-				logger::error("\tcouldn't read INI");
+				REX::ERROR("\tcouldn't read INI");
 				continue;
 			}
 
@@ -45,12 +45,12 @@ namespace SnowSwap
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				logger::info("\tReading [Blacklist]");
+				REX::INFO("\tReading [Blacklist]");
 				for (const auto& key : values) {
 					if (auto formID = INI::parse_form(key.pItem); formID != 0) {
 						_snowShaderBlacklist.insert(formID);
 					} else {
-						logger::error("\t\tfailed to process {} [{:X}] (formID not found)", key.pItem, formID);
+						REX::ERROR("\t\tfailed to process {} [{:X}] (formID not found)", key.pItem, formID);
 					}
 				}
 			}
@@ -60,14 +60,14 @@ namespace SnowSwap
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				logger::info("	Reading [Multipass Snow Whitelist]");
+				REX::INFO("	Reading [Multipass Snow Whitelist]");
 				for (const auto& key : values) {
 					if (std::string value = key.pItem; value.contains(R"(/)") || value.contains(R"(\)") || value.contains(".nif")) {
 						_multipassSnowStrWhitelist.push_back(value);
 					} else if (auto formID = INI::parse_form(value); formID != 0) {
 						_multipassSnowWhitelist.emplace(formID);
 					} else {
-						logger::error("\t\tfailed to process {} [{:X}] (formID not found)", key.pItem, formID);
+						REX::ERROR("\t\tfailed to process {} [{:X}] (formID not found)", key.pItem, formID);
 					}
 				}
 			}
@@ -108,7 +108,7 @@ namespace SnowSwap
 			return true;
 		}
 
-		return std::ranges::any_of(_snowShaderModelBlackList, [&](const auto& str) { return string::icontains(model, str); });
+		return std::ranges::any_of(_snowShaderModelBlackList, [&](const auto& str) { return REX::STR::ICONTAINS(model, str); });
 	}
 
 	bool Manager::GetWhitelistedForMultiPassSnow(const RE::TESForm* a_form) const
@@ -118,7 +118,7 @@ namespace SnowSwap
 		}
 
 		const std::string_view model = a_form->As<RE::TESModel>()->GetModel();
-		return std::ranges::any_of(_multipassSnowStrWhitelist, [&](const auto& str) { return string::icontains(model, str); });
+		return std::ranges::any_of(_multipassSnowStrWhitelist, [&](const auto& str) { return REX::STR::ICONTAINS(model, str); });
 	}
 
 	SWAP_RESULT Manager::CanApplySnowToRef(const RE::TESObjectREFR* a_ref) const

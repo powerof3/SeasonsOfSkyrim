@@ -1,16 +1,16 @@
 #include "SeasonManager.h"
 #include "Papyrus.h"
 
-Season* SeasonManager::GetSeasonImpl(SEASON a_season)
+Season* SeasonManager::GetSeasonImpl(SEASON_TYPE a_season)
 {
 	switch (a_season) {
-	case SEASON::kWinter:
+	case SEASON_TYPE::kWinter:
 		return &winter;
-	case SEASON::kSpring:
+	case SEASON_TYPE::kSpring:
 		return &spring;
-	case SEASON::kSummer:
+	case SEASON_TYPE::kSummer:
 		return &summer;
-	case SEASON::kAutumn:
+	case SEASON_TYPE::kAutumn:
 		return &autumn;
 	default:
 		return nullptr;
@@ -19,20 +19,20 @@ Season* SeasonManager::GetSeasonImpl(SEASON a_season)
 
 Season* SeasonManager::GetCurrentSeason(bool a_ignoreOverride)
 {
-	if (!a_ignoreOverride && seasonOverride != SEASON::kNone) {
+	if (!a_ignoreOverride && seasonOverride != SEASON_TYPE::kNone) {
 		return GetSeasonImpl(seasonOverride);
 	}
 
-	switch (seasonType) {
-	case SEASON_TYPE::kPermanentWinter:
+	switch (GetSeasonMode()) {
+	case SEASON_MODE::kPermanentWinter:
 		return &winter;
-	case SEASON_TYPE::kPermanentSpring:
+	case SEASON_MODE::kPermanentSpring:
 		return &spring;
-	case SEASON_TYPE::kPermanentSummer:
+	case SEASON_MODE::kPermanentSummer:
 		return &summer;
-	case SEASON_TYPE::kPermanentAutumn:
+	case SEASON_MODE::kPermanentAutumn:
 		return &autumn;
-	case SEASON_TYPE::kSeasonal:
+	case SEASON_MODE::kSeasonal:
 		{
 			const auto calendar = RE::Calendar::GetSingleton();
 			const auto month = calendar ? calendar->GetMonth() : 7;
@@ -56,7 +56,7 @@ bool SeasonManager::UpdateSeason()
 		shouldUpdate = true;
 	}
 
-	if (seasonOverride != SEASON::kNone) {
+	if (seasonOverride != SEASON_TYPE::kNone) {
 		const auto tempLastSeason = lastSeason;
 		lastSeason = seasonOverride;
 
@@ -72,7 +72,7 @@ bool SeasonManager::UpdateSeason()
 
 		if (!shouldUpdate) {
 			const auto season = GetCurrentSeason();
-			currentSeason = season ? season->GetType() : SEASON::kNone;
+			currentSeason = season ? season->GetType() : SEASON_TYPE::kNone;
 
 			shouldUpdate = currentSeason != lastSeason;
 		}
@@ -94,69 +94,75 @@ Season* SeasonManager::GetSeason()
 		return nullptr;
 	}
 
-	if (seasonOverride != SEASON::kNone) {
+	if (seasonOverride != SEASON_TYPE::kNone) {
 		return GetSeasonImpl(seasonOverride);
 	} else {
-		if (currentSeason == SEASON::kNone) {
+		if (currentSeason == SEASON_TYPE::kNone) {
 			UpdateSeason();
 		}
 		return GetSeasonImpl(currentSeason);
 	}
 }
 
-void SeasonManager::LoadMonthToSeasonMap(CSimpleIniA& a_ini)
+void SeasonManager::LoadSettings()
 {
-	for (const auto& [month, monthName] : monthNames) {
-		auto& [tes, irl] = monthName;
-		ini::get_value(a_ini, monthToSeasons.at(month), "Settings", tes.data(),
-			month == MONTH::kMorningStar ? ";0 - none\n;1 - winter\n;2 - spring\n;3 - summer\n;4 - autumn\n\n;January" : irl.data());
+	REX::INFO("{:*^30}", "SETTINGS");
+
+	ResetOutdatedSettings();
+
+	const auto store = REX::FIniSettingStore::GetSingleton();
+	store->Init(settings, "");
+	store->Load();
+	store->Save();
+
+	RebuildMonthToSeasonMap();
+
+	using record_type = FormSwapMap::RECORD;
+
+	mainWINSwap.skip = skipWINSwap.GetValue();
+	mainWINSwap.skipRecords[std::to_underlying(record_type::kLandTextures)] = skipLandTextures.GetValue();
+	mainWINSwap.skipRecords[std::to_underlying(record_type::kActivators)] = skipActivators.GetValue();
+	mainWINSwap.skipRecords[std::to_underlying(record_type::kFurniture)] = skipFurniture.GetValue();
+	mainWINSwap.skipRecords[std::to_underlying(record_type::kMovableStatics)] = skipMovableStatics.GetValue();
+	mainWINSwap.skipRecords[std::to_underlying(record_type::kStatics)] = skipStatics.GetValue();
+	mainWINSwap.skipRecords[std::to_underlying(record_type::kTrees)] = skipTrees.GetValue();
+
+	REX::INFO("Season mode is {}", seasonType.GetValue());
+}
+
+void SeasonManager::RebuildMonthToSeasonMap()
+{
+	monthToSeasons.clear();
+
+	for (const auto month : enum_range(MONTH::kMorningStar, MONTH::kTotal)) {
+		const auto value = monthSettings[std::to_underlying(month)].GetValue();
+		if (value >= std::to_underlying(SEASON_TYPE::kTotal)) {
+			REX::WARN("Invalid season {} for month {}, defaulting to none", value, std::to_underlying(month));
+			monthToSeasons.emplace(month, SEASON_TYPE::kNone);
+		} else {
+			monthToSeasons.emplace(month, static_cast<SEASON_TYPE>(value));
+		}
 	}
 }
 
-void SeasonManager::LoadSettings()
+void SeasonManager::ResetOutdatedSettings()
 {
 	CSimpleIniA ini;
 	ini.SetUnicode();
 
-	ini.LoadFile(settings);
+	if (ini.LoadFile(settings) < SI_OK) {
+		return;
+	}
 
-	logger::info("{:*^30}", "SETTINGS");
-
-	//delete and recreate settings if new settings are not found.
-	const auto        month = ini.GetLongValue("Settings", "Morning Star", -1);
-	const std::string flora = ini.GetValue("Winter", "Flora", "-1");
-
-	if (month == -1 || flora == "-1") {
+	// delete and recreate settings if new settings are not found
+	if (ini.GetValue("Settings", "Morning Star") == nullptr || ini.GetValue("Winter", "Flora") == nullptr) {
 		ini.Delete("Settings", nullptr);
 		ini.Delete("Winter", nullptr);
 		ini.Delete("Spring", nullptr);
 		ini.Delete("Summer", nullptr);
 		ini.Delete("Autumn", nullptr);
+		(void)ini.SaveFile(settings);
 	}
-
-	ini::get_value(ini, seasonType, "Settings", "Season Type", ";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n;3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal");
-
-	using record_type = FormSwapMap::RECORD;
-
-	ini::get_value(ini, mainWINSwap.skip, "Winter", "Ignore auto generated WIN formswap", ";Autogenerated winter formswap config will not be applied.");
-	ini::get_value(ini, mainWINSwap.skipRecords[std::to_underlying(record_type::kLandTextures)], "Winter", "Skip Land Textures", ";Skip loading these form types from autogenerated winter formswap.");
-	ini::get_value(ini, mainWINSwap.skipRecords[std::to_underlying(record_type::kActivators)], "Winter", "Skip Activator", nullptr);
-	ini::get_value(ini, mainWINSwap.skipRecords[std::to_underlying(record_type::kFurniture)], "Winter", "Skip Furniture", nullptr);
-	ini::get_value(ini, mainWINSwap.skipRecords[std::to_underlying(record_type::kMovableStatics)], "Winter", "Skip Movable Statics", nullptr);
-	ini::get_value(ini, mainWINSwap.skipRecords[std::to_underlying(record_type::kStatics)], "Winter", "Skip Statics", nullptr);
-	ini::get_value(ini, mainWINSwap.skipRecords[std::to_underlying(record_type::kTrees)], "Winter", "Skip Tree", nullptr);
-
-	logger::info("Season type is {}", std::to_underlying(seasonType));
-
-	ini::get_value(ini, preferMultipass, "Settings", "Prefer Multipass", ";If true, multipass materials will be used where supported.\n;If false, single pass will be used instead.");
-
-	LoadMonthToSeasonMap(ini);
-
-	ForEachSeason([&](SEASON a_type, Season& a_season) {
-		a_season.LoadSettings(ini, a_type == SEASON::kWinter);
-	});
-
-	(void)ini.SaveFile(settings);
 }
 
 bool SeasonManager::ShouldRegenerateWinterFormSwap() const
@@ -172,20 +178,20 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 	ini.DeleteValue("Game", "Total Mod Count", nullptr);
 
 	const auto actualHash = util::get_load_order_hash();
-	const auto expectedHash = string::to_num<size_t>(ini.GetValue("Game", "uLoadOrderHash", "0"));
+	const auto expectedHash = REX::STR::TO_NUM<size_t>(ini.GetValue("Game", "uLoadOrderHash", "0"));
 
 	const auto shouldRegenerate = actualHash != expectedHash;
 
 	if (shouldRegenerate) {
 		ini.SetValue("Game", "uLoadOrderHash", std::to_string(actualHash).c_str(), nullptr);
 		if (expectedHash != 0) {
-			logger::info("\tLoad order has changed since last session, regenerating main WIN formswap");
+			REX::INFO("\tLoad order has changed since last session, regenerating main WIN formswap");
 		} else {
-			logger::info("\tRegenerating main WIN formswap since last update");
+			REX::INFO("\tRegenerating main WIN formswap since last update");
 		}
 		(void)ini.SaveFile(serializedSeasonList);
 	} else {
-		logger::info("\tLoad order has not changed since last session");
+		REX::INFO("\tLoad order has not changed since last session");
 	}
 
 	return shouldRegenerate;
@@ -194,13 +200,13 @@ bool SeasonManager::ShouldRegenerateWinterFormSwap() const
 void SeasonManager::LoadOrGenerateWinterFormSwap()
 {
 	if (mainWINSwap.skip) {
-		logger::info("Main WIN formswap loading disabled in config");
+		REX::INFO("Main WIN formswap loading disabled in config");
 		return;
 	}
 
 	constexpr auto path = L"Data/Seasons/MainFormSwap_WIN.ini";
 
-	logger::info("Loading main WIN formswap settings");
+	REX::INFO("Loading main WIN formswap settings");
 
 	CSimpleIniA ini;
 	ini.SetUnicode();
@@ -218,7 +224,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			auto type = FormSwapMap::get_name(record);
 
 			if (mainWINSwap.skipRecords[std::to_underlying(record)]) {
-				logger::info("\t\t[{}] skipping...", type);
+				REX::INFO("\t\t[{}] skipping...", type);
 				continue;
 			}
 
@@ -227,7 +233,7 @@ void SeasonManager::LoadOrGenerateWinterFormSwap()
 			values.sort(CSimpleIniA::Entry::LoadOrder());
 
 			if (!values.empty()) {
-				logger::info("\t\t[{}] read {} variants", type, values.size());
+				REX::INFO("\t\t[{}] read {} variants", type, values.size());
 
 				std::vector<std::string> vec;
 				std::ranges::transform(values, std::back_inserter(vec), [&](const auto& val) { return val.pItem; });
@@ -244,7 +250,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 
 	const auto& [type, suffix] = a_season.GetID();
 
-	logger::info("{}", type);
+	REX::INFO("{}", type);
 
 	for (constexpr auto folder = R"(Data\Seasons)"; const auto& entry : std::filesystem::directory_iterator(folder)) {
 		if (entry.is_regular_file() && entry.path().extension() == ".ini"sv) {
@@ -258,16 +264,16 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 	}
 
 	if (configs.empty()) {
-		logger::warn("\tNo .ini files with _{} suffix were found in Data/Seasons folder, skipping {} formswaps", suffix, suffix == "WIN"sv ? "secondary" : "all");
+		REX::WARN("\tNo .ini files with _{} suffix were found in Data/Seasons folder, skipping {} formswaps", suffix, suffix == "WIN"sv ? "secondary" : "all");
 		return;
 	}
 
-	logger::info("\t{} matching inis found", configs.size());
+	REX::INFO("\t{} matching inis found", configs.size());
 
 	std::ranges::sort(configs);
 
 	for (auto& path : configs) {
-		logger::info("\tINI : {}", path);
+		REX::INFO("\tINI : {}", path);
 
 		CSimpleIniA ini;
 		ini.SetUnicode();
@@ -275,7 +281,7 @@ void SeasonManager::LoadSeasonData(Season& a_season, CSimpleIniA& a_settings)
 		ini.SetAllowKeyOnly();
 
 		if (const auto rc = ini.LoadFile(path.c_str()); rc < 0) {
-			logger::error("\t\tcouldn't read INI");
+			REX::ERROR("\t\tcouldn't read INI");
 			continue;
 		}
 
@@ -293,7 +299,7 @@ void SeasonManager::LoadSeasonData()
 
 	settingsINI.LoadFile(settings);
 
-	ForEachSeason([&](SEASON, Season& a_season) {
+	ForEachSeason([&](SEASON_TYPE, Season& a_season) {
 		LoadSeasonData(a_season, settingsINI);
 	});
 
@@ -302,16 +308,16 @@ void SeasonManager::LoadSeasonData()
 
 void SeasonManager::LoadValidWorldspaces()
 {
-	ForEachSeason([](SEASON, Season& a_season) {
+	ForEachSeason([](SEASON_TYPE, Season& a_season) {
 		a_season.LoadWorldspaces();
 	});
 }
 
 void SeasonManager::CheckLODExists()
 {
-	logger::info("{:*^30}", "LOD");
+	REX::INFO("{:*^30}", "LOD");
 
-	ForEachSeason([](SEASON, Season& a_season) {
+	ForEachSeason([](SEASON_TYPE, Season& a_season) {
 		a_season.CheckLODExists();
 	});
 }
@@ -328,7 +334,7 @@ void SeasonManager::SaveSeason(std::string_view a_savePath)
 	ini.LoadFile(serializedSeasonList);
 
 	const auto season = GetCurrentSeason(true);
-	currentSeason = season ? season->GetType() : SEASON::kNone;
+	currentSeason = season ? season->GetType() : SEASON_TYPE::kNone;
 
 	const auto seasonData = std::format("{}|{}", std::to_underlying(currentSeason), std::to_underlying(seasonOverride));
 	ini.SetValue("Saves", a_savePath.data(), seasonData.c_str(), nullptr);
@@ -343,13 +349,13 @@ void SeasonManager::LoadSeason(const std::string& a_savePath)
 
 	ini.LoadFile(serializedSeasonList);
 
-	const auto seasonData = string::split(ini.GetValue("Saves", a_savePath.c_str(), "3"), "|");
+	const auto seasonData = REX::STR::SPLIT(ini.GetValue("Saves", a_savePath.c_str(), "3"), "|");
 	if (seasonData.size() == 2) {
-		currentSeason = string::to_num<SEASON>(seasonData[0]);
-		seasonOverride = string::to_num<SEASON>(seasonData[1]);
+		currentSeason = REX::STR::TO_NUM<SEASON_TYPE>(seasonData[0]);
+		seasonOverride = REX::STR::TO_NUM<SEASON_TYPE>(seasonData[1]);
 	} else {
-		currentSeason = string::to_num<SEASON>(seasonData[0]);
-		seasonOverride = SEASON::kNone;
+		currentSeason = REX::STR::TO_NUM<SEASON_TYPE>(seasonData[0]);
+		seasonOverride = SEASON_TYPE::kNone;
 	}
 
 	loadedFromSave = true;
@@ -372,7 +378,7 @@ void SeasonManager::ClearSeason(std::string_view a_savePath) const
 void SeasonManager::CleanupSerializedSeasonList() const
 {
 	constexpr auto get_save_directory = []() -> std::optional<std::filesystem::path> {
-		if (auto path = logger::log_directory()) {
+		if (auto path = SKSE::log::log_directory()) {
 			path->remove_filename();  // remove "/SKSE"
 			path->append(*"sLocalSavePath:General"_ini);
 			return path;
@@ -385,9 +391,9 @@ void SeasonManager::CleanupSerializedSeasonList() const
 		return;
 	}
 
-	logger::info("{:*^30}", "SAVES");
+	REX::INFO("{:*^30}", "SAVES");
 
-	logger::info("Save directory is {}", directory->string());
+	REX::INFO("Save directory is {}", directory->string());
 
 	CSimpleIniA ini;
 	ini.SetUnicode();
@@ -416,16 +422,21 @@ void SeasonManager::CleanupSerializedSeasonList() const
 	(void)ini.SaveFile(serializedSeasonList);
 }
 
-SEASON SeasonManager::GetCurrentSeasonType()
+SEASON_MODE SeasonManager::GetSeasonMode() const
 {
-	const auto season = GetCurrentSeason();
-	return season ? season->GetType() : SEASON::kNone;
+	return static_cast<SEASON_MODE>(seasonType.GetValue());
 }
 
-SEASON SeasonManager::GetSeasonType()
+SEASON_TYPE SeasonManager::GetCurrentSeasonType()
+{
+	const auto season = GetCurrentSeason();
+	return season ? season->GetType() : SEASON_TYPE::kNone;
+}
+
+SEASON_TYPE SeasonManager::GetSeasonType()
 {
 	const auto season = GetSeason();
-	return season ? season->GetType() : SEASON::kNone;
+	return season ? season->GetType() : SEASON_TYPE::kNone;
 }
 
 bool SeasonManager::CanApplySnowShader()
@@ -474,7 +485,7 @@ void SeasonManager::SetExterior(bool a_isExterior)
 	isExterior = a_isExterior;
 }
 
-SEASON SeasonManager::GetSeasonOverride() const
+SEASON_TYPE SeasonManager::GetSeasonOverride() const
 {
 	return seasonOverride;
 }
@@ -484,7 +495,7 @@ bool SeasonManager::PreferMultipass() const
 	return preferMultipass;
 }
 
-void SeasonManager::SetSeasonOverride(SEASON a_season)
+void SeasonManager::SetSeasonOverride(SEASON_TYPE a_season)
 {
 	seasonOverride = a_season;
 }

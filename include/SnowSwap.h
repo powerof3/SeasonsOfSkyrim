@@ -23,7 +23,7 @@ namespace SnowSwap
 		kRemove
 	};
 
-	class Manager : public REX::Singleton<Manager>
+	class Manager : public REX::TSingleton<Manager>
 	{
 	public:
 		struct SnowInfo
@@ -190,6 +190,6 @@ namespace SnowSwap
 		Statics::Install();
 		OtherForms::Install();
 
-		logger::info("Installed dynamic snow manager"sv);
+		REX::INFO("Installed dynamic snow manager"sv);
 	}
 }

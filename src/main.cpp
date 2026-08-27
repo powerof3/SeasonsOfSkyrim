@@ -16,10 +16,10 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			try {
 				SeasonManager::GetSingleton()->LoadSettings();
 			} catch (...) {
-				logger::error("Exception caught when loading settings! Check whether your setting values are valid. Default values will be used instead");
+				REX::ERROR("Exception caught when loading settings! Check whether your setting values are valid. Default values will be used instead");
 			}
 
-			logger::info("{:*^30}", "HOOKS");
+			REX::INFO("{:*^30}", "HOOKS");
 
 			SeasonManager::InstallHooks();
 
@@ -32,22 +32,22 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 		break;
 	case SKSE::MessagingInterface::kPostPostLoad:
 		{
-			logger::info("{:*^30}", "MERGES");
+			REX::INFO("{:*^30}", "MERGES");
 			MergeMapperPluginAPI::GetMergeMapperInterface001();
 			if (g_mergeMapperInterface) {
 				const auto version = g_mergeMapperInterface->GetBuildNumber();
-				logger::info("Got MergeMapper interface buildnumber {}", version);
+				REX::INFO("Got MergeMapper interface buildnumber {}", version);
 			} else {
-				logger::info("MergeMapper not detected");
+				REX::INFO("MergeMapper not detected");
 			}
 		}
 		break;
 	case SKSE::MessagingInterface::kDataLoaded:
 		{
-			logger::info("{:*^30}", "DEPENDENCIES");
+			REX::INFO("{:*^30}", "DEPENDENCIES");
 
 			auto tweaks = GetModuleHandle(L"po3_Tweaks");
-			logger::info("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
+			REX::INFO("powerofthree's Tweaks (po3_tweaks) detected : {}", tweaks != nullptr);
 
 			std::string tweaksError{};
 			if (tweaks == nullptr) {
@@ -67,11 +67,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 
 			Cache::DataHolder::GetSingleton()->GetData();
 
-			logger::info("{:*^30}", "CONFIG");
+			REX::INFO("{:*^30}", "CONFIG");
 
 			const std::filesystem::path seasonsPath{ "Data/Seasons"sv };
 			if (std::filesystem::directory_entry seasonsFolder{ seasonsPath }; !seasonsFolder.exists()) {
-				logger::info("Existing Seasons folder not found, creating it");
+				REX::INFO("Existing Seasons folder not found, creating it");
 				std::filesystem::create_directory(seasonsPath);
 			}
 
@@ -98,7 +98,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	case SKSE::MessagingInterface::kPreLoadGame:
 		{
 			std::string savePath{ static_cast<char*>(a_message->data), a_message->dataLen };
-			string::replace_last_instance(savePath, ".ess", "");
+			REX::STR::REPLACE_LAST_INSTANCE(savePath, ".ess", "");
 
 			SeasonManager::GetSingleton()->LoadSeason(savePath);
 		}
@@ -114,27 +114,33 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 	}
 }
 
-#ifdef SKYRIM_AE
-extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []() {
+#ifdef SKYRIM_SUPPORT_AE
+SKSE_PLUGIN_VERSION = []() {
 	SKSE::PluginVersionData v;
-	v.PluginVersion(Version::MAJOR);
-	v.PluginName("Seasons Of Skyrim");
+	v.PluginVersion(REL::Version{ Version::MAJOR, Version::MINOR, Version::PATCH });
+	v.PluginName("Seasons of Skyrim");
 	v.AuthorName("powerofthree");
 	v.UsesAddressLibrary();
 	v.UsesUpdatedStructs();
 	v.CompatibleVersions({ SKSE::RUNTIME_SSE_LATEST });
 
+	if constexpr (SKSE::RUNTIME_SSE_LATEST < Runtime::MIN_ADDRESS_LIBRARY_V5) {
+		v.MinimumRequiredXSEVersion(REL::Version{ 2, 2, 5 });
+	} else {
+		v.MinimumRequiredXSEVersion(REL::Version{ 2, 3, 0 });
+	}
+
 	return v;
 }();
 #else
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
+SKSE_PLUGIN_QUERY(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = "Seasons Of Skyrim";
+	a_info->name = "Sandbox When Idle";
 	a_info->version = Version::MAJOR;
 
 	if (a_skse->IsEditor()) {
-		logger::critical("Loaded in editor, marking as incompatible"sv);
+		REX::CRITICAL("Loaded in editor, marking as incompatible");
 		return false;
 	}
 
@@ -146,7 +152,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 		> SKSE::RUNTIME_VR_1_4_15_1
 #	endif
 	) {
-		logger::critical(FMT_STRING("Unsupported runtime version {}"), ver.string());
+		REX::CRITICAL("Unsupported runtime version {}", ver.string());
 		return false;
 	}
 
@@ -154,37 +160,29 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Query(const SKSE::QueryInterface* a
 }
 #endif
 
-void InitializeLog()
+SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 {
-	auto path = logger::log_directory();
-	if (!path) {
-		stl::report_and_fail("Failed to find standard logging directory"sv);
+	SKSE::Init(a_skse, { .log = true,
+						   .logName = Version::PROJECT.data(),
+						   .trampoline = true,
+						   .trampolineSize = 14 * 11 });
+
+	auto runtimeVersion = a_skse->RuntimeVersion();
+
+	REX::INFO("Game version : {}", runtimeVersion);
+
+#ifdef SKYRIM_SUPPORT_AE
+	if constexpr (SKSE::RUNTIME_SSE_LATEST < Runtime::MIN_ADDRESS_LIBRARY_V5) {
+		if (runtimeVersion >= Runtime::MIN_ADDRESS_LIBRARY_V5) {
+			REX::FAIL(
+				"You are using a newer version of Skyrim than this version of {0} supports.\n"
+				"Install the correct version of {0} for your game version.\n"
+				"Runtime: {1}\n"
+				"Supported: 1.6.1170 (Steam) / 1.6.1179 (GOG)",
+				Version::PROJECT, runtimeVersion);
+		}
 	}
-
-	*path /= fmt::format(FMT_STRING("{}.log"), Version::PROJECT);
-	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
-
-	auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
-
-	log->set_level(spdlog::level::info);
-	log->flush_on(spdlog::level::info);
-
-	spdlog::set_default_logger(std::move(log));
-	spdlog::set_pattern("[%H:%M:%S:%e] %v"s);
-
-	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
-}
-
-extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
-{
-	InitializeLog();
-
-	gameVersion = a_skse->RuntimeVersion();
-	logger::info("Game version : {}", gameVersion.string());
-
-	SKSE::Init(a_skse, false);
-
-	SKSE::AllocTrampoline(11 * 14);
+#endif
 
 	const auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener(MessageHandler);
@@ -213,10 +211,10 @@ extern "C" DLLEXPORT std::uint32_t GetSeasonOverride()
 
 extern "C" DLLEXPORT void SetSeasonOverride(std::uint32_t a_season)
 {
-	SeasonManager::GetSingleton()->SetSeasonOverride(static_cast<SEASON>(a_season));
+	SeasonManager::GetSingleton()->SetSeasonOverride(static_cast<SEASON_TYPE>(a_season));
 }
 
 extern "C" DLLEXPORT void ClearSeasonOverride()
 {
-	SeasonManager::GetSingleton()->SetSeasonOverride(SEASON::kNone);
+	SeasonManager::GetSingleton()->SetSeasonOverride(SEASON_TYPE::kNone);
 }
