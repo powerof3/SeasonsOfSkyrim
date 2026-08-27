@@ -122,8 +122,8 @@ private:
 
 	Setting::U32 seasonType{
 		"Settings", "Season Type",
-			";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n"
-			";3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal"sv,
+		";0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n"
+		";3 - permanent summer\n;4 - permanent autumn\n;5 - seasonal"sv,
 		std::to_underlying(SEASON_MODE::kSeasonal)
 	};
 
