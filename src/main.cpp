@@ -70,9 +70,11 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			REX::INFO("{:*^30}", "CONFIG");
 
 			const std::filesystem::path seasonsPath{ "Data/Seasons"sv };
-			if (std::filesystem::directory_entry seasonsFolder{ seasonsPath }; !seasonsFolder.exists()) {
+			
+			std::error_code ec;
+			if (std::filesystem::directory_entry seasonsFolder{ seasonsPath, ec }; !seasonsFolder.exists()) {
 				REX::INFO("Existing Seasons folder not found, creating it");
-				std::filesystem::create_directory(seasonsPath);
+				std::filesystem::create_directory(seasonsPath, ec);
 			}
 
 			SnowSwap::Manager::GetSingleton()->LoadSnowShaderSettings();
@@ -136,7 +138,7 @@ SKSE_PLUGIN_VERSION = []() {
 SKSE_PLUGIN_QUERY(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = "Sandbox When Idle";
+	a_info->name = "Seasons of Skyrim";
 	a_info->version = Version::MAJOR;
 
 	if (a_skse->IsEditor()) {
@@ -169,7 +171,7 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 
 	auto runtimeVersion = a_skse->RuntimeVersion();
 
-	REX::INFO("Game version : {}", runtimeVersion);
+	REX::INFO("Game version : {} (built for {})", runtimeVersion, SKSE::RUNTIME_SSE_LATEST);
 
 #ifdef SKYRIM_SUPPORT_AE
 	if constexpr (SKSE::RUNTIME_SSE_LATEST < Runtime::MIN_ADDRESS_LIBRARY_V5) {

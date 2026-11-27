@@ -231,7 +231,7 @@ void FormSwapMap::get_snow_variants(CSimpleIniA& a_ini, RECORD a_record, TempFor
 		std::string comment = std::format(";{}|{}", formEID, swapEID);
 		std::string value = std::format("0x{:X}~{}|0x{:X}~{}", form->GetLocalFormID(), form->GetFile(0)->fileName, swapForm->GetLocalFormID(), swapForm->GetFile(0)->fileName);
 
-		a_ini.SetValue(name.data(), "", value.c_str(), comment.c_str());
+		a_ini.SetValue(name.data(), value.c_str(), nullptr, comment.c_str());
 	}
 
 	REX::INFO("\t\t[{}] : wrote {} variants", name, formIDMap.size());

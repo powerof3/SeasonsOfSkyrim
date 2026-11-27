@@ -140,9 +140,7 @@ bool FormSwapMap::GenerateFormSwaps(CSimpleIniA& a_ini, bool a_forceRegenerate)
 		if (values.empty() || a_forceRegenerate) {
 			save = true;
 
-			if (a_forceRegenerate) {
-				a_ini.Delete(type.data(), nullptr, true);
-			}
+			a_ini.Delete(type.data(), nullptr, true);
 
 			TempFormSwapMap map{};
 

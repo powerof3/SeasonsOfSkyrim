@@ -1,6 +1,6 @@
 {
   "name": "seasons-of-skyrim",
-  "version-string": "1.9.1",
+  "version-string": "1.9.2",
   "description": "Seasons Of Skyrim",
   "homepage": "",
   "license": "GPL-3.0-or-later",
@@ -17,5 +17,5 @@
     "mergemapper",
     "spdlog"
   ],
-  "builtin-baseline": "00c5775211f45cd08b37fce0484b4cb940e422ab"
+  "builtin-baseline": "99541cc939bf01ae3c42f928266d648f5acb88fd"
 }
