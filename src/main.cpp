@@ -70,7 +70,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 			REX::INFO("{:*^30}", "CONFIG");
 
 			const std::filesystem::path seasonsPath{ "Data/Seasons"sv };
-			
+
 			std::error_code ec;
 			if (std::filesystem::directory_entry seasonsFolder{ seasonsPath, ec }; !seasonsFolder.exists()) {
 				REX::INFO("Existing Seasons folder not found, creating it");

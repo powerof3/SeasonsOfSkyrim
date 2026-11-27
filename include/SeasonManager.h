@@ -121,7 +121,7 @@ private:
 	std::map<MONTH, SEASON_TYPE> monthToSeasons{};
 
 	using SettingU32 = REX::TIniSetting<std::uint32_t>;
-	
+
 	SettingU32 seasonType{
 		"Settings", "Season Type", std::to_underlying(SEASON_MODE::kSeasonal),
 		"0 - disabled\n;1 - permanent winter\n;2 - permanent spring\n"
