@@ -120,7 +120,7 @@ void MessageHandler(SKSE::MessagingInterface::Message* a_message)
 SKSE_PLUGIN_VERSION = []() {
 	SKSE::PluginVersionData v;
 	v.PluginVersion(REL::Version{ Version::MAJOR, Version::MINOR, Version::PATCH });
-	v.PluginName("Seasons of Skyrim");
+	v.PluginName("Seasons Of Skyrim");
 	v.AuthorName("powerofthree");
 	v.UsesAddressLibrary();
 	v.UsesUpdatedStructs();
@@ -138,7 +138,7 @@ SKSE_PLUGIN_VERSION = []() {
 SKSE_PLUGIN_QUERY(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
 {
 	a_info->infoVersion = SKSE::PluginInfo::kVersion;
-	a_info->name = "Seasons of Skyrim";
+	a_info->name = "Seasons Of Skyrim";
 	a_info->version = Version::MAJOR;
 
 	if (a_skse->IsEditor()) {
@@ -169,19 +169,19 @@ SKSE_PLUGIN_LOAD(const SKSE::LoadInterface* a_skse)
 						   .trampoline = true,
 						   .trampolineSize = 14 * 11 });
 
-	auto runtimeVersion = a_skse->RuntimeVersion();
+	gameVersion = a_skse->RuntimeVersion();
 
-	REX::INFO("Game version : {} (built for {})", runtimeVersion, SKSE::RUNTIME_SSE_LATEST);
+	REX::INFO("Game version : {} (built for {})", gameVersion, SKSE::RUNTIME_SSE_LATEST);
 
 #ifdef SKYRIM_SUPPORT_AE
 	if constexpr (SKSE::RUNTIME_SSE_LATEST < Runtime::MIN_ADDRESS_LIBRARY_V5) {
-		if (runtimeVersion >= Runtime::MIN_ADDRESS_LIBRARY_V5) {
+		if (gameVersion >= Runtime::MIN_ADDRESS_LIBRARY_V5) {
 			REX::FAIL(
 				"You are using a newer version of Skyrim than this version of {0} supports.\n"
 				"Install the correct version of {0} for your game version.\n"
 				"Runtime: {1}\n"
 				"Supported: 1.6.1170 (Steam) / 1.6.1179 (GOG)",
-				Version::PROJECT, runtimeVersion);
+				Version::PROJECT, gameVersion);
 		}
 	}
 #endif

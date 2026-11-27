@@ -2,7 +2,7 @@
 
 namespace Cache
 {
-	class DataHolder : public REX::Singleton<DataHolder>
+	class DataHolder : public REX::TSingleton<DataHolder>
 	{
 	public:
 		void GetData();

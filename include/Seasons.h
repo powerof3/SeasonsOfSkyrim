@@ -43,21 +43,20 @@ public:
 	explicit Season(SEASON_TYPE a_season, SEASON_ID a_ID, bool a_writeComment) :
 		ID(std::move(a_ID)),
 		season(a_season),
-		validWorldspaces(ID.type, "Worldspaces", a_writeComment ? ";Valid worldspaces."sv : "", "Tamriel|MarkarthWorld|RiftenWorld|SolitudeWorld|WhiterunWorld|DLC1HunterHQWorld|DLC2SolstheimWorld"s),
-		swapActivators(ID.type, "Activators", a_writeComment ? ";Swap objects of these types for seasonal variants."sv : "", true),
-		swapFurniture(ID.type, "Furniture", "", true),
-		swapMovableStatics(ID.type, "Movable Statics", "", true),
-		swapStatics(ID.type, "Statics", "", true),
-		swapTrees(ID.type, "Trees", "", true),
-		swapFlora(ID.type, "Flora", "", true),
-		swapVFX(ID.type, "Visual Effects", "", true),
-		swapObjectLOD(ID.type, "Object LOD", a_writeComment ? ";Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n"
-															  ";See https://dyndolod.info/Help/Seasons for more info"sv :
-															  "",
-			true),
-		swapTerrainLOD(ID.type, "Terrain LOD", "", true),
-		swapTreeLOD(ID.type, "Tree LOD", "", true),
-		swapGrass(ID.type, "Grass", a_writeComment ? ";Enable seasonal grass types (eg. snow grass in winter)."sv : "", true)
+		validWorldspaces(ID.type, "Worldspaces", "Tamriel|MarkarthWorld|RiftenWorld|SolitudeWorld|WhiterunWorld|DLC1HunterHQWorld|DLC2SolstheimWorld"s, a_writeComment ? "Valid worldspaces."sv : ""sv, "|"sv),
+		swapActivators(ID.type, "Activators", true, a_writeComment ? "Swap objects of these types for seasonal variants."sv : ""sv),
+		swapFurniture(ID.type, "Furniture", true),
+		swapMovableStatics(ID.type, "Movable Statics", true),
+		swapStatics(ID.type, "Statics", true),
+		swapTrees(ID.type, "Trees", true),
+		swapFlora(ID.type, "Flora", true),
+		swapVFX(ID.type, "Visual Effects", true),
+		swapObjectLOD(ID.type, "Object LOD", true, a_writeComment ? "Seasonal LOD must be generated using DynDOLOD Alpha 67/SSELODGen Beta 88 or higher.\n"
+																	";See https://dyndolod.info/Help/Seasons for more info"sv :
+																	""sv),
+		swapTerrainLOD(ID.type, "Terrain LOD", true),
+		swapTreeLOD(ID.type, "Tree LOD", true),
+		swapGrass(ID.type, "Grass", true, a_writeComment ? "Enable seasonal grass types (eg. snow grass in winter)."sv : ""sv)
 	{}
 
 	void CheckLODExists();
@@ -110,22 +109,22 @@ private:
 	SEASON_ID   ID{};
 	SEASON_TYPE season{};
 
-	Setting::StrA               validWorldspaces;
-	FlatSet<RE::TESWorldSpace*> validWorldspacesPtr{};
+	REX::TIniSettingA<std::string> validWorldspaces;
+	FlatSet<RE::TESWorldSpace*>    validWorldspacesPtr{};
 
-	Setting::Bool swapActivators;
-	Setting::Bool swapFurniture;
-	Setting::Bool swapMovableStatics;
-	Setting::Bool swapStatics;
-	Setting::Bool swapTrees;
-	Setting::Bool swapFlora;
-	Setting::Bool swapVFX;
+	REX::TIniSetting<bool> swapActivators;
+	REX::TIniSetting<bool> swapFurniture;
+	REX::TIniSetting<bool> swapMovableStatics;
+	REX::TIniSetting<bool> swapStatics;
+	REX::TIniSetting<bool> swapTrees;
+	REX::TIniSetting<bool> swapFlora;
+	REX::TIniSetting<bool> swapVFX;
 
-	Setting::Bool swapObjectLOD;
-	Setting::Bool swapTerrainLOD;
-	Setting::Bool swapTreeLOD;
+	REX::TIniSetting<bool> swapObjectLOD;
+	REX::TIniSetting<bool> swapTerrainLOD;
+	REX::TIniSetting<bool> swapTreeLOD;
 
-	Setting::Bool swapGrass;
+	REX::TIniSetting<bool> swapGrass;
 
 	FormSwapMap formMap{};
 };
